@@ -1,0 +1,17 @@
+[comment encoding = UTF-8 /]
+[**
+ * The documentation of the module generate.
+ */]
+[module generate('http://www.eclipse.org/emf/2002/Ecore')]
+
+
+[**
+ * The documentation of the template generateRacket.
+ * @param anOclAny
+ */]
+[template public generateRacket(anEPackage : EPackage)]
+[comment @main/]
+[file (anEPackage.name, false, 'UTF-8')]
+test!
+[/file]
+[/template]
