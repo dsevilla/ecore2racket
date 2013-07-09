@@ -37,21 +37,51 @@
 [/template]
 
 [template private generate_slots(klass : EClass)]
-[for (sf: EStructuralFeature | klass.eAllStructuralFeatures)]
-; feature [sf.name/]
+[gen_attributes(klass)/]
+[gen_references(klass)/]
+[/template]
+
+[template private gen_attributes(klass : EClass)]
+[for (sf: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
+[let dec : String = decamel(sf.name)]
+; attribute [dec/]
+(define [dec/] 0)
+(define/public (get-[dec/]) [dec/])
+(define/public (set-[dec/]! v)
+  (set! [dec/] v))
+
+[/let]
 [/for]
 [/template]
 
+[template private gen_references(klass : EClass)]
+[for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
+[let dec : String = decamel(ref.name)]
+; reference [dec/]
+(define [dec/] null)
+(define/public (get-[dec/]) [dec/])
+(define/public (set-[dec/]! v)
+  (set! [dec/] v))
+
+[/let]
+[/for]
+[/template]
+
+
 [template private eclass_to_racket_class_name(klass: EClass)]
-[klass.name.toLowerCase()/]%
+[decamel(klass.name)/]%
 [/template]
 
 [template private superclass_spec(klass : EClass)]
-[let superclasses : OrderedSet(EClass) = klass.eAllSuperTypes]
+[let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
 [if superclasses->size() = 0]
 object%
 [else]
 [eclass_to_racket_class_name(superclasses->first())/]
 [/if]
 [/let]	
+[/template]
+
+[template private decamel(name : EString)]
+[name.replaceAll('([a-z])([A-Z][a-z])', '$1-$2').toLowerCase()/]
 [/template]

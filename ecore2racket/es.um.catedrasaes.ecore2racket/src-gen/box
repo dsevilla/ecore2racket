@@ -7,69 +7,137 @@
     (super-new)
 
     ;; slots (features)
-	feature comment
-	feature name
-	feature attributes
-	feature methods
-	feature wires
-	feature boxes
-	feature connection
+	; attribute comment
+	(define comment 0)
+	(define/public (get-comment) comment)
+	(define/public (set-comment! v)
+	  (set! comment v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	
+	; reference attributes
+	(define attributes null)
+	(define/public (get-attributes) attributes)
+	(define/public (set-attributes! v)
+	  (set! attributes v))
+	
+	; reference methods
+	(define methods null)
+	(define/public (get-methods) methods)
+	(define/public (set-methods! v)
+	  (set! methods v))
+	
+	; reference wires
+	(define wires null)
+	(define/public (get-wires) wires)
+	(define/public (set-wires! v)
+	  (set! wires v))
+	
+	; reference boxes
+	(define boxes null)
+	(define/public (get-boxes) boxes)
+	(define/public (set-boxes! v)
+	  (set! boxes v))
+	
+	; reference connection
+	(define connection null)
+	(define/public (get-connection) connection)
+	(define/public (set-connection! v)
+	  (set! connection v))
+	
 	
 
   ))
 
 
-;; Class BoxReference (boxreference%)
-(define boxreference%
+;; Class BoxReference (box-reference%)
+(define box-reference%
   (class object%
   
     (super-new)
 
     ;; slots (features)
-	feature box
-	feature isPointer
-	feature isReference
-	feature name
+	; attribute is-pointer
+	(define is-pointer 0)
+	(define/public (get-is-pointer) is-pointer)
+	(define/public (set-is-pointer! v)
+	  (set! is-pointer v))
+	
+	; attribute is-reference
+	(define is-reference 0)
+	(define/public (get-is-reference) is-reference)
+	(define/public (set-is-reference! v)
+	  (set! is-reference v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	
+	; reference box
+	(define box null)
+	(define/public (get-box) box)
+	(define/public (set-box! v)
+	  (set! box v))
+	
 	
 
   ))
 
 
-;; Class WireReference (wirereference%)
-(define wirereference%
+;; Class WireReference (wire-reference%)
+(define wire-reference%
   (class object%
   
     (super-new)
 
     ;; slots (features)
-	feature wire
+	
+	; reference wire
+	(define wire null)
+	(define/public (get-wire) wire)
+	(define/public (set-wire! v)
+	  (set! wire v))
+	
 	
 
   ))
 
 
-;; Class LocalWireReference (localwirereference%)
-(define localwirereference%
-  (class wirereference%
+;; Class LocalWireReference (local-wire-reference%)
+(define local-wire-reference%
+  (class wire-reference%
   
     (super-new)
 
     ;; slots (features)
-	feature wire
+	
 	
 
   ))
 
 
-;; Class ExternalWireReference (externalwirereference%)
-(define externalwirereference%
-  (class wirereference%
+;; Class ExternalWireReference (external-wire-reference%)
+(define external-wire-reference%
+  (class wire-reference%
   
     (super-new)
 
     ;; slots (features)
-	feature wire
-	feature boxReference
+	
+	; reference box-reference
+	(define box-reference null)
+	(define/public (get-box-reference) box-reference)
+	(define/public (set-box-reference! v)
+	  (set! box-reference v))
+	
 	
 
   ))
@@ -82,8 +150,19 @@
     (super-new)
 
     ;; slots (features)
-	feature from
-	feature to
+	
+	; reference from
+	(define from null)
+	(define/public (get-from) from)
+	(define/public (set-from! v)
+	  (set! from v))
+	
+	; reference to
+	(define to null)
+	(define/public (get-to) to)
+	(define/public (set-to! v)
+	  (set! to v))
+	
 	
 
   ))
@@ -96,9 +175,25 @@
     (super-new)
 
     ;; slots (features)
-	feature isInput
-	feature name
-	feature type
+	; attribute is-input
+	(define is-input 0)
+	(define/public (get-is-input) is-input)
+	(define/public (set-is-input! v)
+	  (set! is-input v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	
+	; reference type
+	(define type null)
+	(define/public (get-type) type)
+	(define/public (set-type! v)
+	  (set! type v))
+	
 	
 
   ))
@@ -111,39 +206,63 @@
     (super-new)
 
     ;; slots (features)
-	feature isPointer
-	feature isReference
+	; attribute is-pointer
+	(define is-pointer 0)
+	(define/public (get-is-pointer) is-pointer)
+	(define/public (set-is-pointer! v)
+	  (set! is-pointer v))
+	
+	; attribute is-reference
+	(define is-reference 0)
+	(define/public (get-is-reference) is-reference)
+	(define/public (set-is-reference! v)
+	  (set! is-reference v))
+	
+	
 	
 
   ))
 
 
-;; Class BasicType (basictype%)
-(define basictype%
+;; Class BasicType (basic-type%)
+(define basic-type%
   (class type%
   
     (super-new)
 
     ;; slots (features)
-	feature isPointer
-	feature isReference
-	feature basicType
+	; attribute basic-type
+	(define basic-type 0)
+	(define/public (get-basic-type) basic-type)
+	(define/public (set-basic-type! v)
+	  (set! basic-type v))
+	
+	
 	
 
   ))
 
 
-;; Class OtherType (othertype%)
-(define othertype%
+;; Class OtherType (other-type%)
+(define other-type%
   (class type%
   
     (super-new)
 
     ;; slots (features)
-	feature isPointer
-	feature isReference
-	feature namespace
-	feature name
+	; attribute namespace
+	(define namespace 0)
+	(define/public (get-namespace) namespace)
+	(define/public (set-namespace! v)
+	  (set! namespace v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	
 	
 
   ))
@@ -156,11 +275,37 @@
     (super-new)
 
     ;; slots (features)
-	feature comment
-	feature isPrivate
-	feature type
-	feature name
-	feature parameters
+	; attribute comment
+	(define comment 0)
+	(define/public (get-comment) comment)
+	(define/public (set-comment! v)
+	  (set! comment v))
+	
+	; attribute is-private
+	(define is-private 0)
+	(define/public (get-is-private) is-private)
+	(define/public (set-is-private! v)
+	  (set! is-private v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	
+	; reference type
+	(define type null)
+	(define/public (get-type) type)
+	(define/public (set-type! v)
+	  (set! type v))
+	
+	; reference parameters
+	(define parameters null)
+	(define/public (get-parameters) parameters)
+	(define/public (set-parameters! v)
+	  (set! parameters v))
+	
 	
 
   ))
@@ -173,41 +318,63 @@
     (super-new)
 
     ;; slots (features)
-	feature comment
-	feature type
-	feature name
-	feature defaultValue
+	; attribute comment
+	(define comment 0)
+	(define/public (get-comment) comment)
+	(define/public (set-comment! v)
+	  (set! comment v))
+	
+	; attribute name
+	(define name 0)
+	(define/public (get-name) name)
+	(define/public (set-name! v)
+	  (set! name v))
+	
+	; attribute default-value
+	(define default-value 0)
+	(define/public (get-default-value) default-value)
+	(define/public (set-default-value! v)
+	  (set! default-value v))
+	
+	
+	; reference type
+	(define type null)
+	(define/public (get-type) type)
+	(define/public (set-type! v)
+	  (set! type v))
+	
 	
 
   ))
 
 
-;; Class WireMany (wiremany%)
-(define wiremany%
+;; Class WireMany (wire-many%)
+(define wire-many%
   (class wire%
   
     (super-new)
 
     ;; slots (features)
-	feature isInput
-	feature name
-	feature type
+	
 	
 
   ))
 
 
-;; Class WireMethod (wiremethod%)
-(define wiremethod%
+;; Class WireMethod (wire-method%)
+(define wire-method%
   (class wire%
   
     (super-new)
 
     ;; slots (features)
-	feature isInput
-	feature name
-	feature type
-	feature method
+	
+	; reference method
+	(define method null)
+	(define/public (get-method) method)
+	(define/public (set-method! v)
+	  (set! method v))
+	
 	
 
   ))
