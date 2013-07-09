@@ -26,9 +26,20 @@
 ;; Class [klass.name + ' (' + cname + ')'/]
 (define [cname/]
   (class [superclass_spec(klass)/]
-     (super-new)
+	[comment See if generating some init method /]
+    (super-new)
+
+    ;; slots (features)
+	[generate_slots(klass)/]
+
   ))
 [/let]
+[/template]
+
+[template private generate_slots(klass : EClass)]
+[for (sf: EStructuralFeature | klass.eAllStructuralFeatures)]
+; feature [sf.name/]
+[/for]
 [/template]
 
 [template private eclass_to_racket_class_name(klass: EClass)]
