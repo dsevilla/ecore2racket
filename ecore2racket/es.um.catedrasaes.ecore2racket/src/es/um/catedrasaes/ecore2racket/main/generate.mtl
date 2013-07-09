@@ -12,6 +12,35 @@
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
 [file (anEPackage.name, false, 'UTF-8')]
-test!
+#lang racket
+
+[for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
+[generate_EClass(klass)/]
+
+[/for]
 [/file]
+[/template]
+
+[template private generate_EClass(klass: EClass)]
+[let cname:String = eclass_to_racket_class_name(klass)] 
+;; Class [klass.name + ' (' + cname + ')'/]
+(define [cname/]
+  (class [superclass_spec(klass)/]
+     (super-new)
+  ))
+[/let]
+[/template]
+
+[template private eclass_to_racket_class_name(klass: EClass)]
+[klass.name.toLowerCase()/]%
+[/template]
+
+[template private superclass_spec(klass : EClass)]
+[let superclasses : OrderedSet(EClass) = klass.eAllSuperTypes]
+[if superclasses->size() = 0]
+object%
+[else]
+[eclass_to_racket_class_name(superclasses->first())/]
+[/if]
+[/let]	
 [/template]

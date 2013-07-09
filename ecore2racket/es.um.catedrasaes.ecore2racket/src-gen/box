@@ -1,1 +1,114 @@
-test!
+#lang racket
+
+;; Class Box (box%)
+(define box%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class BoxReference (boxreference%)
+(define boxreference%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class WireReference (wirereference%)
+(define wirereference%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class LocalWireReference (localwirereference%)
+(define localwirereference%
+  (class wirereference%
+  
+     (super-new)
+  ))
+
+
+;; Class ExternalWireReference (externalwirereference%)
+(define externalwirereference%
+  (class wirereference%
+  
+     (super-new)
+  ))
+
+
+;; Class Connection (connection%)
+(define connection%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class Wire (wire%)
+(define wire%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class Type (type%)
+(define type%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class BasicType (basictype%)
+(define basictype%
+  (class type%
+  
+     (super-new)
+  ))
+
+
+;; Class OtherType (othertype%)
+(define othertype%
+  (class type%
+  
+     (super-new)
+  ))
+
+
+;; Class Method (method%)
+(define method%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class Param (param%)
+(define param%
+  (class object%
+  
+     (super-new)
+  ))
+
+
+;; Class WireMany (wiremany%)
+(define wiremany%
+  (class wire%
+  
+     (super-new)
+  ))
+
+
+;; Class WireMethod (wiremethod%)
+(define wiremethod%
+  (class wire%
+  
+     (super-new)
+  ))
+
+
