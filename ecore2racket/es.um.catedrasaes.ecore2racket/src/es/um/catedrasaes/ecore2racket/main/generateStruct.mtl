@@ -11,7 +11,7 @@
  */]
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
-[file (anEPackage.name, false, 'UTF-8')]
+[file (anEPackage.name+'.rkt', false, 'UTF-8')]
 #lang racket
 
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
