@@ -1,382 +1,242 @@
 #lang racket
 
-;; Class Box (box%)
-(define box%
-  (class object%
+;; Class Box (box)
+(struct box
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute comment
-	(define comment 0)
-	(define/public (get-comment) comment)
-	(define/public (set-comment! v)
-	  (set! comment v))
-	
+	comment
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
-	
+	name
 	
 	; reference attributes
-	(define attributes null)
-	(define/public (get-attributes) attributes)
-	(define/public (set-attributes! v)
-	  (set! attributes v))
-	
+	attributes
 	; reference methods
-	(define methods null)
-	(define/public (get-methods) methods)
-	(define/public (set-methods! v)
-	  (set! methods v))
-	
+	methods
 	; reference wires
-	(define wires null)
-	(define/public (get-wires) wires)
-	(define/public (set-wires! v)
-	  (set! wires v))
-	
+	wires
 	; reference boxes
-	(define boxes null)
-	(define/public (get-boxes) boxes)
-	(define/public (set-boxes! v)
-	  (set! boxes v))
-	
+	boxes
 	; reference connection
-	(define connection null)
-	(define/public (get-connection) connection)
-	(define/public (set-connection! v)
-	  (set! connection v))
+	connection
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class BoxReference (box-reference%)
-(define box-reference%
-  (class object%
+;; Class BoxReference (box-reference)
+(struct box-reference
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute is-pointer
-	(define is-pointer 0)
-	(define/public (get-is-pointer) is-pointer)
-	(define/public (set-is-pointer! v)
-	  (set! is-pointer v))
-	
+	is-pointer
 	; attribute is-reference
-	(define is-reference 0)
-	(define/public (get-is-reference) is-reference)
-	(define/public (set-is-reference! v)
-	  (set! is-reference v))
-	
+	is-reference
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
-	
+	name
 	
 	; reference box
-	(define box null)
-	(define/public (get-box) box)
-	(define/public (set-box! v)
-	  (set! box v))
+	box
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class WireReference (wire-reference%)
-(define wire-reference%
-  (class object%
+;; Class WireReference (wire-reference)
+(struct wire-reference
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	; reference wire
-	(define wire null)
-	(define/public (get-wire) wire)
-	(define/public (set-wire! v)
-	  (set! wire v))
+	wire
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class LocalWireReference (local-wire-reference%)
-(define local-wire-reference%
-  (class wire-reference%
+;; Class LocalWireReference (local-wire-reference)
+(struct local-wire-reference
+  wire-reference
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class ExternalWireReference (external-wire-reference%)
-(define external-wire-reference%
-  (class wire-reference%
+;; Class ExternalWireReference (external-wire-reference)
+(struct external-wire-reference
+  wire-reference
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	; reference box-reference
-	(define box-reference null)
-	(define/public (get-box-reference) box-reference)
-	(define/public (set-box-reference! v)
-	  (set! box-reference v))
+	box-reference
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class Connection (connection%)
-(define connection%
-  (class object%
+;; Class Connection (connection)
+(struct connection
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	; reference from
-	(define from null)
-	(define/public (get-from) from)
-	(define/public (set-from! v)
-	  (set! from v))
-	
+	from
 	; reference to
-	(define to null)
-	(define/public (get-to) to)
-	(define/public (set-to! v)
-	  (set! to v))
+	to
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class Wire (wire%)
-(define wire%
-  (class object%
+;; Class Wire (wire)
+(struct wire
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute is-input
-	(define is-input 0)
-	(define/public (get-is-input) is-input)
-	(define/public (set-is-input! v)
-	  (set! is-input v))
-	
+	is-input
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
-	
+	name
 	
 	; reference type
-	(define type null)
-	(define/public (get-type) type)
-	(define/public (set-type! v)
-	  (set! type v))
+	type
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class Type (type%)
-(define type%
-  (class object%
+;; Class Type (type)
+(struct type
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute is-pointer
-	(define is-pointer 0)
-	(define/public (get-is-pointer) is-pointer)
-	(define/public (set-is-pointer! v)
-	  (set! is-pointer v))
-	
+	is-pointer
 	; attribute is-reference
-	(define is-reference 0)
-	(define/public (get-is-reference) is-reference)
-	(define/public (set-is-reference! v)
-	  (set! is-reference v))
+	is-reference
 	
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class BasicType (basic-type%)
-(define basic-type%
-  (class type%
+;; Class BasicType (basic-type)
+(struct basic-type
+  type
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute basic-type
-	(define basic-type 0)
-	(define/public (get-basic-type) basic-type)
-	(define/public (set-basic-type! v)
-	  (set! basic-type v))
+	basic-type
 	
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class OtherType (other-type%)
-(define other-type%
-  (class type%
+;; Class OtherType (other-type)
+(struct other-type
+  type
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute namespace
-	(define namespace 0)
-	(define/public (get-namespace) namespace)
-	(define/public (set-namespace! v)
-	  (set! namespace v))
-	
+	namespace
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
+	name
 	
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class Method (method%)
-(define method%
-  (class object%
+;; Class Method (method)
+(struct method
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute comment
-	(define comment 0)
-	(define/public (get-comment) comment)
-	(define/public (set-comment! v)
-	  (set! comment v))
-	
+	comment
 	; attribute is-private
-	(define is-private 0)
-	(define/public (get-is-private) is-private)
-	(define/public (set-is-private! v)
-	  (set! is-private v))
-	
+	is-private
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
-	
+	name
 	
 	; reference type
-	(define type null)
-	(define/public (get-type) type)
-	(define/public (set-type! v)
-	  (set! type v))
-	
+	type
 	; reference parameters
-	(define parameters null)
-	(define/public (get-parameters) parameters)
-	(define/public (set-parameters! v)
-	  (set! parameters v))
+	parameters
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class Param (param%)
-(define param%
-  (class object%
+;; Class Param (param)
+(struct param
   
-    (super-new)
-
     ;; slots (features)
+	(
 	; attribute comment
-	(define comment 0)
-	(define/public (get-comment) comment)
-	(define/public (set-comment! v)
-	  (set! comment v))
-	
+	comment
 	; attribute name
-	(define name 0)
-	(define/public (get-name) name)
-	(define/public (set-name! v)
-	  (set! name v))
-	
+	name
 	; attribute default-value
-	(define default-value 0)
-	(define/public (get-default-value) default-value)
-	(define/public (set-default-value! v)
-	  (set! default-value v))
-	
+	default-value
 	
 	; reference type
-	(define type null)
-	(define/public (get-type) type)
-	(define/public (set-type! v)
-	  (set! type v))
+	type
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class WireMany (wire-many%)
-(define wire-many%
-  (class wire%
+;; Class WireMany (wire-many)
+(struct wire-many
+  wire
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	
+	)
 
-  ))
+  #:transparent)
 
 
-;; Class WireMethod (wire-method%)
-(define wire-method%
-  (class wire%
+;; Class WireMethod (wire-method)
+(struct wire-method
+  wire
   
-    (super-new)
-
     ;; slots (features)
+	(
 	
 	; reference method
-	(define method null)
-	(define/public (get-method) method)
-	(define/public (set-method! v)
-	  (set! method v))
+	method
 	
-	
+	)
 
-  ))
+  #:transparent)
 
 
