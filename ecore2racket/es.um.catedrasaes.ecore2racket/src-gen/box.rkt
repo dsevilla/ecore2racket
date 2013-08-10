@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 
 ;; Class Box (box)
 (struct box

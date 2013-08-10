@@ -12,7 +12,7 @@
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
 [file (anEPackage.name+'.rkt', false, 'UTF-8')]
-#lang racket
+#lang racket/base
 
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
