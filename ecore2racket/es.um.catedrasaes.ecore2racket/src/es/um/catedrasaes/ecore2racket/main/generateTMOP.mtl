@@ -14,11 +14,21 @@
 [file (anEPackage.name+'-tmop.rkt', false, 'UTF-8')]
 #lang racket/base
 
+[generate_provides(anEPackage)/]
+
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
 
 [/for]
 [/file]
+[/template]
+
+[template private generate_provides (anEPackage : EPackage) ]
+(provide
+	[for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
+		[eclass_to_mop_class_name(klass)/]
+	[/for]
+	)
 [/template]
 
 [template private generate_EClass(klass: EClass)]
