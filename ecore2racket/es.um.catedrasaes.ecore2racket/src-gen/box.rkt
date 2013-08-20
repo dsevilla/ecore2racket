@@ -1,242 +1,305 @@
 #lang racket/base
 
-;; Class Box (box)
-(struct box
+; (module box racket/base
+
+  (require racket/class)
+
+  (provide
+  		box%
+  		box-reference%
+  		wire-reference%
+  		local-wire-reference%
+  		external-wire-reference%
+  		connection%
+  		wire%
+  		type%
+  		basic-type%
+  		other-type%
+  		method%
+  		param%
+  		wire-many%
+  		wire-method%
+  	)
+
+;; Class Box (box%)
+(define box%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute comment
-	comment
+	(field (comment 0))
+	
 	; attribute name
-	name
+	(field (name 0))
+	
 	
 	; reference attributes
-	attributes
-	; reference methods
-	methods
-	; reference wires
-	wires
-	; reference boxes
-	boxes
-	; reference connection
-	connection
+	(field (attributes null))
 	
-	)
+	; reference methods
+	(field (methods null))
+	
+	; reference wires
+	(field (wires null))
+	
+	; reference boxes
+	(field (boxes null))
+	
+	; reference connection
+	(field (connection null))
+	
+	
 
-  #:transparent)
+  ))
 
 
-;; Class BoxReference (box-reference)
-(struct box-reference
+;; Class BoxReference (box-reference%)
+(define box-reference%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute is-pointer
-	is-pointer
+	(field (is-pointer 0))
+	
 	; attribute is-reference
-	is-reference
+	(field (is-reference 0))
+	
 	; attribute name
-	name
+	(field (name 0))
+	
 	
 	; reference box
-	box
+	(field (box null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class WireReference (wire-reference)
-(struct wire-reference
+;; Class WireReference (wire-reference%)
+(define wire-reference%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	; reference wire
-	wire
+	(field (wire null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class LocalWireReference (local-wire-reference)
-(struct local-wire-reference
-  wire-reference
+;; Class LocalWireReference (local-wire-reference%)
+(define local-wire-reference%
+  (class wire-reference%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	
-	)
 
-  #:transparent)
+  ))
 
 
-;; Class ExternalWireReference (external-wire-reference)
-(struct external-wire-reference
-  wire-reference
+;; Class ExternalWireReference (external-wire-reference%)
+(define external-wire-reference%
+  (class wire-reference%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	; reference box-reference
-	box-reference
+	(field (box-reference null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class Connection (connection)
-(struct connection
+;; Class Connection (connection%)
+(define connection%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	; reference from
-	from
+	(field (from null))
+	
 	; reference to
-	to
+	(field (to null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class Wire (wire)
-(struct wire
+;; Class Wire (wire%)
+(define wire%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute is-input
-	is-input
+	(field (is-input 0))
+	
 	; attribute name
-	name
+	(field (name 0))
+	
 	
 	; reference type
-	type
+	(field (type null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class Type (type)
-(struct type
+;; Class Type (type%)
+(define type%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute is-pointer
-	is-pointer
+	(field (is-pointer 0))
+	
 	; attribute is-reference
-	is-reference
+	(field (is-reference 0))
 	
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class BasicType (basic-type)
-(struct basic-type
-  type
+;; Class BasicType (basic-type%)
+(define basic-type%
+  (class type%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute basic-type
-	basic-type
+	(field (basic-type 0))
 	
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class OtherType (other-type)
-(struct other-type
-  type
+;; Class OtherType (other-type%)
+(define other-type%
+  (class type%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute namespace
-	namespace
+	(field (namespace 0))
+	
 	; attribute name
-	name
+	(field (name 0))
 	
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class Method (method)
-(struct method
+;; Class Method (method%)
+(define method%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute comment
-	comment
+	(field (comment 0))
+	
 	; attribute is-private
-	is-private
+	(field (is-private 0))
+	
 	; attribute name
-	name
+	(field (name 0))
+	
 	
 	; reference type
-	type
+	(field (type null))
+	
 	; reference parameters
-	parameters
+	(field (parameters null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class Param (param)
-(struct param
+;; Class Param (param%)
+(define param%
+  (class object%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	; attribute comment
-	comment
+	(field (comment 0))
+	
 	; attribute name
-	name
+	(field (name 0))
+	
 	; attribute default-value
-	default-value
+	(field (default-value 0))
+	
 	
 	; reference type
-	type
+	(field (type null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
-;; Class WireMany (wire-many)
-(struct wire-many
-  wire
+;; Class WireMany (wire-many%)
+(define wire-many%
+  (class wire%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	
-	)
 
-  #:transparent)
+  ))
 
 
-;; Class WireMethod (wire-method)
-(struct wire-method
-  wire
+;; Class WireMethod (wire-method%)
+(define wire-method%
+  (class wire%
   
-    ;; slots (features)
-	(
+    (super-new)
+
+    ;; fields (features)
 	
 	; reference method
-	method
+	(field (method null))
 	
-	)
+	
 
-  #:transparent)
+  ))
 
 
+;) ; end module box

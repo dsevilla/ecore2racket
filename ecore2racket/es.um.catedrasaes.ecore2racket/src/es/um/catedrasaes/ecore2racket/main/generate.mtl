@@ -11,14 +11,29 @@
  */]
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
-[file (anEPackage.name, false, 'UTF-8')]
-#lang racket
+[file (decamel(anEPackage.name)+'.rkt', false, 'UTF-8')]
+#lang racket/base
+
+; (module [decamel(anEPackage.name)/] racket/base
+
+  (require racket/class)
+
+  [generate_provides(anEPackage)/]
 
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
 
 [/for]
+;) ; end module [decamel(anEPackage.name)/]
 [/file]
+[/template]
+
+[template private generate_provides (anEPackage : EPackage) ]
+(provide
+	[for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
+		[eclass_to_racket_class_name(klass)/]
+	[/for]
+	)
 [/template]
 
 [template private generate_EClass(klass: EClass)]
@@ -29,14 +44,14 @@
 	[comment See if generating some init method /]
     (super-new)
 
-    ;; slots (features)
-	[generate_slots(klass)/]
+    ;; fields (features)
+	[generate_fields(klass)/]
 
   ))
 [/let]
 [/template]
 
-[template private generate_slots(klass : EClass)]
+[template private generate_fields(klass : EClass)]
 [gen_attributes(klass)/]
 [gen_references(klass)/]
 [/template]
@@ -45,10 +60,7 @@
 [for (sf: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
 [let dec : String = decamel(sf.name)]
 ; attribute [dec/]
-(define [dec/] 0)
-(define/public (get-[dec/]) [dec/])
-(define/public (set-[dec/]! v)
-  (set! [dec/] v))
+(field ([dec/] 0))
 
 [/let]
 [/for]
@@ -58,10 +70,7 @@
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 [let dec : String = decamel(ref.name)]
 ; reference [dec/]
-(define [dec/] null)
-(define/public (get-[dec/]) [dec/])
-(define/public (set-[dec/]! v)
-  (set! [dec/] v))
+(field ([dec/] null))
 
 [/let]
 [/for]
