@@ -18,6 +18,9 @@
 
   (require racket/class)
 
+  ;; Support functions
+  (require "ecore-support.rkt")
+
   [generate_provides(anEPackage)/]
 
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
@@ -40,9 +43,23 @@
 [let cname:String = eclass_to_racket_class_name(klass)] 
 ;; Class [klass.name + ' (' + cname + ')'/]
 (define [cname/]
-  (class [superclass_spec(klass)/]
+  (class* [superclass_spec(klass)/] (classifier&)
 	[comment See if generating some init method /]
     (super-new)
+
+	;; Make it available for introspection (TODO: see a more general method)
+	(inspect #f)
+
+	;; classifier& interface methods
+    (define/override (e-name)
+		"[klass.name/]")
+	(define/override (e-attributes)
+		[attributes_list(klass)/]	
+	)
+	(define/override (e-references)
+		[references_list(klass)/]
+	)
+
 
     ;; fields (features)
 	[generate_fields(klass)/]
@@ -60,7 +77,11 @@
 [for (sf: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
 [let dec : String = decamel(sf.name)]
 ; attribute [dec/]
-(field ([dec/] 0))
+(define -[dec/] 0)
+(define/public ([dec/])
+	-[dec/])
+(define/public ([dec/]-set! val)
+	(set! -[dec/] val))
 
 [/let]
 [/for]
@@ -70,7 +91,11 @@
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 [let dec : String = decamel(ref.name)]
 ; reference [dec/]
-(field ([dec/] null))
+(define -[dec/] null)
+(define/public ([dec/])
+	-[dec/])
+(define/public ([dec/]-set! val)
+	(set! -[dec/] val))
 
 [/let]
 [/for]
@@ -84,7 +109,7 @@
 [template private superclass_spec(klass : EClass)]
 [let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
 [if superclasses->size() = 0]
-object%
+eobject%
 [else]
 [eclass_to_racket_class_name(superclasses->first())/]
 [/if]
@@ -93,4 +118,20 @@ object%
 
 [template private decamel(name : EString)]
 [name.replaceAll('([a-z])([A-Z][a-z])', '$1-$2').toLowerCase()/]
+[/template]
+
+[template private attributes_list (klass : EClass) ]
+'( 
+[for (att: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
+[decamel(att.name)/]
+[/for]
+)
+[/template]
+
+[template private references_list (klass : EClass) ]
+'( 
+[for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
+[decamel(ref.name)/]
+[/for]
+)
 [/template]
