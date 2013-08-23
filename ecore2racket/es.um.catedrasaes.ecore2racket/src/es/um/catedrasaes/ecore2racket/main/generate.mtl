@@ -19,7 +19,7 @@
   (require racket/class)
 
   ;; Support functions
-  (require "ecore-support.rkt")
+  (require "../src/ecore-support.rkt")
 
   [generate_provides(anEPackage)/]
 
@@ -43,7 +43,7 @@
 [let cname:String = eclass_to_racket_class_name(klass)] 
 ;; Class [klass.name + ' (' + cname + ')'/]
 (define [cname/]
-  (class* [superclass_spec(klass)/] (classifier&)
+  (class* [superclass_spec(klass)/] (classifier<%>)
 	[comment See if generating some init method /]
     (super-new)
 

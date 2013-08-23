@@ -11,27 +11,28 @@
 (require racket/class)
 
 (provide
-   named-element&
-   classifier&
-   structural-feature&
-   reference&
-   attribute&
+   named-element<%>
+   classifier<%>
+   structural-feature<%>
+   reference<%>
+   attribute<%>
    eobject%)
 
-(define named-element& (interface () e-name))
-(define classifier& (interface (named-element&)
+(define named-element<%> (interface () e-name))
+(define classifier<%> (interface (named-element<%>)
                       ;; superclass
                       e-attributes e-references))
-(define structural-feature& (interface (named-element&) e-type))
-(define reference& (interface (structural-feature&)))
-(define attribute& (interface (structural-feature&)))
+(define structural-feature<%> (interface (named-element<%>) e-type))
+(define reference<%> (interface (structural-feature<%>)))
+(define attribute<%> (interface (structural-feature<%>)))
 
 
 (define eobject%
-  (class* object% (classifier&)
-    ;; classifier& interface methods
-    (define/public (e-name)
-      "EObject")
+  (class* object% (classifier<%>)
+    
+    (super-new)
+    
+    ;; classifier<%> interface methods
+    (define/public (e-name) "EObject")
     (define/public (e-attributes) null)
-    (define/public (e-references) null)
-    ))
+    (define/public (e-references) null)))

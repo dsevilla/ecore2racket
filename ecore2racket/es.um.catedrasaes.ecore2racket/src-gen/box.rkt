@@ -5,7 +5,7 @@
   (require racket/class)
 
   ;; Support functions
-  (require "ecore-support.rkt")
+  (require "../src/ecore-support.rkt")
 
   (provide
   		box%
@@ -27,7 +27,7 @@
 ;; Class Box (box%)
 (define box%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -112,7 +112,7 @@
 ;; Class BoxReference (box-reference%)
 (define box-reference%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -173,7 +173,7 @@
 ;; Class WireReference (wire-reference%)
 (define wire-reference%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -210,7 +210,7 @@
 ;; Class LocalWireReference (local-wire-reference%)
 (define local-wire-reference%
   (class* wire-reference%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -239,7 +239,7 @@
 ;; Class ExternalWireReference (external-wire-reference%)
 (define external-wire-reference%
   (class* wire-reference%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -276,7 +276,7 @@
 ;; Class Connection (connection%)
 (define connection%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -321,7 +321,7 @@
 ;; Class Wire (wire%)
 (define wire%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -374,7 +374,7 @@
 ;; Class Type (type%)
 (define type%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -419,7 +419,7 @@
 ;; Class BasicType (basic-type%)
 (define basic-type%
   (class* type%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -456,7 +456,7 @@
 ;; Class OtherType (other-type%)
 (define other-type%
   (class* type%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -501,7 +501,7 @@
 ;; Class Method (method%)
 (define method%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -570,7 +570,7 @@
 ;; Class Param (param%)
 (define param%
   (class* eobject%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -631,7 +631,7 @@
 ;; Class WireMany (wire-many%)
 (define wire-many%
   (class* wire%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -660,7 +660,7 @@
 ;; Class WireMethod (wire-method%)
 (define wire-method%
   (class* wire%
-   (classifier&)
+   (classifier<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
