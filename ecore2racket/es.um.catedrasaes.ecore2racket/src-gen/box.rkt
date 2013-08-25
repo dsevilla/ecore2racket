@@ -24,10 +24,11 @@
   		wire-method%
   	)
 
+(define box<%> )
 ;; Class Box (box%)
-(define box%
+(define box%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> box<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -109,10 +110,11 @@
   ))
 
 
+(define box-reference<%> )
 ;; Class BoxReference (box-reference%)
-(define box-reference%
+(define box-reference%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> box-reference<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -170,10 +172,11 @@
   ))
 
 
+(define wire-reference<%> )
 ;; Class WireReference (wire-reference%)
-(define wire-reference%
+(define wire-reference%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> wire-reference<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -207,10 +210,11 @@
   ))
 
 
+(define local-wire-reference<%> )
 ;; Class LocalWireReference (local-wire-reference%)
-(define local-wire-reference%
+(define local-wire-reference%/b
   (class* wire-reference%
-   (classifier<%>)
+   (classifier<%> local-wire-reference<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -236,10 +240,11 @@
   ))
 
 
+(define external-wire-reference<%> )
 ;; Class ExternalWireReference (external-wire-reference%)
-(define external-wire-reference%
+(define external-wire-reference%/b
   (class* wire-reference%
-   (classifier<%>)
+   (classifier<%> external-wire-reference<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -273,10 +278,11 @@
   ))
 
 
+(define connection<%> )
 ;; Class Connection (connection%)
-(define connection%
+(define connection%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> connection<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -318,10 +324,11 @@
   ))
 
 
+(define wire<%> )
 ;; Class Wire (wire%)
-(define wire%
+(define wire%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> wire<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -371,10 +378,11 @@
   ))
 
 
+(define type<%> )
 ;; Class Type (type%)
-(define type%
+(define type%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> type<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -416,10 +424,11 @@
   ))
 
 
+(define basic-type<%> )
 ;; Class BasicType (basic-type%)
-(define basic-type%
+(define basic-type%/b
   (class* type%
-   (classifier<%>)
+   (classifier<%> basic-type<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -453,10 +462,11 @@
   ))
 
 
+(define other-type<%> )
 ;; Class OtherType (other-type%)
-(define other-type%
+(define other-type%/b
   (class* type%
-   (classifier<%>)
+   (classifier<%> other-type<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -498,10 +508,11 @@
   ))
 
 
+(define method<%> )
 ;; Class Method (method%)
-(define method%
+(define method%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> method<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -567,10 +578,11 @@
   ))
 
 
+(define param<%> )
 ;; Class Param (param%)
-(define param%
+(define param%/b
   (class* eobject%
-   (classifier<%>)
+   (classifier<%> param<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -628,10 +640,11 @@
   ))
 
 
+(define wire-many<%> )
 ;; Class WireMany (wire-many%)
-(define wire-many%
+(define wire-many%/b
   (class* wire%
-   (classifier<%>)
+   (classifier<%> wire-many<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -657,10 +670,11 @@
   ))
 
 
+(define wire-method<%> )
 ;; Class WireMethod (wire-method%)
-(define wire-method%
+(define wire-method%/b
   (class* wire%
-   (classifier<%>)
+   (classifier<%> wire-method<%>)
     (super-new)
 
 	;; Make it available for introspection (TODO: see a more general method)
@@ -692,6 +706,79 @@
 	
 
   ))
+
+
+
+;; Contracts
+(define box<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract box% box<%>/c box%/b)
+
+
+(define box-reference<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract box-reference% box-reference<%>/c box-reference%/b)
+
+
+(define wire-reference<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract wire-reference% wire-reference<%>/c wire-reference%/b)
+
+
+(define local-wire-reference<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract local-wire-reference% local-wire-reference<%>/c local-wire-reference%/b)
+
+
+(define external-wire-reference<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract external-wire-reference% external-wire-reference<%>/c external-wire-reference%/b)
+
+
+(define connection<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract connection% connection<%>/c connection%/b)
+
+
+(define wire<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract wire% wire<%>/c wire%/b)
+
+
+(define type<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract type% type<%>/c type%/b)
+
+
+(define basic-type<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract basic-type% basic-type<%>/c basic-type%/b)
+
+
+(define other-type<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract other-type% other-type<%>/c other-type%/b)
+
+
+(define method<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract method% method<%>/c method%/b)
+
+
+(define param<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract param% param<%>/c param%/b)
+
+
+(define wire-many<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract wire-many% wire-many<%>/c wire-many%/b)
+
+
+(define wire-method<%>/c 
+	(class/c (afield (->m x y))))
+(define/contract wire-method% wire-method<%>/c wire-method%/b)
+
 
 
 ;) ; end module box

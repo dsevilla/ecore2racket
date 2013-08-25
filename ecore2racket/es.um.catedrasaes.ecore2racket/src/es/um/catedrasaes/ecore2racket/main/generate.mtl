@@ -27,8 +27,25 @@
 [generate_EClass(klass)/]
 
 [/for]
+
+;; Contracts
+[for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
+[generate_contract(klass)/]
+
+[/for]
+
 ;) ; end module [decamel(anEPackage.name)/]
 [/file]
+[/template]
+
+[template private generate_contract (aEClass : EClass) ]
+[let cname:String = eclass_to_racket_class_name(aEClass)]
+[let iname:String = eclass_to_racket_interface_name(aEClass)]
+(define [eclass_to_racket_interface_name(aEClass)/]/c 
+	(class/c (afield (->m x y))))
+(define/contract [cname/] [iname/]/c [cname/]/b)
+[/let]
+[/let]
 [/template]
 
 [template private generate_provides (anEPackage : EPackage) ]
@@ -40,10 +57,20 @@
 [/template]
 
 [template private generate_EClass(klass: EClass)]
+[generate_interface(klass)/]
+[generate_EClass_proper(klass)/]
+[/template]
+
+[template private generate_interface (aEClass : EClass) ]
+(define [eclass_to_racket_interface_name(aEClass)/] )
+[/template]
+
+
+[template private generate_EClass_proper(klass: EClass)]
 [let cname:String = eclass_to_racket_class_name(klass)] 
 ;; Class [klass.name + ' (' + cname + ')'/]
-(define [cname/]
-  (class* [superclass_spec(klass)/] (classifier<%>)
+(define [cname/]/b
+  (class* [superclass_spec(klass)/] (classifier<%> [eclass_to_racket_interface_name(klass)/])
 	[comment See if generating some init method /]
     (super-new)
 
@@ -104,6 +131,10 @@
 
 [template private eclass_to_racket_class_name(klass: EClass)]
 [decamel(klass.name)/]%
+[/template]
+
+[template private eclass_to_racket_interface_name(klass: EClass)]
+[decamel(klass.name)/]<%>
 [/template]
 
 [template private superclass_spec(klass : EClass)]
