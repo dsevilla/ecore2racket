@@ -24,7 +24,23 @@
   		wire-method%
   	)
 
-(define box<%> )
+(define box<%> 
+  (interface (TODO-SUPERCLASS)  
+	comment
+	comment-set!
+	name
+	name-set!
+	attributes
+	attributes-set!
+	methods
+	methods-set!
+	wires
+	wires-set!
+	boxes
+	boxes-set!
+	connection
+	connection-set!
+))
 ;; Class Box (box%)
 (define box%/b
   (class* eobject%
@@ -110,7 +126,17 @@
   ))
 
 
-(define box-reference<%> )
+(define box-reference<%> 
+  (interface (TODO-SUPERCLASS)  
+	box
+	box-set!
+	is-pointer
+	is-pointer-set!
+	is-reference
+	is-reference-set!
+	name
+	name-set!
+))
 ;; Class BoxReference (box-reference%)
 (define box-reference%/b
   (class* eobject%
@@ -172,7 +198,11 @@
   ))
 
 
-(define wire-reference<%> )
+(define wire-reference<%> 
+  (interface (TODO-SUPERCLASS)  
+	wire
+	wire-set!
+))
 ;; Class WireReference (wire-reference%)
 (define wire-reference%/b
   (class* eobject%
@@ -210,7 +240,9 @@
   ))
 
 
-(define local-wire-reference<%> )
+(define local-wire-reference<%> 
+  (interface (TODO-SUPERCLASS)  
+))
 ;; Class LocalWireReference (local-wire-reference%)
 (define local-wire-reference%/b
   (class* wire-reference%
@@ -240,7 +272,11 @@
   ))
 
 
-(define external-wire-reference<%> )
+(define external-wire-reference<%> 
+  (interface (TODO-SUPERCLASS)  
+	box-reference
+	box-reference-set!
+))
 ;; Class ExternalWireReference (external-wire-reference%)
 (define external-wire-reference%/b
   (class* wire-reference%
@@ -278,7 +314,13 @@
   ))
 
 
-(define connection<%> )
+(define connection<%> 
+  (interface (TODO-SUPERCLASS)  
+	from
+	from-set!
+	to
+	to-set!
+))
 ;; Class Connection (connection%)
 (define connection%/b
   (class* eobject%
@@ -324,7 +366,15 @@
   ))
 
 
-(define wire<%> )
+(define wire<%> 
+  (interface (TODO-SUPERCLASS)  
+	is-input
+	is-input-set!
+	name
+	name-set!
+	type
+	type-set!
+))
 ;; Class Wire (wire%)
 (define wire%/b
   (class* eobject%
@@ -378,7 +428,13 @@
   ))
 
 
-(define type<%> )
+(define type<%> 
+  (interface (TODO-SUPERCLASS)  
+	is-pointer
+	is-pointer-set!
+	is-reference
+	is-reference-set!
+))
 ;; Class Type (type%)
 (define type%/b
   (class* eobject%
@@ -424,7 +480,11 @@
   ))
 
 
-(define basic-type<%> )
+(define basic-type<%> 
+  (interface (TODO-SUPERCLASS)  
+	basic-type
+	basic-type-set!
+))
 ;; Class BasicType (basic-type%)
 (define basic-type%/b
   (class* type%
@@ -462,7 +522,13 @@
   ))
 
 
-(define other-type<%> )
+(define other-type<%> 
+  (interface (TODO-SUPERCLASS)  
+	namespace
+	namespace-set!
+	name
+	name-set!
+))
 ;; Class OtherType (other-type%)
 (define other-type%/b
   (class* type%
@@ -508,7 +574,19 @@
   ))
 
 
-(define method<%> )
+(define method<%> 
+  (interface (TODO-SUPERCLASS)  
+	comment
+	comment-set!
+	is-private
+	is-private-set!
+	type
+	type-set!
+	name
+	name-set!
+	parameters
+	parameters-set!
+))
 ;; Class Method (method%)
 (define method%/b
   (class* eobject%
@@ -578,7 +656,17 @@
   ))
 
 
-(define param<%> )
+(define param<%> 
+  (interface (TODO-SUPERCLASS)  
+	comment
+	comment-set!
+	type
+	type-set!
+	name
+	name-set!
+	default-value
+	default-value-set!
+))
 ;; Class Param (param%)
 (define param%/b
   (class* eobject%
@@ -640,7 +728,9 @@
   ))
 
 
-(define wire-many<%> )
+(define wire-many<%> 
+  (interface (TODO-SUPERCLASS)  
+))
 ;; Class WireMany (wire-many%)
 (define wire-many%/b
   (class* wire%
@@ -670,7 +760,11 @@
   ))
 
 
-(define wire-method<%> )
+(define wire-method<%> 
+  (interface (TODO-SUPERCLASS)  
+	method
+	method-set!
+))
 ;; Class WireMethod (wire-method%)
 (define wire-method%/b
   (class* wire%

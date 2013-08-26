@@ -62,7 +62,17 @@
 [/template]
 
 [template private generate_interface (aEClass : EClass) ]
-(define [eclass_to_racket_interface_name(aEClass)/] )
+(define [eclass_to_racket_interface_name(aEClass)/] 
+  (interface (TODO-SUPERCLASS)  
+[for (sf: EStructuralFeature | aEClass.eStructuralFeatures)]
+[let dec : String = decamel(sf.name)]
+	[dec/]
+[if sf.changeable]
+	[dec/]-set!
+[/if]
+[/let]
+[/for]
+))
 [/template]
 
 
@@ -107,8 +117,10 @@
 (define -[dec/] 0)
 (define/public ([dec/])
 	-[dec/])
+[if sf.changeable]
 (define/public ([dec/]-set! val)
 	(set! -[dec/] val))
+[/if]
 
 [/let]
 [/for]
@@ -121,8 +133,10 @@
 (define -[dec/] null)
 (define/public ([dec/])
 	-[dec/])
+[if ref.changeable]
 (define/public ([dec/]-set! val)
 	(set! -[dec/] val))
+[/if]
 
 [/let]
 [/for]
