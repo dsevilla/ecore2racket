@@ -12,7 +12,7 @@
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
 [file (decamel(anEPackage.name)+'.rkt', false, 'UTF-8')]
-#lang racket/base
+#lang racket
 
 ; (module [decamel(anEPackage.name)/] racket/base
 
@@ -42,7 +42,7 @@
 [let cname:String = eclass_to_racket_class_name(aEClass)]
 [let iname:String = eclass_to_racket_interface_name(aEClass)]
 (define [eclass_to_racket_interface_name(aEClass)/]/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract [cname/] [iname/]/c [cname/]/b)
 [/let]
 [/let]
@@ -156,7 +156,7 @@
 [if superclasses->size() = 0]
 eobject%
 [else]
-[eclass_to_racket_class_name(superclasses->first())/]
+[eclass_to_racket_class_name(superclasses->first())/]/b
 [/if]
 [/let]	
 [/template]

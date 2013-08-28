@@ -1,4 +1,5 @@
-#lang racket/base
+#lang racket
+
 
 ; (module box racket/base
 
@@ -25,7 +26,7 @@
   	)
 
 (define box<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	comment
 	comment-set!
 	name
@@ -127,7 +128,7 @@
 
 
 (define box-reference<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	box
 	box-set!
 	is-pointer
@@ -199,7 +200,7 @@
 
 
 (define wire-reference<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	wire
 	wire-set!
 ))
@@ -241,11 +242,11 @@
 
 
 (define local-wire-reference<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 ))
 ;; Class LocalWireReference (local-wire-reference%)
 (define local-wire-reference%/b
-  (class* wire-reference%
+  (class* wire-reference%/b
    (classifier<%> local-wire-reference<%>)
     (super-new)
 
@@ -273,13 +274,13 @@
 
 
 (define external-wire-reference<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	box-reference
 	box-reference-set!
 ))
 ;; Class ExternalWireReference (external-wire-reference%)
 (define external-wire-reference%/b
-  (class* wire-reference%
+  (class* wire-reference%/b
    (classifier<%> external-wire-reference<%>)
     (super-new)
 
@@ -315,7 +316,7 @@
 
 
 (define connection<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	from
 	from-set!
 	to
@@ -367,7 +368,7 @@
 
 
 (define wire<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	is-input
 	is-input-set!
 	name
@@ -429,7 +430,7 @@
 
 
 (define type<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	is-pointer
 	is-pointer-set!
 	is-reference
@@ -481,13 +482,13 @@
 
 
 (define basic-type<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	basic-type
 	basic-type-set!
 ))
 ;; Class BasicType (basic-type%)
 (define basic-type%/b
-  (class* type%
+  (class* type%/b
    (classifier<%> basic-type<%>)
     (super-new)
 
@@ -523,7 +524,7 @@
 
 
 (define other-type<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	namespace
 	namespace-set!
 	name
@@ -531,7 +532,7 @@
 ))
 ;; Class OtherType (other-type%)
 (define other-type%/b
-  (class* type%
+  (class* type%/b
    (classifier<%> other-type<%>)
     (super-new)
 
@@ -575,7 +576,7 @@
 
 
 (define method<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	comment
 	comment-set!
 	is-private
@@ -657,7 +658,7 @@
 
 
 (define param<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	comment
 	comment-set!
 	type
@@ -729,11 +730,11 @@
 
 
 (define wire-many<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 ))
 ;; Class WireMany (wire-many%)
 (define wire-many%/b
-  (class* wire%
+  (class* wire%/b
    (classifier<%> wire-many<%>)
     (super-new)
 
@@ -761,13 +762,13 @@
 
 
 (define wire-method<%> 
-  (interface (TODO-SUPERCLASS)  
+  (interface ()  
 	method
 	method-set!
 ))
 ;; Class WireMethod (wire-method%)
 (define wire-method%/b
-  (class* wire%
+  (class* wire%/b
    (classifier<%> wire-method<%>)
     (super-new)
 
@@ -805,72 +806,72 @@
 
 ;; Contracts
 (define box<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract box% box<%>/c box%/b)
 
 
 (define box-reference<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract box-reference% box-reference<%>/c box-reference%/b)
 
 
 (define wire-reference<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract wire-reference% wire-reference<%>/c wire-reference%/b)
 
 
 (define local-wire-reference<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract local-wire-reference% local-wire-reference<%>/c local-wire-reference%/b)
 
 
 (define external-wire-reference<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract external-wire-reference% external-wire-reference<%>/c external-wire-reference%/b)
 
 
 (define connection<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract connection% connection<%>/c connection%/b)
 
 
 (define wire<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract wire% wire<%>/c wire%/b)
 
 
 (define type<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract type% type<%>/c type%/b)
 
 
 (define basic-type<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract basic-type% basic-type<%>/c basic-type%/b)
 
 
 (define other-type<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract other-type% other-type<%>/c other-type%/b)
 
 
 (define method<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract method% method<%>/c method%/b)
 
 
 (define param<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract param% param<%>/c param%/b)
 
 
 (define wire-many<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract wire-many% wire-many<%>/c wire-many%/b)
 
 
 (define wire-method<%>/c 
-	(class/c (afield (->m x y))))
+	(class/c ));;(afield (->m x y))))
 (define/contract wire-method% wire-method<%>/c wire-method%/b)
 
 
