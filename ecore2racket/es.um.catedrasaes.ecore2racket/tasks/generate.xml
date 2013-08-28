@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="generate" name="es.um.catedrasaes.ecore2racket">
     <property name="ECLIPSE_HOME" value="../../../../juno/eclipse"/>
-    <property name="ECLIPSE_WORKSPACE" value="../../../../../workspace-juno"/>
+    <property name="ECLIPSE_WORKSPACE" value="../../../../../workspace"/>
 
     <!-- The classpath with only the dependencies used by the project -->
     <path id="es.um.catedrasaes.ecore2racket.libraryclasspath">

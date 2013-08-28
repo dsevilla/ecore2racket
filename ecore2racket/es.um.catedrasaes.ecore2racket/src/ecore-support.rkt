@@ -35,4 +35,6 @@
     ;; classifier<%> interface methods
     (define/public (e-name) "EObject")
     (define/public (e-attributes) null)
-    (define/public (e-references) null)))
+    (define/public (e-references) null)
+    (define/public (e-all-attributes) null)
+    (define/public (e-all-references) null)))

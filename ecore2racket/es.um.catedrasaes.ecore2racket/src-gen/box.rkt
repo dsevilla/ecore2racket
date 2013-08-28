@@ -1,6 +1,5 @@
 #lang racket
 
-
 ; (module box racket/base
 
   (require racket/class)
@@ -70,58 +69,46 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		comment
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		attributes
+		methods
+		wires
+		boxes
+		connection
+		)
+	)
+
 
     ;; fields (features)
 	; attribute comment
-	(define -comment 0)
-	(define/public (comment)
-		-comment)
-	(define/public (comment-set! val)
-		(set! -comment val))
-	
+	(define -comment 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
+	(define -name 
+	)
 	
-	
-	; reference attributes
-	(define -attributes null)
-	(define/public (attributes)
-		-attributes)
-	(define/public (attributes-set! val)
-		(set! -attributes val))
-	
-	; reference methods
-	(define -methods null)
-	(define/public (methods)
-		-methods)
-	(define/public (methods-set! val)
-		(set! -methods val))
-	
-	; reference wires
-	(define -wires null)
-	(define/public (wires)
-		-wires)
-	(define/public (wires-set! val)
-		(set! -wires val))
-	
-	; reference boxes
-	(define -boxes null)
-	(define/public (boxes)
-		-boxes)
-	(define/public (boxes-set! val)
-		(set! -boxes val))
-	
-	; reference connection
-	(define -connection null)
-	(define/public (connection)
-		-connection)
-	(define/public (connection-set! val)
-		(set! -connection val))
-	
+	; attribute attributes
+	(define -attributes 
+	)
+	; attribute methods
+	(define -methods 
+	)
+	; attribute wires
+	(define -wires 
+	)
+	; attribute boxes
+	(define -boxes 
+	)
+	; attribute connection
+	(define -connection 
+	)
 	
 
   ))
@@ -163,37 +150,34 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-pointer
+		is-reference
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		box
+		)
+	)
+
 
     ;; fields (features)
 	; attribute is-pointer
-	(define -is-pointer 0)
-	(define/public (is-pointer)
-		-is-pointer)
-	(define/public (is-pointer-set! val)
-		(set! -is-pointer val))
-	
+	(define -is-pointer 
+	)
 	; attribute is-reference
-	(define -is-reference 0)
-	(define/public (is-reference)
-		-is-reference)
-	(define/public (is-reference-set! val)
-		(set! -is-reference val))
-	
+	(define -is-reference 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
+	(define -name 
+	)
 	
-	
-	; reference box
-	(define -box null)
-	(define/public (box)
-		-box)
-	(define/public (box-set! val)
-		(set! -box val))
-	
+	; attribute box
+	(define -box 
+	)
 	
 
   ))
@@ -226,23 +210,30 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		wire
+		)
+	)
+
 
     ;; fields (features)
 	
-	; reference wire
-	(define -wire null)
-	(define/public (wire)
-		-wire)
-	(define/public (wire-set! val)
-		(set! -wire val))
-	
+	; attribute wire
+	(define -wire 
+	)
 	
 
   ))
 
 
 (define local-wire-reference<%> 
-  (interface ()  
+  (interface (wire-reference<%>
+  )  
 ))
 ;; Class LocalWireReference (local-wire-reference%)
 (define local-wire-reference%/b
@@ -265,6 +256,16 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		wire
+		)
+	)
+
 
     ;; fields (features)
 	
@@ -274,7 +275,8 @@
 
 
 (define external-wire-reference<%> 
-  (interface ()  
+  (interface (wire-reference<%>
+  )  
 	box-reference
 	box-reference-set!
 ))
@@ -300,16 +302,23 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		wire
+		box-reference
+		)
+	)
+
 
     ;; fields (features)
 	
-	; reference box-reference
-	(define -box-reference null)
-	(define/public (box-reference)
-		-box-reference)
-	(define/public (box-reference-set! val)
-		(set! -box-reference val))
-	
+	; attribute box-reference
+	(define -box-reference 
+	)
 	
 
   ))
@@ -345,23 +354,26 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		from
+		to
+		)
+	)
+
 
     ;; fields (features)
 	
-	; reference from
-	(define -from null)
-	(define/public (from)
-		-from)
-	(define/public (from-set! val)
-		(set! -from val))
-	
-	; reference to
-	(define -to null)
-	(define/public (to)
-		-to)
-	(define/public (to-set! val)
-		(set! -to val))
-	
+	; attribute from
+	(define -from 
+	)
+	; attribute to
+	(define -to 
+	)
 	
 
   ))
@@ -400,30 +412,30 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-input
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		type
+		)
+	)
+
 
     ;; fields (features)
 	; attribute is-input
-	(define -is-input 0)
-	(define/public (is-input)
-		-is-input)
-	(define/public (is-input-set! val)
-		(set! -is-input val))
-	
+	(define -is-input 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
+	(define -name 
+	)
 	
-	
-	; reference type
-	(define -type null)
-	(define/public (type)
-		-type)
-	(define/public (type-set! val)
-		(set! -type val))
-	
+	; attribute type
+	(define -type 
+	)
 	
 
   ))
@@ -459,22 +471,25 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-pointer
+		is-reference
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		)
+	)
+
 
     ;; fields (features)
 	; attribute is-pointer
-	(define -is-pointer 0)
-	(define/public (is-pointer)
-		-is-pointer)
-	(define/public (is-pointer-set! val)
-		(set! -is-pointer val))
-	
+	(define -is-pointer 
+	)
 	; attribute is-reference
-	(define -is-reference 0)
-	(define/public (is-reference)
-		-is-reference)
-	(define/public (is-reference-set! val)
-		(set! -is-reference val))
-	
+	(define -is-reference 
+	)
 	
 	
 
@@ -482,7 +497,8 @@
 
 
 (define basic-type<%> 
-  (interface ()  
+  (interface (type<%>
+  )  
 	basic-type
 	basic-type-set!
 ))
@@ -508,15 +524,23 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-pointer
+		is-reference
+		basic-type
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		)
+	)
+
 
     ;; fields (features)
 	; attribute basic-type
-	(define -basic-type 0)
-	(define/public (basic-type)
-		-basic-type)
-	(define/public (basic-type-set! val)
-		(set! -basic-type val))
-	
+	(define -basic-type 
+	)
 	
 	
 
@@ -524,7 +548,8 @@
 
 
 (define other-type<%> 
-  (interface ()  
+  (interface (type<%>
+  )  
 	namespace
 	namespace-set!
 	name
@@ -553,22 +578,27 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-pointer
+		is-reference
+		namespace
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		)
+	)
+
 
     ;; fields (features)
 	; attribute namespace
-	(define -namespace 0)
-	(define/public (namespace)
-		-namespace)
-	(define/public (namespace-set! val)
-		(set! -namespace val))
-	
+	(define -namespace 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
-	
+	(define -name 
+	)
 	
 	
 
@@ -614,44 +644,38 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		comment
+		is-private
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		type
+		parameters
+		)
+	)
+
 
     ;; fields (features)
 	; attribute comment
-	(define -comment 0)
-	(define/public (comment)
-		-comment)
-	(define/public (comment-set! val)
-		(set! -comment val))
-	
+	(define -comment 
+	)
 	; attribute is-private
-	(define -is-private 0)
-	(define/public (is-private)
-		-is-private)
-	(define/public (is-private-set! val)
-		(set! -is-private val))
-	
+	(define -is-private 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
+	(define -name 
+	)
 	
-	
-	; reference type
-	(define -type null)
-	(define/public (type)
-		-type)
-	(define/public (type-set! val)
-		(set! -type val))
-	
-	; reference parameters
-	(define -parameters null)
-	(define/public (parameters)
-		-parameters)
-	(define/public (parameters-set! val)
-		(set! -parameters val))
-	
+	; attribute type
+	(define -type 
+	)
+	; attribute parameters
+	(define -parameters 
+	)
 	
 
   ))
@@ -693,44 +717,42 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		comment
+		name
+		default-value
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		type
+		)
+	)
+
 
     ;; fields (features)
 	; attribute comment
-	(define -comment 0)
-	(define/public (comment)
-		-comment)
-	(define/public (comment-set! val)
-		(set! -comment val))
-	
+	(define -comment 
+	)
 	; attribute name
-	(define -name 0)
-	(define/public (name)
-		-name)
-	(define/public (name-set! val)
-		(set! -name val))
-	
+	(define -name 
+	)
 	; attribute default-value
-	(define -default-value 0)
-	(define/public (default-value)
-		-default-value)
-	(define/public (default-value-set! val)
-		(set! -default-value val))
+	(define -default-value 
+	)
 	
-	
-	; reference type
-	(define -type null)
-	(define/public (type)
-		-type)
-	(define/public (type-set! val)
-		(set! -type val))
-	
+	; attribute type
+	(define -type 
+	)
 	
 
   ))
 
 
 (define wire-many<%> 
-  (interface ()  
+  (interface (wire<%>
+  )  
 ))
 ;; Class WireMany (wire-many%)
 (define wire-many%/b
@@ -753,6 +775,18 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-input
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		type
+		)
+	)
+
 
     ;; fields (features)
 	
@@ -762,7 +796,8 @@
 
 
 (define wire-method<%> 
-  (interface ()  
+  (interface (wire<%>
+  )  
 	method
 	method-set!
 ))
@@ -788,16 +823,25 @@
 		)
 	)
 
+    (define/override (e-all-attributes)
+		'( 
+		is-input
+		name
+		)	
+	)
+	(define/override (e-all-references)
+		'( 
+		type
+		method
+		)
+	)
+
 
     ;; fields (features)
 	
-	; reference method
-	(define -method null)
-	(define/public (method)
-		-method)
-	(define/public (method-set! val)
-		(set! -method val))
-	
+	; attribute method
+	(define -method 
+	)
 	
 
   ))
@@ -806,72 +850,72 @@
 
 ;; Contracts
 (define box<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract box% box<%>/c box%/b)
 
 
 (define box-reference<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract box-reference% box-reference<%>/c box-reference%/b)
 
 
 (define wire-reference<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract wire-reference% wire-reference<%>/c wire-reference%/b)
 
 
 (define local-wire-reference<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract local-wire-reference% local-wire-reference<%>/c local-wire-reference%/b)
 
 
 (define external-wire-reference<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract external-wire-reference% external-wire-reference<%>/c external-wire-reference%/b)
 
 
 (define connection<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract connection% connection<%>/c connection%/b)
 
 
 (define wire<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract wire% wire<%>/c wire%/b)
 
 
 (define type<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract type% type<%>/c type%/b)
 
 
 (define basic-type<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract basic-type% basic-type<%>/c basic-type%/b)
 
 
 (define other-type<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract other-type% other-type<%>/c other-type%/b)
 
 
 (define method<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract method% method<%>/c method%/b)
 
 
 (define param<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract param% param<%>/c param%/b)
 
 
 (define wire-many<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract wire-many% wire-many<%>/c wire-many%/b)
 
 
 (define wire-method<%>/c 
-	(class/c ));;(afield (->m x y))))
+	(class/c ));;(amethod (->m x y))))
 (define/contract wire-method% wire-method<%>/c wire-method%/b)
 
 
