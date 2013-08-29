@@ -87,28 +87,152 @@
 
 
     ;; fields (features)
-	; attribute comment
+	; Structural Feature comment
 	(define -comment 
+	  ""
+	  
+	  
 	)
-	; attribute name
+	(define/public (comment)
+	    -comment)
+	(define/public (comment-set! val)
+	    (set! -comment val))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
 	
-	; attribute attributes
+	; Structural Feature attributes
 	(define -attributes 
+	  (make-vector 0)
+	  
 	)
-	; attribute methods
+	(define/public (attributes . pos)
+	   (if (null? pos)
+	    -attributes
+	    (begin
+	    (when (<= (vector-length -attributes) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -attributes)
+	       (set! -attributes new-vector)))
+	    (vector-ref -attributes (car pos)))))
+	(define/public (attributes-set! val . pos)
+	  (if (null? pos)
+	   (set! -attributes val)
+	   (begin
+	    (when (<= (vector-length -attributes) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -attributes)
+	       (set! -attributes new-vector)))
+	    (vector-set! -attributes (car pos) val))))
+	; Structural Feature methods
 	(define -methods 
+	  (make-vector 0)
+	  
 	)
-	; attribute wires
+	(define/public (methods . pos)
+	   (if (null? pos)
+	    -methods
+	    (begin
+	    (when (<= (vector-length -methods) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -methods)
+	       (set! -methods new-vector)))
+	    (vector-ref -methods (car pos)))))
+	(define/public (methods-set! val . pos)
+	  (if (null? pos)
+	   (set! -methods val)
+	   (begin
+	    (when (<= (vector-length -methods) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -methods)
+	       (set! -methods new-vector)))
+	    (vector-set! -methods (car pos) val))))
+	; Structural Feature wires
 	(define -wires 
+	  (make-vector 0)
+	  
 	)
-	; attribute boxes
+	(define/public (wires . pos)
+	   (if (null? pos)
+	    -wires
+	    (begin
+	    (when (<= (vector-length -wires) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -wires)
+	       (set! -wires new-vector)))
+	    (vector-ref -wires (car pos)))))
+	(define/public (wires-set! val . pos)
+	  (if (null? pos)
+	   (set! -wires val)
+	   (begin
+	    (when (<= (vector-length -wires) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -wires)
+	       (set! -wires new-vector)))
+	    (vector-set! -wires (car pos) val))))
+	; Structural Feature boxes
 	(define -boxes 
+	  (make-vector 0)
+	  
 	)
-	; attribute connection
+	(define/public (boxes . pos)
+	   (if (null? pos)
+	    -boxes
+	    (begin
+	    (when (<= (vector-length -boxes) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -boxes)
+	       (set! -boxes new-vector)))
+	    (vector-ref -boxes (car pos)))))
+	(define/public (boxes-set! val . pos)
+	  (if (null? pos)
+	   (set! -boxes val)
+	   (begin
+	    (when (<= (vector-length -boxes) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -boxes)
+	       (set! -boxes new-vector)))
+	    (vector-set! -boxes (car pos) val))))
+	; Structural Feature connection
 	(define -connection 
+	  (make-vector 0)
+	  
 	)
+	(define/public (connection . pos)
+	   (if (null? pos)
+	    -connection
+	    (begin
+	    (when (<= (vector-length -connection) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -connection)
+	       (set! -connection new-vector)))
+	    (vector-ref -connection (car pos)))))
+	(define/public (connection-set! val . pos)
+	  (if (null? pos)
+	   (set! -connection val)
+	   (begin
+	    (when (<= (vector-length -connection) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -connection)
+	       (set! -connection new-vector)))
+	    (vector-set! -connection (car pos) val))))
 	
 
   ))
@@ -165,19 +289,47 @@
 
 
     ;; fields (features)
-	; attribute is-pointer
+	; Structural Feature is-pointer
 	(define -is-pointer 
+	  #f
+	  
+	  
 	)
-	; attribute is-reference
+	(define/public (is-pointer)
+	    -is-pointer)
+	(define/public (is-pointer-set! val)
+	    (set! -is-pointer val))
+	; Structural Feature is-reference
 	(define -is-reference 
+	  #f
+	  
+	  
 	)
-	; attribute name
+	(define/public (is-reference)
+	    -is-reference)
+	(define/public (is-reference-set! val)
+	    (set! -is-reference val))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
 	
-	; attribute box
+	; Structural Feature box
 	(define -box 
+	  null
+	  
+	  
 	)
+	(define/public (box)
+	    -box)
+	(define/public (box-set! val)
+	    (set! -box val))
 	
 
   ))
@@ -223,9 +375,16 @@
 
     ;; fields (features)
 	
-	; attribute wire
+	; Structural Feature wire
 	(define -wire 
+	  null
+	  
+	  
 	)
+	(define/public (wire)
+	    -wire)
+	(define/public (wire-set! val)
+	    (set! -wire val))
 	
 
   ))
@@ -316,9 +475,16 @@
 
     ;; fields (features)
 	
-	; attribute box-reference
+	; Structural Feature box-reference
 	(define -box-reference 
+	  null
+	  
+	  
 	)
+	(define/public (box-reference)
+	    -box-reference)
+	(define/public (box-reference-set! val)
+	    (set! -box-reference val))
 	
 
   ))
@@ -368,12 +534,26 @@
 
     ;; fields (features)
 	
-	; attribute from
+	; Structural Feature from
 	(define -from 
+	  null
+	  
+	  
 	)
-	; attribute to
+	(define/public (from)
+	    -from)
+	(define/public (from-set! val)
+	    (set! -from val))
+	; Structural Feature to
 	(define -to 
+	  null
+	  
+	  
 	)
+	(define/public (to)
+	    -to)
+	(define/public (to-set! val)
+	    (set! -to val))
 	
 
   ))
@@ -426,16 +606,37 @@
 
 
     ;; fields (features)
-	; attribute is-input
+	; Structural Feature is-input
 	(define -is-input 
+	  #f
+	  
+	  
 	)
-	; attribute name
+	(define/public (is-input)
+	    -is-input)
+	(define/public (is-input-set! val)
+	    (set! -is-input val))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
 	
-	; attribute type
+	; Structural Feature type
 	(define -type 
+	  null
+	  
+	  
 	)
+	(define/public (type)
+	    -type)
+	(define/public (type-set! val)
+	    (set! -type val))
 	
 
   ))
@@ -484,12 +685,26 @@
 
 
     ;; fields (features)
-	; attribute is-pointer
+	; Structural Feature is-pointer
 	(define -is-pointer 
+	  #f
+	  
+	  
 	)
-	; attribute is-reference
+	(define/public (is-pointer)
+	    -is-pointer)
+	(define/public (is-pointer-set! val)
+	    (set! -is-pointer val))
+	; Structural Feature is-reference
 	(define -is-reference 
+	  #f
+	  
+	  
 	)
+	(define/public (is-reference)
+	    -is-reference)
+	(define/public (is-reference-set! val)
+	    (set! -is-reference val))
 	
 	
 
@@ -538,9 +753,16 @@
 
 
     ;; fields (features)
-	; attribute basic-type
+	; Structural Feature basic-type
 	(define -basic-type 
+	  0
+	  
+	  
 	)
+	(define/public (basic-type)
+	    -basic-type)
+	(define/public (basic-type-set! val)
+	    (set! -basic-type val))
 	
 	
 
@@ -593,12 +815,41 @@
 
 
     ;; fields (features)
-	; attribute namespace
+	; Structural Feature namespace
 	(define -namespace 
+	  (make-vector 0)
+	  
 	)
-	; attribute name
+	(define/public (namespace . pos)
+	   (if (null? pos)
+	    -namespace
+	    (begin
+	    (when (<= (vector-length -namespace) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -namespace)
+	       (set! -namespace new-vector)))
+	    (vector-ref -namespace (car pos)))))
+	(define/public (namespace-set! val . pos)
+	  (if (null? pos)
+	   (set! -namespace val)
+	   (begin
+	    (when (<= (vector-length -namespace) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -namespace)
+	       (set! -namespace new-vector)))
+	    (vector-set! -namespace (car pos) val))))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
 	
 	
 
@@ -660,22 +911,72 @@
 
 
     ;; fields (features)
-	; attribute comment
+	; Structural Feature comment
 	(define -comment 
+	  ""
+	  
+	  
 	)
-	; attribute is-private
+	(define/public (comment)
+	    -comment)
+	(define/public (comment-set! val)
+	    (set! -comment val))
+	; Structural Feature is-private
 	(define -is-private 
+	  #f
+	  
+	  
 	)
-	; attribute name
+	(define/public (is-private)
+	    -is-private)
+	(define/public (is-private-set! val)
+	    (set! -is-private val))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
 	
-	; attribute type
+	; Structural Feature type
 	(define -type 
+	  null
+	  
+	  
 	)
-	; attribute parameters
+	(define/public (type)
+	    -type)
+	(define/public (type-set! val)
+	    (set! -type val))
+	; Structural Feature parameters
 	(define -parameters 
+	  (make-vector 0)
+	  
 	)
+	(define/public (parameters . pos)
+	   (if (null? pos)
+	    -parameters
+	    (begin
+	    (when (<= (vector-length -parameters) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -parameters)
+	       (set! -parameters new-vector)))
+	    (vector-ref -parameters (car pos)))))
+	(define/public (parameters-set! val . pos)
+	  (if (null? pos)
+	   (set! -parameters val)
+	   (begin
+	    (when (<= (vector-length -parameters) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -parameters)
+	       (set! -parameters new-vector)))
+	    (vector-set! -parameters (car pos) val))))
 	
 
   ))
@@ -732,19 +1033,62 @@
 
 
     ;; fields (features)
-	; attribute comment
+	; Structural Feature comment
 	(define -comment 
+	  ""
+	  
+	  
 	)
-	; attribute name
+	(define/public (comment)
+	    -comment)
+	(define/public (comment-set! val)
+	    (set! -comment val))
+	; Structural Feature name
 	(define -name 
+	  ""
+	  
+	  
 	)
-	; attribute default-value
+	(define/public (name)
+	    -name)
+	(define/public (name-set! val)
+	    (set! -name val))
+	; Structural Feature default-value
 	(define -default-value 
+	  (make-vector 0)
+	  
 	)
+	(define/public (default-value . pos)
+	   (if (null? pos)
+	    -default-value
+	    (begin
+	    (when (<= (vector-length -default-value) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -default-value)
+	       (set! -default-value new-vector)))
+	    (vector-ref -default-value (car pos)))))
+	(define/public (default-value-set! val . pos)
+	  (if (null? pos)
+	   (set! -default-value val)
+	   (begin
+	    (when (<= (vector-length -default-value) (car pos))
+	     (let ((new-vector (make-vector (+ 1 (car pos)))))
+	       ;; grow the vector
+	       (vector-copy! new-vector 0 -default-value)
+	       (set! -default-value new-vector)))
+	    (vector-set! -default-value (car pos) val))))
 	
-	; attribute type
+	; Structural Feature type
 	(define -type 
+	  null
+	  
+	  
 	)
+	(define/public (type)
+	    -type)
+	(define/public (type-set! val)
+	    (set! -type val))
 	
 
   ))
@@ -839,9 +1183,16 @@
 
     ;; fields (features)
 	
-	; attribute method
+	; Structural Feature method
 	(define -method 
+	  null
+	  
+	  
 	)
+	(define/public (method)
+	    -method)
+	(define/public (method-set! val)
+	    (set! -method val))
 	
 
   ))

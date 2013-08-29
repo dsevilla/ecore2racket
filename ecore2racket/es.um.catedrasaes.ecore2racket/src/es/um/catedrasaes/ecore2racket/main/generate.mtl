@@ -120,18 +120,11 @@
 [template private gen_structural_features(klass : EClass, set: OrderedSet(EStructuralFeature))]
 [for (sf: EStructuralFeature | set)]
 [let dec : String = decamel(sf.name)]
-; attribute [dec/]
+; Structural Feature [dec/]
 (define -[dec/] 
-[if sf.upperBound.toString().toInteger() < 0]
-[comment multi-valuated, create a vector/]
-(make-vector 0)
-[elseif sf.upperBound.toString().toInteger() <> 1] 
-(make-vector [sf.upperBound/])
-[else]
-[default_value(sf)/]
-[/if]
+  [default_value(sf)/]
 )
-[if sf.upperBound.toString().toInteger() = 1]
+[if (sf.upperBound = 1)]
 [comment Easy version of the accessors/]
 (define/public ([dec/])
     -[dec/])
@@ -140,21 +133,27 @@
     (set! -[dec/] val))
 [/if]
 [else]
-(define/public ([dec/] pos)
-   (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos))))
+(define/public ([dec/] . pos)
+   (if (null? pos)
+    -[dec/]
+    (begin
+    (when (<= (vector-length -[dec/]) (car pos))
+     (let ((new-vector (make-vector (+ 1 (car pos)))))
        ;; grow the vector
-       (vector-copy! new-vector -[dec/] 0)
+       (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
-   (vector-ref -[dec/] (car pos)))
+    (vector-ref -[dec/] (car pos)))))
 [if sf.changeable]
-(define/public ([dec/]-set! val pos)
-   (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos))))
+(define/public ([dec/]-set! val . pos)
+  (if (null? pos)
+   (set! -[dec/] val)
+   (begin
+    (when (<= (vector-length -[dec/]) (car pos))
+     (let ((new-vector (make-vector (+ 1 (car pos)))))
        ;; grow the vector
-       (vector-copy! new-vector -[dec/] 0)
+       (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
-   (vector-set! -[dec/] pos val))
+    (vector-set! -[dec/] (car pos) val))))
 [/if]
 [/if]
 [/let]
@@ -163,12 +162,35 @@
 
 [template private default_value (sf : EStructuralFeature) ]
 [comment TODO: distinguish types/]
-[if sf.oclIsKindOf(EAttribute)]
-0
-[elseif sf.oclIsKindOf(EReference)]
-null
+[let upper :Integer = sf.upperBound]
+[if (upper < 0)]
+(make-vector 0)
+[elseif (upper <> 1)] 
+(make-vector [upper/])
+[else]
+[default_value_for_type(sf)/]
 [/if]
+[/let]
 [/template]
+
+[template private default_value_for_type (sf : EStructuralFeature) ? (sf.oclIsKindOf(EAttribute)) ]
+[let att: EAttribute = sf.oclAsType(EAttribute)]
+[if (att.eType = EString)]
+""
+[elseif (att.eType = EBoolean)]
+#f
+[else][comment Integers, mainly/]
+0
+[/if]
+[/let]
+[/template]
+
+[template private default_value_for_type (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
+[let ref: EReference = sf.oclAsType(EReference)]
+null
+[/let]
+[/template]
+
 
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
@@ -197,7 +219,7 @@ null
 
 [template private superclass_spec(klass : EClass)]
 [let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
-[if superclasses->size() = 0]
+[if (superclasses->size() = 0)]
 eobject%
 [else]
 [eclass_to_racket_class_name(superclasses->first())/]/b
@@ -207,7 +229,7 @@ eobject%
 
 [template private superiface_spec(klass : EClass)]
 [let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
-[if superclasses->size() <> 0]
+[if (superclasses->size() <> 0)]
 [eclass_to_racket_interface_name(superclasses->first())/]
 [/if]
 [/let]	
