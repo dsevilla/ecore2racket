@@ -1,8 +1,8 @@
-#lang racket
+#lang racket/base
 
 ; (module box racket/base
 
-  (require racket/class)
+  (require racket/class racket/contract)
 
   ;; Support functions
   (require "../src/ecore-support.rkt")
@@ -1201,72 +1201,212 @@
 
 ;; Contracts
 (define box<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (comment (->m string?
+            ))
+            (comment-set! (->m string?
+             any))
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        
+    ))
 (define/contract box% box<%>/c box%/b)
 
 
 (define box-reference<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            
+            (is-pointer (->m boolean?
+            ))
+            (is-pointer-set! (->m boolean?
+             any))
+            
+            (is-reference (->m boolean?
+            ))
+            (is-reference-set! (->m boolean?
+             any))
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+        
+    ))
 (define/contract box-reference% box-reference<%>/c box-reference%/b)
 
 
 (define wire-reference<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            
+        
+    ))
 (define/contract wire-reference% wire-reference<%>/c wire-reference%/b)
 
 
 (define local-wire-reference<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+        
+    ))
 (define/contract local-wire-reference% local-wire-reference<%>/c local-wire-reference%/b)
 
 
 (define external-wire-reference<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            
+        
+    ))
 (define/contract external-wire-reference% external-wire-reference<%>/c external-wire-reference%/b)
 
 
 (define connection<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            
+            
+            
+        
+    ))
 (define/contract connection% connection<%>/c connection%/b)
 
 
 (define wire<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (is-input (->m boolean?
+            ))
+            (is-input-set! (->m boolean?
+             any))
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+            
+            
+        
+    ))
 (define/contract wire% wire<%>/c wire%/b)
 
 
 (define type<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (is-pointer (->m boolean?
+            ))
+            (is-pointer-set! (->m boolean?
+             any))
+            
+            (is-reference (->m boolean?
+            ))
+            (is-reference-set! (->m boolean?
+             any))
+            
+        
+    ))
 (define/contract type% type<%>/c type%/b)
 
 
 (define basic-type<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (basic-type (->m number?
+            ))
+            (basic-type-set! (->m number?
+             any))
+            
+        
+    ))
 (define/contract basic-type% basic-type<%>/c basic-type%/b)
 
 
 (define other-type<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+        
+    ))
 (define/contract other-type% other-type<%>/c other-type%/b)
 
 
 (define method<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (comment (->m string?
+            ))
+            (comment-set! (->m string?
+             any))
+            
+            (is-private (->m boolean?
+            ))
+            (is-private-set! (->m boolean?
+             any))
+            
+            
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+            
+            
+        
+    ))
 (define/contract method% method<%>/c method%/b)
 
 
 (define param<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            (comment (->m string?
+            ))
+            (comment-set! (->m string?
+             any))
+            
+            
+            
+            (name (->m string?
+            ))
+            (name-set! (->m string?
+             any))
+            
+            
+        
+    ))
 (define/contract param% param<%>/c param%/b)
 
 
 (define wire-many<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+        
+    ))
 (define/contract wire-many% wire-many<%>/c wire-many%/b)
 
 
 (define wire-method<%>/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+            
+            
+        
+    ))
 (define/contract wire-method% wire-method<%>/c wire-method%/b)
 
 

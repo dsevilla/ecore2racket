@@ -12,11 +12,11 @@
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
 [file (decamel(anEPackage.name)+'.rkt', false, 'UTF-8')]
-#lang racket
+#lang racket/base
 
 ; (module [decamel(anEPackage.name)/] racket/base
 
-  (require racket/class)
+  (require racket/class racket/contract)
 
   ;; Support functions
   (require "../src/ecore-support.rkt")
@@ -38,14 +38,48 @@
 [/file]
 [/template]
 
-[template private generate_contract (aEClass : EClass) ]
+[template private generate_contract (aEClass : EClass)]
 [let cname:String = eclass_to_racket_class_name(aEClass)]
 [let iname:String = eclass_to_racket_interface_name(aEClass)]
 (define [eclass_to_racket_interface_name(aEClass)/]/c 
-	(class/c ));;(amethod (->m x y))))
+	(class/c 
+        [gen_feature_contracts(aEClass)/]
+    ))
 (define/contract [cname/] [iname/]/c [cname/]/b)
 [/let]
 [/let]
+[/template]
+
+[template private gen_feature_contracts (aEClass : EClass)]
+[for (sf : EStructuralFeature | aEClass.eStructuralFeatures) ]
+    [gen_contract(sf)/]
+[/for]
+[/template]
+
+[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EAttribute)) ]
+[let dec : String = decamel(sf.name)]
+[if (sf.upperBound = 1)]
+[comment Easy version of the accessors/]
+([dec/] (->m [datatype_to_racket(sf)/]))
+[if sf.changeable]
+([dec/]-set! (->m [datatype_to_racket(sf)/] any))
+[/if]
+[/if]
+[/let]
+[/template]
+
+[template private datatype_to_racket (sf : EStructuralFeature) ]
+[if (sf.eType = EString)]
+string?
+[elseif (sf.eType = EBoolean)]
+boolean?
+[else][comment Integers, mainly TODOTODOTODO/]
+number?
+[/if]
+[/template]
+
+[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
+
 [/template]
 
 [template private generate_provides (anEPackage : EPackage) ]
