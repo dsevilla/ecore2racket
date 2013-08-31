@@ -64,6 +64,10 @@
 [if sf.changeable]
 ([dec/]-set! (->m [datatype_to_racket(sf)/] any))
 [/if]
+[else]
+([dec/] (->dm () ((pos (or/c #f natural-number/c)))
+                 (_ (or/c (vectorof [datatype_to_racket(sf)/])
+                          [datatype_to_racket(sf)/]))))   
 [/if]
 [/let]
 [/template]
@@ -167,27 +171,27 @@ number?
     (set! -[dec/] val))
 [/if]
 [else]
-(define/public ([dec/] . pos)
-   (if (null? pos)
+(define/public ([dec/] (pos #f))
+   (if (not pos)
     -[dec/]
     (begin
-    (when (<= (vector-length -[dec/]) (car pos))
-     (let ((new-vector (make-vector (+ 1 (car pos)))))
+    (when (<= (vector-length -[dec/]) pos)
+     (let ((new-vector (make-vector (+ 1 pos))))
        ;; grow the vector
        (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
-    (vector-ref -[dec/] (car pos)))))
+    (vector-ref -[dec/] pos))))
 [if sf.changeable]
-(define/public ([dec/]-set! val . pos)
-  (if (null? pos)
+(define/public ([dec/]-set! val (pos #f))
+  (if (not pos)
    (set! -[dec/] val)
    (begin
-    (when (<= (vector-length -[dec/]) (car pos))
-     (let ((new-vector (make-vector (+ 1 (car pos)))))
+    (when (<= (vector-length -[dec/]) pos)
+     (let ((new-vector (make-vector (+ 1 pos))))
        ;; grow the vector
        (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
-    (vector-set! -[dec/] (car pos) val))))
+    (vector-set! -[dec/] pos val))))
 [/if]
 [/if]
 [/let]
