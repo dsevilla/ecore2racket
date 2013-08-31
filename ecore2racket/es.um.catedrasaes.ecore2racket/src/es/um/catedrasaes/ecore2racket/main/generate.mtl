@@ -77,16 +77,19 @@
 [let dec : String = decamel(sf.name)]
 [if (sf.upperBound = 1)]
 [comment Easy version of the accessors/]
-([dec/] (->m (is-a?/c [reference_to_racket(sf)/]/b)))
+([dec/] (->m (or/c null? (is-a?/c [reference_to_racket(sf)/]/b))))
 [if sf.changeable]
-([dec/]-set! (->m (is-a?/c [reference_to_racket(sf)/]/b) void?))
+([dec/]-set! (->m (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)) void?))
 [/if]
 [else]
-([dec/] (case->m (-> (and/c (vectorof (is-a?/c [reference_to_racket(sf)/]/b)) (not/c immutable?)))
-                 (-> natural-number/c (is-a?/c [reference_to_racket(sf)/]/b))))
+([dec/] (case->m (-> (and/c (vectorof (or/c null?
+                                            (is-a?/c [reference_to_racket(sf)/]/b))) (not/c immutable?)))
+                 (-> natural-number/c (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)))))
 [if sf.changeable]
-([dec/]-set! (case->m (-> (and/c (vectorof (is-a?/c [reference_to_racket(sf)/]/b)) (not/c immutable?)) void?)
-                      (-> (is-a?/c [reference_to_racket(sf)/]/b) natural-number/c void?)))
+([dec/]-set! (case->m (-> (and/c (vectorof 
+                                  (or/c null?
+                                        (is-a?/c [reference_to_racket(sf)/]/b))) (not/c immutable?)) void?)
+                      (-> (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)) natural-number/c void?)))
 [/if]
 [/if]
 [/let]

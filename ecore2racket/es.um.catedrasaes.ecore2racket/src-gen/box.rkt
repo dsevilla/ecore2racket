@@ -1228,30 +1228,45 @@
             (name-set! (->m string?
              void?))
             
-            (attributes (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c param%/b))))
-            (attributes-set! (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c param%/b) natural-number/c void?)))
+            (attributes (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c param%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c param%/b)))))
+            (attributes-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c param%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c param%/b)) natural-number/c void?)))
             
-            (methods (case->m (-> (and/c (vectorof (is-a?/c method%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c method%/b))))
-            (methods-set! (case->m (-> (and/c (vectorof (is-a?/c method%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c method%/b) natural-number/c void?)))
+            (methods (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c method%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c method%/b)))))
+            (methods-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c method%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c method%/b)) natural-number/c void?)))
             
-            (wires (case->m (-> (and/c (vectorof (is-a?/c wire%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c wire%/b))))
-            (wires-set! (case->m (-> (and/c (vectorof (is-a?/c wire%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c wire%/b) natural-number/c void?)))
+            (wires (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c wire%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c wire%/b)))))
+            (wires-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c wire%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c wire%/b)) natural-number/c void?)))
             
-            (boxes (case->m (-> (and/c (vectorof (is-a?/c box-reference%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c box-reference%/b))))
-            (boxes-set! (case->m (-> (and/c (vectorof (is-a?/c box-reference%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c box-reference%/b) natural-number/c void?)))
+            (boxes (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c box-reference%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c box-reference%/b)))))
+            (boxes-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c box-reference%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c box-reference%/b)) natural-number/c void?)))
             
-            (connection (case->m (-> (and/c (vectorof (is-a?/c connection%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c connection%/b))))
-            (connection-set! (case->m (-> (and/c (vectorof (is-a?/c connection%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c connection%/b) natural-number/c void?)))
+            (connection (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c connection%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c connection%/b)))))
+            (connection-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c connection%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c connection%/b)) natural-number/c void?)))
             
         
     ) box%/b)
@@ -1259,8 +1274,8 @@
 
 (define/contract box-reference% 
 	(class/c 
-            (box (->m (is-a?/c box%/b)))
-            (box-set! (->m (is-a?/c box%/b) void?))
+            (box (->m (or/c null? (is-a?/c box%/b))))
+            (box-set! (->m (or/c null? (is-a?/c box%/b)) void?))
             
             (is-pointer (->m boolean?
             ))
@@ -1283,8 +1298,8 @@
 
 (define/contract wire-reference% 
 	(class/c 
-            (wire (->m (is-a?/c wire%/b)))
-            (wire-set! (->m (is-a?/c wire%/b) void?))
+            (wire (->m (or/c null? (is-a?/c wire%/b))))
+            (wire-set! (->m (or/c null? (is-a?/c wire%/b)) void?))
             
         
     ) wire-reference%/b)
@@ -1298,8 +1313,8 @@
 
 (define/contract external-wire-reference% 
 	(class/c 
-            (box-reference (->m (is-a?/c box-reference%/b)))
-            (box-reference-set! (->m (is-a?/c box-reference%/b) void?))
+            (box-reference (->m (or/c null? (is-a?/c box-reference%/b))))
+            (box-reference-set! (->m (or/c null? (is-a?/c box-reference%/b)) void?))
             
         
     ) external-wire-reference%/b)
@@ -1307,11 +1322,11 @@
 
 (define/contract connection% 
 	(class/c 
-            (from (->m (is-a?/c wire-reference%/b)))
-            (from-set! (->m (is-a?/c wire-reference%/b) void?))
+            (from (->m (or/c null? (is-a?/c wire-reference%/b))))
+            (from-set! (->m (or/c null? (is-a?/c wire-reference%/b)) void?))
             
-            (to (->m (is-a?/c wire-reference%/b)))
-            (to-set! (->m (is-a?/c wire-reference%/b) void?))
+            (to (->m (or/c null? (is-a?/c wire-reference%/b))))
+            (to-set! (->m (or/c null? (is-a?/c wire-reference%/b)) void?))
             
         
     ) connection%/b)
@@ -1329,8 +1344,8 @@
             (name-set! (->m string?
              void?))
             
-            (type (->m (is-a?/c type%/b)))
-            (type-set! (->m (is-a?/c type%/b) void?))
+            (type (->m (or/c null? (is-a?/c type%/b))))
+            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
             
         
     ) wire%/b)
@@ -1395,18 +1410,21 @@
             (is-private-set! (->m boolean?
              void?))
             
-            (type (->m (is-a?/c type%/b)))
-            (type-set! (->m (is-a?/c type%/b) void?))
+            (type (->m (or/c null? (is-a?/c type%/b))))
+            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
              void?))
             
-            (parameters (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)))
-                             (-> natural-number/c (is-a?/c param%/b))))
-            (parameters-set! (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)) void?)
-                                  (-> (is-a?/c param%/b) natural-number/c void?)))
+            (parameters (case->m (-> (and/c (vectorof (or/c null?
+                                                        (is-a?/c param%/b))) (not/c immutable?)))
+                             (-> natural-number/c (or/c null? (is-a?/c param%/b)))))
+            (parameters-set! (case->m (-> (and/c (vectorof 
+                                              (or/c null?
+                                                    (is-a?/c param%/b))) (not/c immutable?)) void?)
+                                  (-> (or/c null? (is-a?/c param%/b)) natural-number/c void?)))
             
         
     ) method%/b)
@@ -1419,8 +1437,8 @@
             (comment-set! (->m string?
              void?))
             
-            (type (->m (is-a?/c type%/b)))
-            (type-set! (->m (is-a?/c type%/b) void?))
+            (type (->m (or/c null? (is-a?/c type%/b))))
+            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
             
             (name (->m string?
             ))
@@ -1448,8 +1466,8 @@
 
 (define/contract wire-method% 
 	(class/c 
-            (method (->m (is-a?/c method%/b)))
-            (method-set! (->m (is-a?/c method%/b) void?))
+            (method (->m (or/c null? (is-a?/c method%/b))))
+            (method-set! (->m (or/c null? (is-a?/c method%/b)) void?))
             
         
     ) wire-method%/b)
