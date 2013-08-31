@@ -33,7 +33,6 @@
 [generate_contract(klass)/]
 
 [/for]
-
 ;) ; end module [decamel(anEPackage.name)/]
 [/file]
 [/template]
@@ -41,11 +40,10 @@
 [template private generate_contract (aEClass : EClass)]
 [let cname:String = eclass_to_racket_class_name(aEClass)]
 [let iname:String = eclass_to_racket_interface_name(aEClass)]
-(define [eclass_to_racket_interface_name(aEClass)/]/c 
+(define/contract [cname/] 
 	(class/c 
         [gen_feature_contracts(aEClass)/]
-    ))
-(define/contract [cname/] [iname/]/c [cname/]/b)
+    ) [cname/]/b)
 [/let]
 [/let]
 [/template]
@@ -62,14 +60,40 @@
 [comment Easy version of the accessors/]
 ([dec/] (->m [datatype_to_racket(sf)/]))
 [if sf.changeable]
-([dec/]-set! (->m [datatype_to_racket(sf)/] any))
+([dec/]-set! (->m [datatype_to_racket(sf)/] void?))
 [/if]
 [else]
-([dec/] (->dm () ((pos (or/c #f natural-number/c)))
-                 (_ (or/c (vectorof [datatype_to_racket(sf)/])
-                          [datatype_to_racket(sf)/]))))   
+([dec/] (case->m (-> (and/c (vectorof [datatype_to_racket(sf)/]) (not/c immutable?)))
+                 (-> natural-number/c [datatype_to_racket(sf)/])))
+[if sf.changeable]
+([dec/]-set! (case->m (-> (and/c (vectorof [datatype_to_racket(sf)/]) (not/c immutable?)) void?)
+                      (-> [datatype_to_racket(sf)/] natural-number/c void?)))
+[/if]
 [/if]
 [/let]
+[/template]
+
+[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
+[let dec : String = decamel(sf.name)]
+[if (sf.upperBound = 1)]
+[comment Easy version of the accessors/]
+([dec/] (->m (is-a?/c [reference_to_racket(sf)/]/b)))
+[if sf.changeable]
+([dec/]-set! (->m (is-a?/c [reference_to_racket(sf)/]/b) void?))
+[/if]
+[else]
+([dec/] (case->m (-> (and/c (vectorof (is-a?/c [reference_to_racket(sf)/]/b)) (not/c immutable?)))
+                 (-> natural-number/c (is-a?/c [reference_to_racket(sf)/]/b))))
+[if sf.changeable]
+([dec/]-set! (case->m (-> (and/c (vectorof (is-a?/c [reference_to_racket(sf)/]/b)) (not/c immutable?)) void?)
+                      (-> (is-a?/c [reference_to_racket(sf)/]/b) natural-number/c void?)))
+[/if]
+[/if]
+[/let]
+[/template]
+
+[template private reference_to_racket (sf : EStructuralFeature) ]
+[eclass_to_racket_class_name(sf.eType.oclAsType(EClass))/]
 [/template]
 
 [template private datatype_to_racket (sf : EStructuralFeature) ]
@@ -80,10 +104,6 @@ boolean?
 [else][comment Integers, mainly TODOTODOTODO/]
 number?
 [/if]
-[/template]
-
-[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
-
 [/template]
 
 [template private generate_provides (anEPackage : EPackage) ]
@@ -176,7 +196,7 @@ number?
     -[dec/]
     (begin
     (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos))))
+     (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
        ;; grow the vector
        (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
@@ -187,7 +207,7 @@ number?
    (set! -[dec/] val)
    (begin
     (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos))))
+     (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
        ;; grow the vector
        (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))

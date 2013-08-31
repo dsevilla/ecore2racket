@@ -118,7 +118,8 @@
 	    -attributes
 	    (begin
 	    (when (<= (vector-length -attributes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -attributes)
 	       (set! -attributes new-vector)))
@@ -128,7 +129,8 @@
 	   (set! -attributes val)
 	   (begin
 	    (when (<= (vector-length -attributes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -attributes)
 	       (set! -attributes new-vector)))
@@ -143,7 +145,8 @@
 	    -methods
 	    (begin
 	    (when (<= (vector-length -methods) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -methods)
 	       (set! -methods new-vector)))
@@ -153,7 +156,8 @@
 	   (set! -methods val)
 	   (begin
 	    (when (<= (vector-length -methods) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -methods)
 	       (set! -methods new-vector)))
@@ -168,7 +172,8 @@
 	    -wires
 	    (begin
 	    (when (<= (vector-length -wires) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -wires)
 	       (set! -wires new-vector)))
@@ -178,7 +183,8 @@
 	   (set! -wires val)
 	   (begin
 	    (when (<= (vector-length -wires) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -wires)
 	       (set! -wires new-vector)))
@@ -193,7 +199,8 @@
 	    -boxes
 	    (begin
 	    (when (<= (vector-length -boxes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -boxes)
 	       (set! -boxes new-vector)))
@@ -203,7 +210,8 @@
 	   (set! -boxes val)
 	   (begin
 	    (when (<= (vector-length -boxes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -boxes)
 	       (set! -boxes new-vector)))
@@ -218,7 +226,8 @@
 	    -connection
 	    (begin
 	    (when (<= (vector-length -connection) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -connection)
 	       (set! -connection new-vector)))
@@ -228,7 +237,8 @@
 	   (set! -connection val)
 	   (begin
 	    (when (<= (vector-length -connection) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -connection)
 	       (set! -connection new-vector)))
@@ -825,7 +835,8 @@
 	    -namespace
 	    (begin
 	    (when (<= (vector-length -namespace) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) ""
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -namespace)
 	       (set! -namespace new-vector)))
@@ -835,7 +846,8 @@
 	   (set! -namespace val)
 	   (begin
 	    (when (<= (vector-length -namespace) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) ""
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -namespace)
 	       (set! -namespace new-vector)))
@@ -962,7 +974,8 @@
 	    -parameters
 	    (begin
 	    (when (<= (vector-length -parameters) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -parameters)
 	       (set! -parameters new-vector)))
@@ -972,7 +985,8 @@
 	   (set! -parameters val)
 	   (begin
 	    (when (<= (vector-length -parameters) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) null
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -parameters)
 	       (set! -parameters new-vector)))
@@ -1063,7 +1077,8 @@
 	    -default-value
 	    (begin
 	    (when (<= (vector-length -default-value) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) ""
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -default-value)
 	       (set! -default-value new-vector)))
@@ -1073,7 +1088,8 @@
 	   (set! -default-value val)
 	   (begin
 	    (when (<= (vector-length -default-value) pos)
-	     (let ((new-vector (make-vector (+ 1 pos))))
+	     (let ((new-vector (make-vector (+ 1 pos) ""
+	     )))
 	       ;; grow the vector
 	       (vector-copy! new-vector 0 -default-value)
 	       (set! -default-value new-vector)))
@@ -1200,225 +1216,243 @@
 
 
 ;; Contracts
-(define box<%>/c 
+(define/contract box% 
 	(class/c 
             (comment (->m string?
             ))
             (comment-set! (->m string?
-             any))
+             void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
+            (attributes (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c param%/b))))
+            (attributes-set! (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c param%/b) natural-number/c void?)))
             
+            (methods (case->m (-> (and/c (vectorof (is-a?/c method%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c method%/b))))
+            (methods-set! (case->m (-> (and/c (vectorof (is-a?/c method%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c method%/b) natural-number/c void?)))
             
+            (wires (case->m (-> (and/c (vectorof (is-a?/c wire%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c wire%/b))))
+            (wires-set! (case->m (-> (and/c (vectorof (is-a?/c wire%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c wire%/b) natural-number/c void?)))
             
+            (boxes (case->m (-> (and/c (vectorof (is-a?/c box-reference%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c box-reference%/b))))
+            (boxes-set! (case->m (-> (and/c (vectorof (is-a?/c box-reference%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c box-reference%/b) natural-number/c void?)))
             
-            
-            
-            
-            
-            
+            (connection (case->m (-> (and/c (vectorof (is-a?/c connection%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c connection%/b))))
+            (connection-set! (case->m (-> (and/c (vectorof (is-a?/c connection%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c connection%/b) natural-number/c void?)))
             
         
-    ))
-(define/contract box% box<%>/c box%/b)
+    ) box%/b)
 
 
-(define box-reference<%>/c 
+(define/contract box-reference% 
 	(class/c 
-            
+            (box (->m (is-a?/c box%/b)))
+            (box-set! (->m (is-a?/c box%/b) void?))
             
             (is-pointer (->m boolean?
             ))
             (is-pointer-set! (->m boolean?
-             any))
+             void?))
             
             (is-reference (->m boolean?
             ))
             (is-reference-set! (->m boolean?
-             any))
+             void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
         
-    ))
-(define/contract box-reference% box-reference<%>/c box-reference%/b)
+    ) box-reference%/b)
 
 
-(define wire-reference<%>/c 
+(define/contract wire-reference% 
 	(class/c 
-            
+            (wire (->m (is-a?/c wire%/b)))
+            (wire-set! (->m (is-a?/c wire%/b) void?))
             
         
-    ))
-(define/contract wire-reference% wire-reference<%>/c wire-reference%/b)
+    ) wire-reference%/b)
 
 
-(define local-wire-reference<%>/c 
+(define/contract local-wire-reference% 
 	(class/c 
         
-    ))
-(define/contract local-wire-reference% local-wire-reference<%>/c local-wire-reference%/b)
+    ) local-wire-reference%/b)
 
 
-(define external-wire-reference<%>/c 
+(define/contract external-wire-reference% 
 	(class/c 
-            
+            (box-reference (->m (is-a?/c box-reference%/b)))
+            (box-reference-set! (->m (is-a?/c box-reference%/b) void?))
             
         
-    ))
-(define/contract external-wire-reference% external-wire-reference<%>/c external-wire-reference%/b)
+    ) external-wire-reference%/b)
 
 
-(define connection<%>/c 
+(define/contract connection% 
 	(class/c 
+            (from (->m (is-a?/c wire-reference%/b)))
+            (from-set! (->m (is-a?/c wire-reference%/b) void?))
             
-            
-            
+            (to (->m (is-a?/c wire-reference%/b)))
+            (to-set! (->m (is-a?/c wire-reference%/b) void?))
             
         
-    ))
-(define/contract connection% connection<%>/c connection%/b)
+    ) connection%/b)
 
 
-(define wire<%>/c 
+(define/contract wire% 
 	(class/c 
             (is-input (->m boolean?
             ))
             (is-input-set! (->m boolean?
-             any))
+             void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
-            
+            (type (->m (is-a?/c type%/b)))
+            (type-set! (->m (is-a?/c type%/b) void?))
             
         
-    ))
-(define/contract wire% wire<%>/c wire%/b)
+    ) wire%/b)
 
 
-(define type<%>/c 
+(define/contract type% 
 	(class/c 
             (is-pointer (->m boolean?
             ))
             (is-pointer-set! (->m boolean?
-             any))
+             void?))
             
             (is-reference (->m boolean?
             ))
             (is-reference-set! (->m boolean?
-             any))
+             void?))
             
         
-    ))
-(define/contract type% type<%>/c type%/b)
+    ) type%/b)
 
 
-(define basic-type<%>/c 
+(define/contract basic-type% 
 	(class/c 
             (basic-type (->m number?
             ))
             (basic-type-set! (->m number?
-             any))
+             void?))
             
         
-    ))
-(define/contract basic-type% basic-type<%>/c basic-type%/b)
+    ) basic-type%/b)
 
 
-(define other-type<%>/c 
+(define/contract other-type% 
 	(class/c 
-            (namespace (->dm () ((pos (or/c #f natural-number/c)))
-                             (_ (or/c (vectorof string?
-                             )
-                                      string?
-                                      ))))   
+            (namespace (case->m (-> (and/c (vectorof string?
+            ) (not/c immutable?)))
+                             (-> natural-number/c string?
+                             )))
+            (namespace-set! (case->m (-> (and/c (vectorof string?
+            ) (not/c immutable?)) void?)
+                                  (-> string?
+                                   natural-number/c void?)))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
         
-    ))
-(define/contract other-type% other-type<%>/c other-type%/b)
+    ) other-type%/b)
 
 
-(define method<%>/c 
+(define/contract method% 
 	(class/c 
             (comment (->m string?
             ))
             (comment-set! (->m string?
-             any))
+             void?))
             
             (is-private (->m boolean?
             ))
             (is-private-set! (->m boolean?
-             any))
+             void?))
             
-            
+            (type (->m (is-a?/c type%/b)))
+            (type-set! (->m (is-a?/c type%/b) void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
-            
+            (parameters (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)))
+                             (-> natural-number/c (is-a?/c param%/b))))
+            (parameters-set! (case->m (-> (and/c (vectorof (is-a?/c param%/b)) (not/c immutable?)) void?)
+                                  (-> (is-a?/c param%/b) natural-number/c void?)))
             
         
-    ))
-(define/contract method% method<%>/c method%/b)
+    ) method%/b)
 
 
-(define param<%>/c 
+(define/contract param% 
 	(class/c 
             (comment (->m string?
             ))
             (comment-set! (->m string?
-             any))
+             void?))
             
-            
+            (type (->m (is-a?/c type%/b)))
+            (type-set! (->m (is-a?/c type%/b) void?))
             
             (name (->m string?
             ))
             (name-set! (->m string?
-             any))
+             void?))
             
-            (default-value (->dm () ((pos (or/c #f natural-number/c)))
-                             (_ (or/c (vectorof string?
-                             )
-                                      string?
-                                      ))))   
+            (default-value (case->m (-> (and/c (vectorof string?
+            ) (not/c immutable?)))
+                             (-> natural-number/c string?
+                             )))
+            (default-value-set! (case->m (-> (and/c (vectorof string?
+            ) (not/c immutable?)) void?)
+                                  (-> string?
+                                   natural-number/c void?)))
             
         
-    ))
-(define/contract param% param<%>/c param%/b)
+    ) param%/b)
 
 
-(define wire-many<%>/c 
+(define/contract wire-many% 
 	(class/c 
         
-    ))
-(define/contract wire-many% wire-many<%>/c wire-many%/b)
+    ) wire-many%/b)
 
 
-(define wire-method<%>/c 
+(define/contract wire-method% 
 	(class/c 
-            
+            (method (->m (is-a?/c method%/b)))
+            (method-set! (->m (is-a?/c method%/b) void?))
             
         
-    ))
-(define/contract wire-method% wire-method<%>/c wire-method%/b)
-
+    ) wire-method%/b)
 
 
 ;) ; end module box
