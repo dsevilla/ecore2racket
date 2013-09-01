@@ -194,27 +194,29 @@ number?
     (set! -[dec/] val))
 [/if]
 [else]
-(define/public ([dec/] (pos #f))
-   (if (not pos)
-    -[dec/]
-    (begin
-    (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
-       ;; grow the vector
-       (vector-copy! new-vector 0 -[dec/])
-       (set! -[dec/] new-vector)))
-    (vector-ref -[dec/] pos))))
+(define [dec/]
+  (case-lambda
+   (() -[dec/])
+   ((pos)
+     (when (<= (vector-length -[dec/]) pos)
+      (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
+        ;; grow the vector
+        (vector-copy! new-vector 0 -[dec/])
+        (set! -[dec/] new-vector)))
+     (vector-ref -[dec/] pos))))
+(public [dec/])
 [if sf.changeable]
-(define/public ([dec/]-set! val (pos #f))
-  (if (not pos)
-   (set! -[dec/] val)
-   (begin
+(define [dec/]-set!
+ (case-lambda
+  ((val) (set! -[dec/] val))
+  ((val pos)
     (when (<= (vector-length -[dec/]) pos)
      (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
        ;; grow the vector
        (vector-copy! new-vector 0 -[dec/])
        (set! -[dec/] new-vector)))
     (vector-set! -[dec/] pos val))))
+(public [dec/]-set!)
 [/if]
 [/if]
 [/let]

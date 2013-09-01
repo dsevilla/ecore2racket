@@ -113,21 +113,22 @@
 	  (make-vector 0)
 	  
 	)
-	(define/public (attributes (pos #f))
-	   (if (not pos)
-	    -attributes
-	    (begin
-	    (when (<= (vector-length -attributes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -attributes)
-	       (set! -attributes new-vector)))
-	    (vector-ref -attributes pos))))
-	(define/public (attributes-set! val (pos #f))
-	  (if (not pos)
-	   (set! -attributes val)
-	   (begin
+	(define attributes
+	  (case-lambda
+	   (() -attributes)
+	   ((pos)
+	     (when (<= (vector-length -attributes) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -attributes)
+	        (set! -attributes new-vector)))
+	     (vector-ref -attributes pos))))
+	(public attributes)
+	(define attributes-set!
+	 (case-lambda
+	  ((val) (set! -attributes val))
+	  ((val pos)
 	    (when (<= (vector-length -attributes) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -135,26 +136,28 @@
 	       (vector-copy! new-vector 0 -attributes)
 	       (set! -attributes new-vector)))
 	    (vector-set! -attributes pos val))))
+	(public attributes-set!)
 	; Structural Feature methods
 	(define -methods 
 	  (make-vector 0)
 	  
 	)
-	(define/public (methods (pos #f))
-	   (if (not pos)
-	    -methods
-	    (begin
-	    (when (<= (vector-length -methods) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -methods)
-	       (set! -methods new-vector)))
-	    (vector-ref -methods pos))))
-	(define/public (methods-set! val (pos #f))
-	  (if (not pos)
-	   (set! -methods val)
-	   (begin
+	(define methods
+	  (case-lambda
+	   (() -methods)
+	   ((pos)
+	     (when (<= (vector-length -methods) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -methods)
+	        (set! -methods new-vector)))
+	     (vector-ref -methods pos))))
+	(public methods)
+	(define methods-set!
+	 (case-lambda
+	  ((val) (set! -methods val))
+	  ((val pos)
 	    (when (<= (vector-length -methods) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -162,26 +165,28 @@
 	       (vector-copy! new-vector 0 -methods)
 	       (set! -methods new-vector)))
 	    (vector-set! -methods pos val))))
+	(public methods-set!)
 	; Structural Feature wires
 	(define -wires 
 	  (make-vector 0)
 	  
 	)
-	(define/public (wires (pos #f))
-	   (if (not pos)
-	    -wires
-	    (begin
-	    (when (<= (vector-length -wires) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -wires)
-	       (set! -wires new-vector)))
-	    (vector-ref -wires pos))))
-	(define/public (wires-set! val (pos #f))
-	  (if (not pos)
-	   (set! -wires val)
-	   (begin
+	(define wires
+	  (case-lambda
+	   (() -wires)
+	   ((pos)
+	     (when (<= (vector-length -wires) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -wires)
+	        (set! -wires new-vector)))
+	     (vector-ref -wires pos))))
+	(public wires)
+	(define wires-set!
+	 (case-lambda
+	  ((val) (set! -wires val))
+	  ((val pos)
 	    (when (<= (vector-length -wires) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -189,26 +194,28 @@
 	       (vector-copy! new-vector 0 -wires)
 	       (set! -wires new-vector)))
 	    (vector-set! -wires pos val))))
+	(public wires-set!)
 	; Structural Feature boxes
 	(define -boxes 
 	  (make-vector 0)
 	  
 	)
-	(define/public (boxes (pos #f))
-	   (if (not pos)
-	    -boxes
-	    (begin
-	    (when (<= (vector-length -boxes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -boxes)
-	       (set! -boxes new-vector)))
-	    (vector-ref -boxes pos))))
-	(define/public (boxes-set! val (pos #f))
-	  (if (not pos)
-	   (set! -boxes val)
-	   (begin
+	(define boxes
+	  (case-lambda
+	   (() -boxes)
+	   ((pos)
+	     (when (<= (vector-length -boxes) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -boxes)
+	        (set! -boxes new-vector)))
+	     (vector-ref -boxes pos))))
+	(public boxes)
+	(define boxes-set!
+	 (case-lambda
+	  ((val) (set! -boxes val))
+	  ((val pos)
 	    (when (<= (vector-length -boxes) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -216,26 +223,28 @@
 	       (vector-copy! new-vector 0 -boxes)
 	       (set! -boxes new-vector)))
 	    (vector-set! -boxes pos val))))
+	(public boxes-set!)
 	; Structural Feature connection
 	(define -connection 
 	  (make-vector 0)
 	  
 	)
-	(define/public (connection (pos #f))
-	   (if (not pos)
-	    -connection
-	    (begin
-	    (when (<= (vector-length -connection) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -connection)
-	       (set! -connection new-vector)))
-	    (vector-ref -connection pos))))
-	(define/public (connection-set! val (pos #f))
-	  (if (not pos)
-	   (set! -connection val)
-	   (begin
+	(define connection
+	  (case-lambda
+	   (() -connection)
+	   ((pos)
+	     (when (<= (vector-length -connection) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -connection)
+	        (set! -connection new-vector)))
+	     (vector-ref -connection pos))))
+	(public connection)
+	(define connection-set!
+	 (case-lambda
+	  ((val) (set! -connection val))
+	  ((val pos)
 	    (when (<= (vector-length -connection) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -243,6 +252,7 @@
 	       (vector-copy! new-vector 0 -connection)
 	       (set! -connection new-vector)))
 	    (vector-set! -connection pos val))))
+	(public connection-set!)
 	
 
   ))
@@ -830,21 +840,22 @@
 	  (make-vector 0)
 	  
 	)
-	(define/public (namespace (pos #f))
-	   (if (not pos)
-	    -namespace
-	    (begin
-	    (when (<= (vector-length -namespace) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) ""
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -namespace)
-	       (set! -namespace new-vector)))
-	    (vector-ref -namespace pos))))
-	(define/public (namespace-set! val (pos #f))
-	  (if (not pos)
-	   (set! -namespace val)
-	   (begin
+	(define namespace
+	  (case-lambda
+	   (() -namespace)
+	   ((pos)
+	     (when (<= (vector-length -namespace) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) ""
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -namespace)
+	        (set! -namespace new-vector)))
+	     (vector-ref -namespace pos))))
+	(public namespace)
+	(define namespace-set!
+	 (case-lambda
+	  ((val) (set! -namespace val))
+	  ((val pos)
 	    (when (<= (vector-length -namespace) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) ""
 	     )))
@@ -852,6 +863,7 @@
 	       (vector-copy! new-vector 0 -namespace)
 	       (set! -namespace new-vector)))
 	    (vector-set! -namespace pos val))))
+	(public namespace-set!)
 	; Structural Feature name
 	(define -name 
 	  ""
@@ -969,21 +981,22 @@
 	  (make-vector 0)
 	  
 	)
-	(define/public (parameters (pos #f))
-	   (if (not pos)
-	    -parameters
-	    (begin
-	    (when (<= (vector-length -parameters) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -parameters)
-	       (set! -parameters new-vector)))
-	    (vector-ref -parameters pos))))
-	(define/public (parameters-set! val (pos #f))
-	  (if (not pos)
-	   (set! -parameters val)
-	   (begin
+	(define parameters
+	  (case-lambda
+	   (() -parameters)
+	   ((pos)
+	     (when (<= (vector-length -parameters) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) null
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -parameters)
+	        (set! -parameters new-vector)))
+	     (vector-ref -parameters pos))))
+	(public parameters)
+	(define parameters-set!
+	 (case-lambda
+	  ((val) (set! -parameters val))
+	  ((val pos)
 	    (when (<= (vector-length -parameters) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) null
 	     )))
@@ -991,6 +1004,7 @@
 	       (vector-copy! new-vector 0 -parameters)
 	       (set! -parameters new-vector)))
 	    (vector-set! -parameters pos val))))
+	(public parameters-set!)
 	
 
   ))
@@ -1072,21 +1086,22 @@
 	  (make-vector 0)
 	  
 	)
-	(define/public (default-value (pos #f))
-	   (if (not pos)
-	    -default-value
-	    (begin
-	    (when (<= (vector-length -default-value) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) ""
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -default-value)
-	       (set! -default-value new-vector)))
-	    (vector-ref -default-value pos))))
-	(define/public (default-value-set! val (pos #f))
-	  (if (not pos)
-	   (set! -default-value val)
-	   (begin
+	(define default-value
+	  (case-lambda
+	   (() -default-value)
+	   ((pos)
+	     (when (<= (vector-length -default-value) pos)
+	      (let ((new-vector (make-vector (+ 1 pos) ""
+	      )))
+	        ;; grow the vector
+	        (vector-copy! new-vector 0 -default-value)
+	        (set! -default-value new-vector)))
+	     (vector-ref -default-value pos))))
+	(public default-value)
+	(define default-value-set!
+	 (case-lambda
+	  ((val) (set! -default-value val))
+	  ((val pos)
 	    (when (<= (vector-length -default-value) pos)
 	     (let ((new-vector (make-vector (+ 1 pos) ""
 	     )))
@@ -1094,6 +1109,7 @@
 	       (vector-copy! new-vector 0 -default-value)
 	       (set! -default-value new-vector)))
 	    (vector-set! -default-value pos val))))
+	(public default-value-set!)
 	
 	; Structural Feature type
 	(define -type 
