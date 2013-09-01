@@ -16,7 +16,9 @@
    structural-feature<%>
    reference<%>
    attribute<%>
-   eobject%)
+   eobject%
+   to-xml
+   to-xexpr)
 
 (define named-element<%> (interface () e-name))
 (define classifier<%> (interface (named-element<%>)
@@ -38,3 +40,21 @@
     (define/public (e-references) null)
     (define/public (e-all-attributes) null)
     (define/public (e-all-references) null)))
+
+;; TODO: provide contracts for these.
+
+(require xml)
+
+;; Build the xexpr
+(define (to-xml o-base)
+  (xexpr->string (to-xexpr o-base)))
+
+(define (attr-to-xexpr obj att-name)
+  `(,att-name ,(dynamic-send obj att-name)))
+
+(define (to-xexpr o-base)
+  `(,(string->symbol (send o-base e-name))
+    (,@(map (lambda (att) (attr-to-xexpr o-base att)) (send o-base e-all-attributes))
+     (xmlns:box "http://www.catedrasaes.org/Box")
+     (xmlns:xmi "http://www.omg.org/XMI")
+     (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
