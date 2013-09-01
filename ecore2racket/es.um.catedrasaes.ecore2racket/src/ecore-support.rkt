@@ -17,30 +17,46 @@
    reference<%>
    attribute<%>
    eobject%
+   package%
    to-xml
    to-xexpr)
 
-(define named-element<%> (interface () e-name))
+(define named-element<%> (interface () e-name e-name-set!))
 (define classifier<%> (interface (named-element<%>)
                       ;; superclass
-                      e-package e-attributes e-references))
+                      e-package e-package-set! e-attributes e-references))
 (define structural-feature<%> (interface (named-element<%>) e-type))
 (define reference<%> (interface (structural-feature<%>)))
 (define attribute<%> (interface (structural-feature<%>)))
-
 
 (define eobject%
   (class* object% (classifier<%>)
     
     (super-new)
     
+    (define -e-name "EObject")
+    (define -e-package "ecore")
+    
     ;; classifier<%> interface methods
-    (define/public (e-name) "EObject")
-    (define/public (e-package) "ecore")
+    (define/public (e-name) -e-name)
+    (define/public (e-name-set! n) (set! -e-name n))
+    
+    (define/public (e-package) -e-package)
+    (define/public (e-package-set! p) (set! -e-package p))
     (define/public (e-attributes) null)
     (define/public (e-references) null)
     (define/public (e-all-attributes) null)
     (define/public (e-all-references) null)))
+
+(define package%
+  (class* eobject% ()
+    (super-new)
+    
+    (define -e-name "EPackage")
+    (define -e-package "ecore")
+    
+    
+))
 
 ;; TODO: provide contracts for these.
 
@@ -54,7 +70,7 @@
   `(,att-name ,(dynamic-send obj att-name)))
 
 (define (to-xexpr o-base)
-  `(,(string->symbol (send o-base e-name))
+  `(,(string->symbol (string-append (send o-base e-package) ":" (send o-base e-name)))
     (,@(map (lambda (att) (attr-to-xexpr o-base att)) (send o-base e-all-attributes))
      (xmlns:box "http://www.catedrasaes.org/Box")
      (xmlns:xmi "http://www.omg.org/XMI")
