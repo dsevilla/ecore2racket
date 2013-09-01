@@ -23,7 +23,7 @@
 (define named-element<%> (interface () e-name))
 (define classifier<%> (interface (named-element<%>)
                       ;; superclass
-                      e-attributes e-references))
+                      e-package e-attributes e-references))
 (define structural-feature<%> (interface (named-element<%>) e-type))
 (define reference<%> (interface (structural-feature<%>)))
 (define attribute<%> (interface (structural-feature<%>)))
@@ -36,6 +36,7 @@
     
     ;; classifier<%> interface methods
     (define/public (e-name) "EObject")
+    (define/public (e-package) "ecore")
     (define/public (e-attributes) null)
     (define/public (e-references) null)
     (define/public (e-all-attributes) null)
