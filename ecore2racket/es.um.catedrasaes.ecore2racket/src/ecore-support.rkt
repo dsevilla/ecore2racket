@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 ;; Minimal interface that resembles ecore metadata
 ;; As ecore models representational elements are in turn classes
@@ -7,8 +7,6 @@
 ;; the differentiation between attributes and references even when
 ;; they're represented by the same abstraction (private field + get &
 ;; set functions).
-
-(require racket/class)
 
 (provide
    named-element<%>
@@ -75,3 +73,47 @@
      (xmlns:box "http://www.catedrasaes.org/Box")
      (xmlns:xmi "http://www.omg.org/XMI")
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require compatibility/defmacro (for-syntax racket/match))
+(provide klass)
+
+(begin-for-syntax  
+  (define (identify-attributes list)
+    (cond
+      ((null? list) '())
+      ((pair? (car list))
+       (if (eq? (caar list) 'attribute)
+           (cons (cadar list) (identify-attributes (cdr list)))
+           (identify-attributes (cdr list))))))
+  
+  (define (expand-klass-body body)
+    (cond ((null? body) '())
+          ((match (car body)
+             ((list 'attribute name type readonly? minoccur maxoccur)
+              (let ((new-name (string->symbol (string-append "-" (symbol->string name)))))
+                `((define ,new-name 0)
+                  (define/public (,name) ,new-name)
+                  ,@(unless readonly? 
+                      `(,(let ((set-name (string->symbol (string-append (symbol->string name) "-set!")))) 
+                           `(define/public (,set-name value)
+                              (set! ,new-name value)))))
+                  ,@(expand-klass-body (cdr body)))))
+             (else
+              (cons (car body) (expand-klass-body (cdr body))))))))
+  )
+
+;; The macro proper.
+(define-macro (klass n super . body)
+  `(define ,n
+     (class ,super
+       (super-new)
+       (define/public (attributes) #[,(identify-attributes body)])
+       ,@(expand-klass-body body))))
+
+
+;; test
+(klass x% object% 
+       (define/public (test1) 1)
+       (attribute pepe 'string #f 1 1)
+       (define/public (test2) 2))
