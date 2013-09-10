@@ -75,27 +75,32 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro (for-syntax racket/match))
+(require compatibility/defmacro (for-syntax racket/match racket/list))
 (provide klass)
 
-(begin-for-syntax  
-  (define (identify-attributes list)
-    (cond
-      ((null? list) '())
-      ((pair? (car list))
-       (if (eq? (caar list) 'attribute)
-           (cons (cadar list) (identify-attributes (cdr list)))
-           (identify-attributes (cdr list))))))
+(begin-for-syntax
+  (define (filter-by-application-symbol symbol list)
+    (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
+  
+  (define (append-id . list)
+    (string->symbol 
+     (apply 
+      string-append 
+      (map (lambda (s-s) 
+             (if (symbol? s-s)
+                 (symbol->string s-s)
+                 s-s))
+           list))))
   
   (define (expand-klass-body body)
     (cond ((null? body) '())
           ((match (car body)
              ((list 'attribute name type readonly? minoccur maxoccur)
-              (let ((new-name (string->symbol (string-append "-" (symbol->string name)))))
+              (let ((new-name (append-id "-" name)))
                 `((define ,new-name 0)
                   (define/public (,name) ,new-name)
                   ,@(unless readonly? 
-                      `(,(let ((set-name (string->symbol (string-append (symbol->string name) "-set!")))) 
+                      `(,(let ((set-name (append-id name "-set!")))
                            `(define/public (,set-name value)
                               (set! ,new-name value)))))
                   ,@(expand-klass-body (cdr body)))))
@@ -108,7 +113,8 @@
   `(define ,n
      (class ,super
        (super-new)
-       (define/public (attributes) #[,(identify-attributes body)])
+       (define/public (attributes) #[,@(filter-by-application-symbol 'attribute body)])
+       (define/public (references) #[,@(filter-by-application-symbol 'reference body)])
        ,@(expand-klass-body body))))
 
 
@@ -116,4 +122,5 @@
 (klass x% object% 
        (define/public (test1) 1)
        (attribute pepe 'string #f 1 1)
+       (attribute juan 'string #f 1 1)
        (define/public (test2) 2))
