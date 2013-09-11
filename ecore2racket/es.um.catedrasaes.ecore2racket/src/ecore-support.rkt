@@ -87,7 +87,7 @@
          body ...))))
   
 ;  (define-macro (with-gensyms list . body)
-;    `(let (,@(map (λ (v) (cons v '((gensym)))) list))
+;    `(let (,@(map (λ (v) `(,v (gensym))) list))
 ;       ,@body))
 
   
