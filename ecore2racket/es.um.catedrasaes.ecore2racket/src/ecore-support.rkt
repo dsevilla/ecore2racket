@@ -15,10 +15,14 @@
    reference<%>
    attribute<%>
    eobject%
-   package%
+   epackage%
    to-xml
    to-xexpr)
 
+;;; Interfaces describing the different Ecore metamodel elements. In a
+;;; perfect world, these entities would have been generated with the
+;;; same interface all other metamodels have, but we need a bootstrap
+;;; process first.
 (define named-element<%> (interface () e-name e-name-set!))
 (define classifier<%> (interface (named-element<%>)
                       ;; superclass
@@ -29,16 +33,16 @@
 
 (define eobject%
   (class* object% (classifier<%>)
-    
+
     (super-new)
-    
+
     (define -e-name "EObject")
-    (define -e-package "ecore")
-    
+    (define -e-package null)
+
     ;; classifier<%> interface methods
     (define/public (e-name) -e-name)
     (define/public (e-name-set! n) (set! -e-name n))
-    
+
     (define/public (e-package) -e-package)
     (define/public (e-package-set! p) (set! -e-package p))
     (define/public (e-attributes) null)
@@ -46,14 +50,14 @@
     (define/public (e-all-attributes) null)
     (define/public (e-all-references) null)))
 
-(define package%
+(define epackage%
   (class* eobject% ()
     (super-new)
-    
+
     (define -e-name "EPackage")
     (define -e-package "ecore")
-    
-    
+
+
 ))
 
 ;; TODO: provide contracts for these.
@@ -85,20 +89,20 @@
       ((_ (vars ...) body ...)
        (let ((vars (gensym)) ...)
          body ...))))
-  
+
 ;  (define-macro (with-gensyms list . body)
 ;    `(let (,@(map (λ (v) `(,v (gensym))) list))
 ;       ,@body))
 
-  
+
   (define (filter-by-application-symbol symbol list)
     (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
-  
+
   (define (append-id . list)
-    (string->symbol 
-     (apply 
-      string-append 
-      (map (lambda (s-s) 
+    (string->symbol
+     (apply
+      string-append
+      (map (lambda (s-s)
              (if (symbol? s-s)
                  (symbol->string s-s)
                  s-s))
@@ -150,7 +154,7 @@
            (define/public (,set-name value)
              (set! ,private-name value)))))))
 
-  
+
   (define (expand-eclass-body body)
     (if (null? body)
         '()
@@ -166,8 +170,8 @@
                        (list (car body))))
                     (expand-eclass-body (cdr body)))
             (cons (car body) (expand-eclass-body (cdr body))))))
-    
-    
+
+
   )
 
 ;; The macro proper.
@@ -181,7 +185,7 @@
 
 
 ;;; test
-(eclass x% object% 
+(eclass x% object%
        (define/public (test1) 1)
        (attribute pepe 'string 1 10)
        (attribute juan 'string 1 1)
