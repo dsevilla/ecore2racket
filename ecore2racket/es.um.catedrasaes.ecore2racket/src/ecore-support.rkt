@@ -9,11 +9,11 @@
 ;; set functions).
 
 (provide
-   named-element<%>
-   classifier<%>
-   structural-feature<%>
-   reference<%>
-   attribute<%>
+   enamed-element<%>
+   eclassifier<%>
+   estructuralfeature<%>
+   ereference<%>
+   eattribute<%>
    eobject%
    epackage%
    to-xml
@@ -23,20 +23,22 @@
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
-(define named-element<%> (interface () e-name e-name-set!))
-(define classifier<%> (interface (named-element<%>)
+(define enamed-element<%> (interface () e-name e-name-set!))
+(define eclassifier<%> (interface (enamed-element<%>)
                       ;; superclass
                       e-package e-package-set! e-attributes e-references))
-(define structural-feature<%> (interface (named-element<%>) e-type))
-(define reference<%> (interface (structural-feature<%>)))
-(define attribute<%> (interface (structural-feature<%>)))
+(define epackage<%> (interface (enamed-element<%>)
+                      e-parent e-children))
+(define estructuralfeature<%> (interface (enamed-element<%>) e-type))
+(define ereference<%> (interface (estructuralfeature<%>)))
+(define eattribute<%> (interface (estructuralfeature<%>)))
 
 (define eobject%
-  (class* object% (classifier<%>)
+  (class* object% ()
 
     (super-new)
 
-    (field [-e-name "EObject"]
+    (field [-e-name ""]
            [-e-package null])
 
     ;; classifier<%> interface methods
@@ -44,7 +46,16 @@
     (define/public (e-name-set! n) (set! -e-name n))
 
     (define/public (e-package) -e-package)
-    (define/public (e-package-set! p) (set! -e-package p))
+    (define/public (e-package-set! p) (set! -e-package p))))
+
+(define -eclass%
+  (class* eobject% (eclassifier<%>)
+
+    (super-new)
+    
+    (inherit-field -e-name -e-package)
+    (set! -e-name "")
+    (set! -e-package null)
     
     (field [-e-attributes null]
            [-e-references null]
@@ -55,16 +66,19 @@
     (define/public (e-all-attributes) -e-all-attributes)
     (define/public (e-all-references) -e-all-references)))
 
-(define epackage%
-  (class* eobject% ()
+(define -epackage%
+  (class* -eclass% (epackage<%>)
     (super-new)
-
-    (inherit-field -e-name -e-package)
-    (set! -e-name "EPackage")
-    (set! -e-package "ecore")
-
-
-))
+    ;; Fake class symbols to close the circle
+    (field [-e-parent null]
+           [-e-children null])
+    
+    (define/public (e-parent) -e-parent)
+    (define/public (e-parent-set! n) (set! -e-parent n))
+    (define/public (e-children) -e-children)
+    (define/public (e-children-set! n) (set! -e-children n))
+    
+    ))
 
 ;; TODO: provide contracts for these.
 
@@ -152,7 +166,7 @@
 
   (define (expand-class-reference list)
     (match list
-      ((list 'reference name type minoccur maxoccur)
+      ((list 'reference name type contained? minoccur maxoccur)
        (let ((field-name (append-id "-" name))
              (set-name (append-id name "-set!")))
          (if (= maxoccur 1)
@@ -212,14 +226,13 @@
        (super-new)
        
        (inherit-field -e-name -e-package)
-       (set! -e-name ,(symbol->string n))
-       (set! -e-package null)
+       (set! -e-name "")
+       (set! -e-package the-epackage)
        
        ;; Normal class fields
-       (field [-e-attributes #[,@(filter-by-application-symbol 'attribute body)]])
-       (define (e-attributes) -e-attributes)
-       (field [-e-references #[,@(filter-by-application-symbol 'reference body)]])
-       (define (e-references) -e-references)
+       (inherit-field -e-attributes -e-references)
+       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
+       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
        
        ,@(expand-eclass-body body))))
 
@@ -228,25 +241,44 @@
     (syntax-case stx ()
       ((_ package body ...)
        (with-syntax ([the-epackage (datum->syntax stx (string->symbol "the-epackage"))])
-         #'(let ((the-epackage package))
+         #'(begin 
+             (define the-epackage package)
              body ...)))))
 
 (define-syntax (with-eclass stx)
     (syntax-case stx ()
       ((_ eclass body ...)
        (with-syntax ([the-eclass (datum->syntax stx (string->symbol "the-eclass"))])
-         #'(let ((the-eclass eclass))
+         #'(begin
+             (define the-eclass eclass)
              body ...)))))
 
-;;; test
-(eclass x% eobject%
-       (define/public (test1) 1)
-       (attribute pepe 'string 1 10)
-       (attribute juan 'string 1 1)
-       (reference abc eobject% 1 1)
-       (define/public (test2) 2))
+;;; Ecore classes
+(define ecore-package (new -epackage%))
+(send ecore-package e-name-set! "ecore")
+(with-epackage
+ ecore-package
+ (eclass 
+  eclass% -eclass%)
 
-(with-epackage 
- (begin (displayln "yes") 1)
- (displayln the-epackage)
- (displayln the-epackage))
+ (eclass
+  epackage% eclass%
+  (reference e-parent epackage% #f 0 1)
+  (reference e-children eobject% #t 0 -1))
+
+ (eclass
+  estructuralfeature% eclass%
+  (attribute e-changeable 'boolean 0 1)
+  (attribute e-volatile 'boolean 0 1)
+  (attribute e-transient 'boolean 0 1)
+  (attribute e-unsettable 'boolean 0 1)
+  (attribute e-derived 'boolean 0 1)
+  (reference e-containing-class eclass% #f 1 1))
+ 
+ (eclass
+  eattribute% estructuralfeature%)
+
+ (eclass
+  ereference% estructuralfeature%)
+
+ )
