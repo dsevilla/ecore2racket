@@ -36,8 +36,8 @@
 
     (super-new)
 
-    (define -e-name "EObject")
-    (define -e-package null)
+    (field [-e-name "EObject"]
+           [-e-package null])
 
     ;; classifier<%> interface methods
     (define/public (e-name) -e-name)
@@ -54,8 +54,9 @@
   (class* eobject% ()
     (super-new)
 
-    (define -e-name "EPackage")
-    (define -e-package "ecore")
+    (inherit-field -e-name -e-package)
+    (set! -e-name "EPackage")
+    (set! -e-package "ecore")
 
 
 ))
