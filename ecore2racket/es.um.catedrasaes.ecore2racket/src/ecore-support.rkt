@@ -185,9 +185,28 @@
        ,@(expand-eclass-body body))))
 
 
+(define-syntax (with-epackage stx)
+    (syntax-case stx ()
+      ((_ package body ...)
+       (with-syntax ([the-epackage (datum->syntax stx (string->symbol "the-epackage"))])
+         #'(let ((the-epackage package))
+             body ...)))))
+
+(define-syntax (with-eclass stx)
+    (syntax-case stx ()
+      ((_ eclass body ...)
+       (with-syntax ([the-eclass (datum->syntax stx (string->symbol "the-eclass"))])
+         #'(let ((the-eclass eclass))
+             body ...)))))
+
 ;;; test
 (eclass x% object%
        (define/public (test1) 1)
        (attribute pepe 'string 1 10)
        (attribute juan 'string 1 1)
        (define/public (test2) 2))
+
+(with-epackage 
+ (begin (displayln "yes") 1)
+ (displayln the-epackage)
+ (displayln the-epackage))
