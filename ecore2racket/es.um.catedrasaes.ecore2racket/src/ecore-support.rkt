@@ -15,7 +15,6 @@
    ereference<%>
    eattribute<%>
    eobject%
-   epackage%
    to-xml
    to-xexpr)
 
@@ -71,14 +70,15 @@
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-e-super-package null]
-           [-e-classifiers null])
+           [-e-classifiers (make-vector 0)])
     
     (define/public (e-superpackage) -e-super-package)
     (define/public (e-super-package-set! n) (set! -e-super-package n))
     (define/public (e-classifiers) -e-classifiers)
     (define/public (e-classifiers-set! n) (set! -e-classifiers n))
-    
-    ))
+    (define/public (e-classifiers-append! c) 
+      (set! -e-classifiers 
+            (vector-append -e-classifiers (vector c))))))
 
 ;; TODO: provide contracts for these.
 
@@ -221,20 +221,22 @@
 
 ;; The macro proper.
 (define-macro (eclass n super . body)
-  `(define ,n
-     (class ,super
-       (super-new)
+  `(begin
+     (define ,n
+       (class ,super
+         (super-new)
        
-       (inherit-field -e-name -e-package)
-       (set! -e-name "")
-       (set! -e-package the-epackage)
+         (inherit-field -e-name -e-package)
+         (set! -e-name ,(symbol->string n))
+         (set! -e-package the-epackage)
        
-       ;; Normal class fields
-       (inherit-field -e-attributes -e-references)
-       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
-       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
+         ;; Normal class fields
+;       (inherit-field -e-attributes -e-references)
+;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
+;       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
        
-       ,@(expand-eclass-body body))))
+         ,@(expand-eclass-body body)))
+     (send the-epackage e-classifiers-append! (new ,n))))
 
 
 (define-syntax (with-epackage stx)
@@ -262,12 +264,14 @@
   eclass% -eclass%
   (reference e-operations eoperation% #t 0 -1)
   (reference e-structural-features estructural-feature% #t 0 -1))
-
+ (provide eclass%)
+ 
  (eclass
   epackage% eclass%
   (reference e-super-package epackage% #f 0 1)
   (reference e-classifiers eobject% #t 0 -1))
-
+ (provide epackage%)
+ 
  (eclass
   etyped-element% eclass%)
  
@@ -275,9 +279,12 @@
   eoperation% etyped-element%
   (reference e-containing-class eclass% #f 1 1)
   (reference e-parameters eparameter% #t 0 -1))
+ (provide eoperation%)
  
  (eclass
-  eparameter% etyped-element%)
+  eparameter% etyped-element%
+  (reference e-type eclasssifier% #f 1 1))
+ (provide eparameter%)
  
  (eclass
   estructural-feature% eclass%
@@ -290,12 +297,17 @@
  
  (eclass
   eattribute% estructural-feature%)
-
+ (provide eattribute%)
+ 
  (eclass
-  ereference% estructural-feature%)
-
+  ereference% estructural-feature%
+  (attribute e-containment 'boolean 0 1)
+  (attribute e-container 'boolean 0 1))
+ (provide ereference%)
+ 
  (eclass
   edatatype% eclass%
   (attribute eserializable 'boolean 0 1))
+ (provide edatatype%)
  
  )
