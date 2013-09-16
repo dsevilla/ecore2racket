@@ -11,7 +11,7 @@
 (provide
    enamed-element<%>
    eclassifier<%>
-   estructuralfeature<%>
+   estructural-feature<%>
    ereference<%>
    eattribute<%>
    eobject%
@@ -28,10 +28,10 @@
                       ;; superclass
                       e-package e-package-set! e-attributes e-references))
 (define epackage<%> (interface (enamed-element<%>)
-                      e-parent e-children))
-(define estructuralfeature<%> (interface (enamed-element<%>) e-type))
-(define ereference<%> (interface (estructuralfeature<%>)))
-(define eattribute<%> (interface (estructuralfeature<%>)))
+                      e-superpackage e-classifiers))
+(define estructural-feature<%> (interface (enamed-element<%>) e-type))
+(define ereference<%> (interface (estructural-feature<%>)))
+(define eattribute<%> (interface (estructural-feature<%>)))
 
 (define eobject%
   (class* object% ()
@@ -70,13 +70,13 @@
   (class* -eclass% (epackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
-    (field [-e-parent null]
-           [-e-children null])
+    (field [-e-super-package null]
+           [-e-classifiers null])
     
-    (define/public (e-parent) -e-parent)
-    (define/public (e-parent-set! n) (set! -e-parent n))
-    (define/public (e-children) -e-children)
-    (define/public (e-children-set! n) (set! -e-children n))
+    (define/public (e-superpackage) -e-super-package)
+    (define/public (e-super-package-set! n) (set! -e-super-package n))
+    (define/public (e-classifiers) -e-classifiers)
+    (define/public (e-classifiers-set! n) (set! -e-classifiers n))
     
     ))
 
@@ -258,16 +258,29 @@
 (send ecore-package e-name-set! "ecore")
 (with-epackage
  ecore-package
- (eclass 
-  eclass% -eclass%)
+ (eclass
+  eclass% -eclass%
+  (reference e-operations eoperation% #t 0 -1)
+  (reference e-structural-features estructural-feature% #t 0 -1))
 
  (eclass
   epackage% eclass%
-  (reference e-parent epackage% #f 0 1)
-  (reference e-children eobject% #t 0 -1))
+  (reference e-super-package epackage% #f 0 1)
+  (reference e-classifiers eobject% #t 0 -1))
 
  (eclass
-  estructuralfeature% eclass%
+  etyped-element% eclass%)
+ 
+ (eclass
+  eoperation% etyped-element%
+  (reference e-containing-class eclass% #f 1 1)
+  (reference e-parameters eparameter% #t 0 -1))
+ 
+ (eclass
+  eparameter% etyped-element%)
+ 
+ (eclass
+  estructural-feature% eclass%
   (attribute e-changeable 'boolean 0 1)
   (attribute e-volatile 'boolean 0 1)
   (attribute e-transient 'boolean 0 1)
@@ -276,9 +289,13 @@
   (reference e-containing-class eclass% #f 1 1))
  
  (eclass
-  eattribute% estructuralfeature%)
+  eattribute% estructural-feature%)
 
  (eclass
-  ereference% estructuralfeature%)
+  ereference% estructural-feature%)
 
+ (eclass
+  edatatype% eclass%
+  (attribute eserializable 'boolean 0 1))
+ 
  )
