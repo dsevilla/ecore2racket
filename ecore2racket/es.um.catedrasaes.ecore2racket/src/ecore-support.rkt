@@ -262,7 +262,11 @@
  ecore-package
  
  (eclass
-  enamed-element% eobject%
+  emodel-element% eobject%)
+ (provide emodel-element%)
+ 
+ (eclass
+  enamed-element% emodel-element%
   (attribute e-name 'string 1 1))
   
  (eclass
@@ -284,14 +288,23 @@
  
  (eclass
   epackage% enamed-element%
+  (attribute e-ns-uri 'string 0 1)
+  (attribute e-ns-prefix 'string 0 1)
   (reference e-super-package epackage% #f 0 1)
   (reference e-classifiers eobject% #t 0 -1)
   (reference e-subpackages epackage% #t 0 -1))
  (provide epackage%)
  
  (eclass
-  etyped-element% eclass%)
- 
+  etyped-element% eclass%
+  (attribute e-ordered 'boolean 0 1)
+  (attribute e-unique 'boolean 0 1)
+  (attribute e-lower-bound 'number 0 1)
+  (attribute e-upper-bound 'number 0 1)
+  (attribute e-many 'boolean 0 1)
+  (attribute e-required 'boolean 0 1)
+  (reference e-type eclassifier% #f 0 1))
+  
  (eclass
   eoperation% etyped-element%
   (reference e-containing-class eclass% #f 1 1)
@@ -300,7 +313,7 @@
  
  (eclass
   eparameter% etyped-element%
-  (reference e-type eclasssifier% #f 1 1))
+  (reference e-operation eoperation% #f 1 1))
  (provide eparameter%)
  
  (eclass
@@ -310,7 +323,7 @@
   (attribute e-transient 'boolean 0 1)
   (attribute e-unsettable 'boolean 0 1)
   (attribute e-derived 'boolean 0 1)
-  (reference e-containing-class eclass% #f 1 1))
+  (reference e-containing-class eclass% #f 0 1))
  
  (eclass
   eattribute% estructural-feature%
@@ -321,12 +334,14 @@
  (eclass
   ereference% estructural-feature%
   (attribute e-containment 'boolean 0 1)
-  (attribute e-container 'boolean 0 1))
+  (attribute e-container 'boolean 0 1)
+  (reference e-opposite ereference% #f 0 1)
+  (reference e-reference-type eclass% #f 1 1))
  (provide ereference%)
  
  (eclass
-  edatatype% eclass%
+  edata-type% eclassifier%
   (attribute eserializable 'boolean 0 1))
- (provide edatatype%)
+ (provide edata-type%)
  
  )
