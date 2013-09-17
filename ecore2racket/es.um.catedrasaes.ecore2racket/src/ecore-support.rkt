@@ -242,7 +242,7 @@
 (define-syntax (with-epackage stx)
     (syntax-case stx ()
       ((_ package body ...)
-       (with-syntax ([the-epackage (datum->syntax stx (string->symbol "the-epackage"))])
+       (with-syntax ([the-epackage (datum->syntax stx 'the-epackage)])
          #'(begin 
              (define the-epackage package)
              body ...)))))
@@ -250,7 +250,7 @@
 (define-syntax (with-eclass stx)
     (syntax-case stx ()
       ((_ eclass body ...)
-       (with-syntax ([the-eclass (datum->syntax stx (string->symbol "the-eclass"))])
+       (with-syntax ([the-eclass (datum->syntax stx 'the-eclass)])
          #'(begin
              (define the-eclass eclass)
              body ...)))))
@@ -272,7 +272,14 @@
  (eclass
   eclass% eclassifier%
   (reference e-operations eoperation% #t 0 -1)
-  (reference e-structural-features estructural-feature% #t 0 -1))
+  (reference e-structural-features estructural-feature% #t 0 -1)
+  
+  ;; Note: as eAttributes and eReferences are derived, and so
+  ;; frequently used, we'll devise a mechanism to recreate the
+  ;; list of eAttributes and eReferences from the
+  ;; e-structural-features field.
+  
+  )
  (provide eclass%)
  
  (eclass
