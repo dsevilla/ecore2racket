@@ -8,23 +8,23 @@
   (require "../src/ecore-support.rkt")
 
   (provide
-  		box%
-  		box-reference%
-  		wire-reference%
-  		local-wire-reference%
-  		external-wire-reference%
-  		connection%
-  		wire%
-  		type%
-  		basic-type%
-  		other-type%
-  		method%
-  		param%
-  		wire-many%
-  		wire-method%
+  		Box%
+  		BoxReference%
+  		WireReference%
+  		LocalWireReference%
+  		ExternalWireReference%
+  		Connection%
+  		Wire%
+  		Type%
+  		BasicType%
+  		OtherType%
+  		Method%
+  		Param%
+  		WireMany%
+  		WireMethod%
   	)
 
-(define box<%> 
+(define Box<%> 
   (interface ()  
 	comment
 	comment-set!
@@ -41,410 +41,102 @@
 	connection
 	connection-set!
 ))
-;; Class Box (box%)
-(define box%/b
-  (class* eobject%
-   (classifier<%> box<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Box")
-	(define/override (e-attributes)
-		'( 
-		comment
-		name
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		attributes
-		methods
-		wires
-		boxes
-		connection
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		comment
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		attributes
-		methods
-		wires
-		boxes
-		connection
-		)
-	)
-
+;; Class Box
+(eclass 
+  Box% eobject%
+   (EClassifier<%> Box<%>)
 
     ;; fields (features)
-	; Structural Feature comment
-	(define -comment 
-	  ""
-	  
-	  
-	)
-	(define/public (comment)
-	    -comment)
-	(define/public (comment-set! val)
-	    (set! -comment val))
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
+	; attribute comment
+	(attribute comment EString 0 1)
 	
-	; Structural Feature attributes
-	(define -attributes 
-	  (make-vector 0)
-	  
-	)
-	(define attributes
-	  (case-lambda
-	   (() -attributes)
-	   ((pos)
-	     (when (<= (vector-length -attributes) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -attributes)
-	        (set! -attributes new-vector)))
-	     (vector-ref -attributes pos))))
-	(public attributes)
-	(define attributes-set!
-	 (case-lambda
-	  ((val) (set! -attributes val))
-	  ((val pos)
-	    (when (<= (vector-length -attributes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -attributes)
-	       (set! -attributes new-vector)))
-	    (vector-set! -attributes pos val))))
-	(public attributes-set!)
-	; Structural Feature methods
-	(define -methods 
-	  (make-vector 0)
-	  
-	)
-	(define methods
-	  (case-lambda
-	   (() -methods)
-	   ((pos)
-	     (when (<= (vector-length -methods) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -methods)
-	        (set! -methods new-vector)))
-	     (vector-ref -methods pos))))
-	(public methods)
-	(define methods-set!
-	 (case-lambda
-	  ((val) (set! -methods val))
-	  ((val pos)
-	    (when (<= (vector-length -methods) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -methods)
-	       (set! -methods new-vector)))
-	    (vector-set! -methods pos val))))
-	(public methods-set!)
-	; Structural Feature wires
-	(define -wires 
-	  (make-vector 0)
-	  
-	)
-	(define wires
-	  (case-lambda
-	   (() -wires)
-	   ((pos)
-	     (when (<= (vector-length -wires) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -wires)
-	        (set! -wires new-vector)))
-	     (vector-ref -wires pos))))
-	(public wires)
-	(define wires-set!
-	 (case-lambda
-	  ((val) (set! -wires val))
-	  ((val pos)
-	    (when (<= (vector-length -wires) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -wires)
-	       (set! -wires new-vector)))
-	    (vector-set! -wires pos val))))
-	(public wires-set!)
-	; Structural Feature boxes
-	(define -boxes 
-	  (make-vector 0)
-	  
-	)
-	(define boxes
-	  (case-lambda
-	   (() -boxes)
-	   ((pos)
-	     (when (<= (vector-length -boxes) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -boxes)
-	        (set! -boxes new-vector)))
-	     (vector-ref -boxes pos))))
-	(public boxes)
-	(define boxes-set!
-	 (case-lambda
-	  ((val) (set! -boxes val))
-	  ((val pos)
-	    (when (<= (vector-length -boxes) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -boxes)
-	       (set! -boxes new-vector)))
-	    (vector-set! -boxes pos val))))
-	(public boxes-set!)
-	; Structural Feature connection
-	(define -connection 
-	  (make-vector 0)
-	  
-	)
-	(define connection
-	  (case-lambda
-	   (() -connection)
-	   ((pos)
-	     (when (<= (vector-length -connection) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -connection)
-	        (set! -connection new-vector)))
-	     (vector-ref -connection pos))))
-	(public connection)
-	(define connection-set!
-	 (case-lambda
-	  ((val) (set! -connection val))
-	  ((val pos)
-	    (when (<= (vector-length -connection) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -connection)
-	       (set! -connection new-vector)))
-	    (vector-set! -connection pos val))))
-	(public connection-set!)
+	; attribute name
+	(attribute name EString 0 1)
+	
+	
+	; reference attributes
+	(reference attributes Param #t 0 -1)
+	
+	; reference methods
+	(reference methods Method #t 0 -1)
+	
+	; reference wires
+	(reference wires Wire #t 0 -1)
+	
+	; reference boxes
+	(reference boxes BoxReference #t 0 -1)
+	
+	; reference connection
+	(reference connection Connection #t 0 -1)
+	
 	
 
   ))
 
 
-(define box-reference<%> 
+(define BoxReference<%> 
   (interface ()  
 	box
 	box-set!
-	is-pointer
-	is-pointer-set!
-	is-reference
-	is-reference-set!
+	isPointer
+	isPointer-set!
+	isReference
+	isReference-set!
 	name
 	name-set!
 ))
-;; Class BoxReference (box-reference%)
-(define box-reference%/b
-  (class* eobject%
-   (classifier<%> box-reference<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"BoxReference")
-	(define/override (e-attributes)
-		'( 
-		is-pointer
-		is-reference
-		name
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		box
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-pointer
-		is-reference
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		box
-		)
-	)
-
+;; Class BoxReference
+(eclass 
+  BoxReference% eobject%
+   (EClassifier<%> BoxReference<%>)
 
     ;; fields (features)
-	; Structural Feature is-pointer
-	(define -is-pointer 
-	  #f
-	  
-	  
-	)
-	(define/public (is-pointer)
-	    -is-pointer)
-	(define/public (is-pointer-set! val)
-	    (set! -is-pointer val))
-	; Structural Feature is-reference
-	(define -is-reference 
-	  #f
-	  
-	  
-	)
-	(define/public (is-reference)
-	    -is-reference)
-	(define/public (is-reference-set! val)
-	    (set! -is-reference val))
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
+	; attribute isPointer
+	(attribute isPointer EBoolean 0 1)
 	
-	; Structural Feature box
-	(define -box 
-	  null
-	  
-	  
-	)
-	(define/public (box)
-	    -box)
-	(define/public (box-set! val)
-	    (set! -box val))
+	; attribute isReference
+	(attribute isReference EBoolean 0 1)
+	
+	; attribute name
+	(attribute name EString 0 1)
+	
+	
+	; reference box
+	(reference box Box #f 0 1)
+	
 	
 
   ))
 
 
-(define wire-reference<%> 
+(define WireReference<%> 
   (interface ()  
 	wire
 	wire-set!
 ))
-;; Class WireReference (wire-reference%)
-(define wire-reference%/b
-  (class* eobject%
-   (classifier<%> wire-reference<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"WireReference")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		wire
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		wire
-		)
-	)
-
+;; Class WireReference
+(eclass 
+  WireReference% eobject%
+   (EClassifier<%> WireReference<%>)
 
     ;; fields (features)
 	
-	; Structural Feature wire
-	(define -wire 
-	  null
-	  
-	  
-	)
-	(define/public (wire)
-	    -wire)
-	(define/public (wire-set! val)
-	    (set! -wire val))
+	; reference wire
+	(reference wire Wire #f 0 1)
+	
 	
 
   ))
 
 
-(define local-wire-reference<%> 
-  (interface (wire-reference<%>
+(define LocalWireReference<%> 
+  (interface (WireReference<%>
   )  
 ))
-;; Class LocalWireReference (local-wire-reference%)
-(define local-wire-reference%/b
-  (class* wire-reference%/b
-   (classifier<%> local-wire-reference<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"LocalWireReference")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		wire
-		)
-	)
-
+;; Class LocalWireReference
+(eclass 
+  LocalWireReference% WireReference%/b
+   (EClassifier<%> LocalWireReference<%>)
 
     ;; fields (features)
 	
@@ -453,439 +145,160 @@
   ))
 
 
-(define external-wire-reference<%> 
-  (interface (wire-reference<%>
+(define ExternalWireReference<%> 
+  (interface (WireReference<%>
   )  
-	box-reference
-	box-reference-set!
+	boxReference
+	boxReference-set!
 ))
-;; Class ExternalWireReference (external-wire-reference%)
-(define external-wire-reference%/b
-  (class* wire-reference%/b
-   (classifier<%> external-wire-reference<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"ExternalWireReference")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		box-reference
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		wire
-		box-reference
-		)
-	)
-
+;; Class ExternalWireReference
+(eclass 
+  ExternalWireReference% WireReference%/b
+   (EClassifier<%> ExternalWireReference<%>)
 
     ;; fields (features)
 	
-	; Structural Feature box-reference
-	(define -box-reference 
-	  null
-	  
-	  
-	)
-	(define/public (box-reference)
-	    -box-reference)
-	(define/public (box-reference-set! val)
-	    (set! -box-reference val))
+	; reference boxReference
+	(reference boxReference BoxReference #f 0 1)
+	
 	
 
   ))
 
 
-(define connection<%> 
+(define Connection<%> 
   (interface ()  
 	from
 	from-set!
 	to
 	to-set!
 ))
-;; Class Connection (connection%)
-(define connection%/b
-  (class* eobject%
-   (classifier<%> connection<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Connection")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		from
-		to
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		from
-		to
-		)
-	)
-
+;; Class Connection
+(eclass 
+  Connection% eobject%
+   (EClassifier<%> Connection<%>)
 
     ;; fields (features)
 	
-	; Structural Feature from
-	(define -from 
-	  null
-	  
-	  
-	)
-	(define/public (from)
-	    -from)
-	(define/public (from-set! val)
-	    (set! -from val))
-	; Structural Feature to
-	(define -to 
-	  null
-	  
-	  
-	)
-	(define/public (to)
-	    -to)
-	(define/public (to-set! val)
-	    (set! -to val))
+	; reference from
+	(reference from WireReference #t 0 1)
+	
+	; reference to
+	(reference to WireReference #t 0 1)
+	
 	
 
   ))
 
 
-(define wire<%> 
+(define Wire<%> 
   (interface ()  
-	is-input
-	is-input-set!
+	isInput
+	isInput-set!
 	name
 	name-set!
 	type
 	type-set!
 ))
-;; Class Wire (wire%)
-(define wire%/b
-  (class* eobject%
-   (classifier<%> wire<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Wire")
-	(define/override (e-attributes)
-		'( 
-		is-input
-		name
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		type
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-input
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		type
-		)
-	)
-
+;; Class Wire
+(eclass 
+  Wire% eobject%
+   (EClassifier<%> Wire<%>)
 
     ;; fields (features)
-	; Structural Feature is-input
-	(define -is-input 
-	  #f
-	  
-	  
-	)
-	(define/public (is-input)
-	    -is-input)
-	(define/public (is-input-set! val)
-	    (set! -is-input val))
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
+	; attribute isInput
+	(attribute isInput EBoolean 0 1)
 	
-	; Structural Feature type
-	(define -type 
-	  null
-	  
-	  
-	)
-	(define/public (type)
-	    -type)
-	(define/public (type-set! val)
-	    (set! -type val))
+	; attribute name
+	(attribute name EString 0 1)
+	
+	
+	; reference type
+	(reference type Type #t 0 1)
+	
 	
 
   ))
 
 
-(define type<%> 
+(define Type<%> 
   (interface ()  
-	is-pointer
-	is-pointer-set!
-	is-reference
-	is-reference-set!
+	isPointer
+	isPointer-set!
+	isReference
+	isReference-set!
 ))
-;; Class Type (type%)
-(define type%/b
-  (class* eobject%
-   (classifier<%> type<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Type")
-	(define/override (e-attributes)
-		'( 
-		is-pointer
-		is-reference
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-pointer
-		is-reference
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		)
-	)
-
+;; Class Type
+(eclass 
+  Type% eobject%
+   (EClassifier<%> Type<%>)
 
     ;; fields (features)
-	; Structural Feature is-pointer
-	(define -is-pointer 
-	  #f
-	  
-	  
-	)
-	(define/public (is-pointer)
-	    -is-pointer)
-	(define/public (is-pointer-set! val)
-	    (set! -is-pointer val))
-	; Structural Feature is-reference
-	(define -is-reference 
-	  #f
-	  
-	  
-	)
-	(define/public (is-reference)
-	    -is-reference)
-	(define/public (is-reference-set! val)
-	    (set! -is-reference val))
+	; attribute isPointer
+	(attribute isPointer EBoolean 0 1)
+	
+	; attribute isReference
+	(attribute isReference EBoolean 0 1)
+	
 	
 	
 
   ))
 
 
-(define basic-type<%> 
-  (interface (type<%>
+(define BasicType<%> 
+  (interface (Type<%>
   )  
-	basic-type
-	basic-type-set!
+	basicType
+	basicType-set!
 ))
-;; Class BasicType (basic-type%)
-(define basic-type%/b
-  (class* type%/b
-   (classifier<%> basic-type<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"BasicType")
-	(define/override (e-attributes)
-		'( 
-		basic-type
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-pointer
-		is-reference
-		basic-type
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		)
-	)
-
+;; Class BasicType
+(eclass 
+  BasicType% Type%/b
+   (EClassifier<%> BasicType<%>)
 
     ;; fields (features)
-	; Structural Feature basic-type
-	(define -basic-type 
-	  0
-	  
-	  
-	)
-	(define/public (basic-type)
-	    -basic-type)
-	(define/public (basic-type-set! val)
-	    (set! -basic-type val))
+	; attribute basicType
+	(attribute basicType BaseTypes 0 1)
+	
 	
 	
 
   ))
 
 
-(define other-type<%> 
-  (interface (type<%>
+(define OtherType<%> 
+  (interface (Type<%>
   )  
 	namespace
 	namespace-set!
 	name
 	name-set!
 ))
-;; Class OtherType (other-type%)
-(define other-type%/b
-  (class* type%/b
-   (classifier<%> other-type<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"OtherType")
-	(define/override (e-attributes)
-		'( 
-		namespace
-		name
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-pointer
-		is-reference
-		namespace
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		)
-	)
-
+;; Class OtherType
+(eclass 
+  OtherType% Type%/b
+   (EClassifier<%> OtherType<%>)
 
     ;; fields (features)
-	; Structural Feature namespace
-	(define -namespace 
-	  (make-vector 0)
-	  
-	)
-	(define namespace
-	  (case-lambda
-	   (() -namespace)
-	   ((pos)
-	     (when (<= (vector-length -namespace) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) ""
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -namespace)
-	        (set! -namespace new-vector)))
-	     (vector-ref -namespace pos))))
-	(public namespace)
-	(define namespace-set!
-	 (case-lambda
-	  ((val) (set! -namespace val))
-	  ((val pos)
-	    (when (<= (vector-length -namespace) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) ""
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -namespace)
-	       (set! -namespace new-vector)))
-	    (vector-set! -namespace pos val))))
-	(public namespace-set!)
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
+	; attribute namespace
+	(attribute namespace EString 0 -1)
+	
+	; attribute name
+	(attribute name EString 0 1)
+	
 	
 	
 
   ))
 
 
-(define method<%> 
+(define Method<%> 
   (interface ()  
 	comment
 	comment-set!
-	is-private
-	is-private-set!
+	isPrivate
+	isPrivate-set!
 	type
 	type-set!
 	name
@@ -893,124 +306,34 @@
 	parameters
 	parameters-set!
 ))
-;; Class Method (method%)
-(define method%/b
-  (class* eobject%
-   (classifier<%> method<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Method")
-	(define/override (e-attributes)
-		'( 
-		comment
-		is-private
-		name
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		type
-		parameters
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		comment
-		is-private
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		type
-		parameters
-		)
-	)
-
+;; Class Method
+(eclass 
+  Method% eobject%
+   (EClassifier<%> Method<%>)
 
     ;; fields (features)
-	; Structural Feature comment
-	(define -comment 
-	  ""
-	  
-	  
-	)
-	(define/public (comment)
-	    -comment)
-	(define/public (comment-set! val)
-	    (set! -comment val))
-	; Structural Feature is-private
-	(define -is-private 
-	  #f
-	  
-	  
-	)
-	(define/public (is-private)
-	    -is-private)
-	(define/public (is-private-set! val)
-	    (set! -is-private val))
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
+	; attribute comment
+	(attribute comment EString 0 1)
 	
-	; Structural Feature type
-	(define -type 
-	  null
-	  
-	  
-	)
-	(define/public (type)
-	    -type)
-	(define/public (type-set! val)
-	    (set! -type val))
-	; Structural Feature parameters
-	(define -parameters 
-	  (make-vector 0)
-	  
-	)
-	(define parameters
-	  (case-lambda
-	   (() -parameters)
-	   ((pos)
-	     (when (<= (vector-length -parameters) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) null
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -parameters)
-	        (set! -parameters new-vector)))
-	     (vector-ref -parameters pos))))
-	(public parameters)
-	(define parameters-set!
-	 (case-lambda
-	  ((val) (set! -parameters val))
-	  ((val pos)
-	    (when (<= (vector-length -parameters) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) null
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -parameters)
-	       (set! -parameters new-vector)))
-	    (vector-set! -parameters pos val))))
-	(public parameters-set!)
+	; attribute isPrivate
+	(attribute isPrivate EBoolean 0 1)
+	
+	; attribute name
+	(attribute name EString 0 1)
+	
+	
+	; reference type
+	(reference type Type #t 0 1)
+	
+	; reference parameters
+	(reference parameters Param #t 0 -1)
+	
 	
 
   ))
 
 
-(define param<%> 
+(define Param<%> 
   (interface ()  
 	comment
 	comment-set!
@@ -1018,151 +341,41 @@
 	type-set!
 	name
 	name-set!
-	default-value
-	default-value-set!
+	defaultValue
+	defaultValue-set!
 ))
-;; Class Param (param%)
-(define param%/b
-  (class* eobject%
-   (classifier<%> param<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"Param")
-	(define/override (e-attributes)
-		'( 
-		comment
-		name
-		default-value
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		type
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		comment
-		name
-		default-value
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		type
-		)
-	)
-
+;; Class Param
+(eclass 
+  Param% eobject%
+   (EClassifier<%> Param<%>)
 
     ;; fields (features)
-	; Structural Feature comment
-	(define -comment 
-	  ""
-	  
-	  
-	)
-	(define/public (comment)
-	    -comment)
-	(define/public (comment-set! val)
-	    (set! -comment val))
-	; Structural Feature name
-	(define -name 
-	  ""
-	  
-	  
-	)
-	(define/public (name)
-	    -name)
-	(define/public (name-set! val)
-	    (set! -name val))
-	; Structural Feature default-value
-	(define -default-value 
-	  (make-vector 0)
-	  
-	)
-	(define default-value
-	  (case-lambda
-	   (() -default-value)
-	   ((pos)
-	     (when (<= (vector-length -default-value) pos)
-	      (let ((new-vector (make-vector (+ 1 pos) ""
-	      )))
-	        ;; grow the vector
-	        (vector-copy! new-vector 0 -default-value)
-	        (set! -default-value new-vector)))
-	     (vector-ref -default-value pos))))
-	(public default-value)
-	(define default-value-set!
-	 (case-lambda
-	  ((val) (set! -default-value val))
-	  ((val pos)
-	    (when (<= (vector-length -default-value) pos)
-	     (let ((new-vector (make-vector (+ 1 pos) ""
-	     )))
-	       ;; grow the vector
-	       (vector-copy! new-vector 0 -default-value)
-	       (set! -default-value new-vector)))
-	    (vector-set! -default-value pos val))))
-	(public default-value-set!)
+	; attribute comment
+	(attribute comment EString 0 1)
 	
-	; Structural Feature type
-	(define -type 
-	  null
-	  
-	  
-	)
-	(define/public (type)
-	    -type)
-	(define/public (type-set! val)
-	    (set! -type val))
+	; attribute name
+	(attribute name EString 0 1)
+	
+	; attribute defaultValue
+	(attribute defaultValue EString 0 -1)
+	
+	
+	; reference type
+	(reference type Type #t 0 1)
+	
 	
 
   ))
 
 
-(define wire-many<%> 
-  (interface (wire<%>
+(define WireMany<%> 
+  (interface (Wire<%>
   )  
 ))
-;; Class WireMany (wire-many%)
-(define wire-many%/b
-  (class* wire%/b
-   (classifier<%> wire-many<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"WireMany")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-input
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		type
-		)
-	)
-
+;; Class WireMany
+(eclass 
+  WireMany% Wire%/b
+   (EClassifier<%> WireMany<%>)
 
     ;; fields (features)
 	
@@ -1171,322 +384,27 @@
   ))
 
 
-(define wire-method<%> 
-  (interface (wire<%>
+(define WireMethod<%> 
+  (interface (Wire<%>
   )  
 	method
 	method-set!
 ))
-;; Class WireMethod (wire-method%)
-(define wire-method%/b
-  (class* wire%/b
-   (classifier<%> wire-method<%>)
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"WireMethod")
-	(define/override (e-attributes)
-		'( 
-		)	
-	)
-	(define/override (e-references)
-		'( 
-		method
-		)
-	)
-
-    (define/override (e-all-attributes)
-		'( 
-		is-input
-		name
-		)	
-	)
-	(define/override (e-all-references)
-		'( 
-		type
-		method
-		)
-	)
-
+;; Class WireMethod
+(eclass 
+  WireMethod% Wire%/b
+   (EClassifier<%> WireMethod<%>)
 
     ;; fields (features)
 	
-	; Structural Feature method
-	(define -method 
-	  null
-	  
-	  
-	)
-	(define/public (method)
-	    -method)
-	(define/public (method-set! val)
-	    (set! -method val))
+	; reference method
+	(reference method Method #f 0 1)
+	
 	
 
   ))
 
 
-
-;; Contracts
-(define/contract box% 
-	(class/c 
-            (comment (->m string?
-            ))
-            (comment-set! (->m string?
-             void?))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-            (attributes (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c param%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c param%/b)))))
-            (attributes-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c param%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c param%/b)) natural-number/c void?)))
-            
-            (methods (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c method%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c method%/b)))))
-            (methods-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c method%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c method%/b)) natural-number/c void?)))
-            
-            (wires (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c wire%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c wire%/b)))))
-            (wires-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c wire%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c wire%/b)) natural-number/c void?)))
-            
-            (boxes (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c box-reference%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c box-reference%/b)))))
-            (boxes-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c box-reference%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c box-reference%/b)) natural-number/c void?)))
-            
-            (connection (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c connection%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c connection%/b)))))
-            (connection-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c connection%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c connection%/b)) natural-number/c void?)))
-            
-        
-    ) box%/b)
-
-
-(define/contract box-reference% 
-	(class/c 
-            (box (->m (or/c null? (is-a?/c box%/b))))
-            (box-set! (->m (or/c null? (is-a?/c box%/b)) void?))
-            
-            (is-pointer (->m boolean?
-            ))
-            (is-pointer-set! (->m boolean?
-             void?))
-            
-            (is-reference (->m boolean?
-            ))
-            (is-reference-set! (->m boolean?
-             void?))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-        
-    ) box-reference%/b)
-
-
-(define/contract wire-reference% 
-	(class/c 
-            (wire (->m (or/c null? (is-a?/c wire%/b))))
-            (wire-set! (->m (or/c null? (is-a?/c wire%/b)) void?))
-            
-        
-    ) wire-reference%/b)
-
-
-(define/contract local-wire-reference% 
-	(class/c 
-        
-    ) local-wire-reference%/b)
-
-
-(define/contract external-wire-reference% 
-	(class/c 
-            (box-reference (->m (or/c null? (is-a?/c box-reference%/b))))
-            (box-reference-set! (->m (or/c null? (is-a?/c box-reference%/b)) void?))
-            
-        
-    ) external-wire-reference%/b)
-
-
-(define/contract connection% 
-	(class/c 
-            (from (->m (or/c null? (is-a?/c wire-reference%/b))))
-            (from-set! (->m (or/c null? (is-a?/c wire-reference%/b)) void?))
-            
-            (to (->m (or/c null? (is-a?/c wire-reference%/b))))
-            (to-set! (->m (or/c null? (is-a?/c wire-reference%/b)) void?))
-            
-        
-    ) connection%/b)
-
-
-(define/contract wire% 
-	(class/c 
-            (is-input (->m boolean?
-            ))
-            (is-input-set! (->m boolean?
-             void?))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-            (type (->m (or/c null? (is-a?/c type%/b))))
-            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
-            
-        
-    ) wire%/b)
-
-
-(define/contract type% 
-	(class/c 
-            (is-pointer (->m boolean?
-            ))
-            (is-pointer-set! (->m boolean?
-             void?))
-            
-            (is-reference (->m boolean?
-            ))
-            (is-reference-set! (->m boolean?
-             void?))
-            
-        
-    ) type%/b)
-
-
-(define/contract basic-type% 
-	(class/c 
-            (basic-type (->m number?
-            ))
-            (basic-type-set! (->m number?
-             void?))
-            
-        
-    ) basic-type%/b)
-
-
-(define/contract other-type% 
-	(class/c 
-            (namespace (case->m (-> (and/c (vectorof string?
-            ) (not/c immutable?)))
-                             (-> natural-number/c string?
-                             )))
-            (namespace-set! (case->m (-> (and/c (vectorof string?
-            ) (not/c immutable?)) void?)
-                                  (-> string?
-                                   natural-number/c void?)))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-        
-    ) other-type%/b)
-
-
-(define/contract method% 
-	(class/c 
-            (comment (->m string?
-            ))
-            (comment-set! (->m string?
-             void?))
-            
-            (is-private (->m boolean?
-            ))
-            (is-private-set! (->m boolean?
-             void?))
-            
-            (type (->m (or/c null? (is-a?/c type%/b))))
-            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-            (parameters (case->m (-> (and/c (vectorof (or/c null?
-                                                        (is-a?/c param%/b))) (not/c immutable?)))
-                             (-> natural-number/c (or/c null? (is-a?/c param%/b)))))
-            (parameters-set! (case->m (-> (and/c (vectorof 
-                                              (or/c null?
-                                                    (is-a?/c param%/b))) (not/c immutable?)) void?)
-                                  (-> (or/c null? (is-a?/c param%/b)) natural-number/c void?)))
-            
-        
-    ) method%/b)
-
-
-(define/contract param% 
-	(class/c 
-            (comment (->m string?
-            ))
-            (comment-set! (->m string?
-             void?))
-            
-            (type (->m (or/c null? (is-a?/c type%/b))))
-            (type-set! (->m (or/c null? (is-a?/c type%/b)) void?))
-            
-            (name (->m string?
-            ))
-            (name-set! (->m string?
-             void?))
-            
-            (default-value (case->m (-> (and/c (vectorof string?
-            ) (not/c immutable?)))
-                             (-> natural-number/c string?
-                             )))
-            (default-value-set! (case->m (-> (and/c (vectorof string?
-            ) (not/c immutable?)) void?)
-                                  (-> string?
-                                   natural-number/c void?)))
-            
-        
-    ) param%/b)
-
-
-(define/contract wire-many% 
-	(class/c 
-        
-    ) wire-many%/b)
-
-
-(define/contract wire-method% 
-	(class/c 
-            (method (->m (or/c null? (is-a?/c method%/b))))
-            (method-set! (->m (or/c null? (is-a?/c method%/b)) void?))
-            
-        
-    ) wire-method%/b)
 
 
 ;) ; end module box

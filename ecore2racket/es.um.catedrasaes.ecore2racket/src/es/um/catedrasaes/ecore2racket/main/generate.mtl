@@ -11,10 +11,10 @@
  */]
 [template public generateRacket(anEPackage : EPackage)]
 [comment @main/]
-[file (decamel(anEPackage.name)+'.rkt', false, 'UTF-8')]
+[file (anEPackage.name+'.rkt', false, 'UTF-8')]
 #lang racket/base
 
-; (module [decamel(anEPackage.name)/] racket/base
+; (module [anEPackage.name/] racket/base
 
   (require racket/class racket/contract)
 
@@ -28,71 +28,9 @@
 
 [/for]
 
-;; Contracts
-[for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
-[generate_contract(klass)/]
 
-[/for]
-;) ; end module [decamel(anEPackage.name)/]
+;) ; end module [anEPackage.name/]
 [/file]
-[/template]
-
-[template private generate_contract (aEClass : EClass)]
-[let cname:String = eclass_to_racket_class_name(aEClass)]
-[let iname:String = eclass_to_racket_interface_name(aEClass)]
-(define/contract [cname/] 
-	(class/c 
-        [gen_feature_contracts(aEClass)/]
-    ) [cname/]/b)
-[/let]
-[/let]
-[/template]
-
-[template private gen_feature_contracts (aEClass : EClass)]
-[for (sf : EStructuralFeature | aEClass.eStructuralFeatures) ]
-    [gen_contract(sf)/]
-[/for]
-[/template]
-
-[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EAttribute)) ]
-[let dec : String = decamel(sf.name)]
-[if (sf.upperBound = 1)]
-[comment Easy version of the accessors/]
-([dec/] (->m [datatype_to_racket(sf)/]))
-[if sf.changeable]
-([dec/]-set! (->m [datatype_to_racket(sf)/] void?))
-[/if]
-[else]
-([dec/] (case->m (-> (and/c (vectorof [datatype_to_racket(sf)/]) (not/c immutable?)))
-                 (-> natural-number/c [datatype_to_racket(sf)/])))
-[if sf.changeable]
-([dec/]-set! (case->m (-> (and/c (vectorof [datatype_to_racket(sf)/]) (not/c immutable?)) void?)
-                      (-> [datatype_to_racket(sf)/] natural-number/c void?)))
-[/if]
-[/if]
-[/let]
-[/template]
-
-[template public gen_contract (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
-[let dec : String = decamel(sf.name)]
-[if (sf.upperBound = 1)]
-[comment Easy version of the accessors/]
-([dec/] (->m (or/c null? (is-a?/c [reference_to_racket(sf)/]/b))))
-[if sf.changeable]
-([dec/]-set! (->m (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)) void?))
-[/if]
-[else]
-([dec/] (case->m (-> (and/c (vectorof (or/c null?
-                                            (is-a?/c [reference_to_racket(sf)/]/b))) (not/c immutable?)))
-                 (-> natural-number/c (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)))))
-[if sf.changeable]
-([dec/]-set! (case->m (-> (and/c (vectorof 
-                                  (or/c null?
-                                        (is-a?/c [reference_to_racket(sf)/]/b))) (not/c immutable?)) void?)
-                      (-> (or/c null? (is-a?/c [reference_to_racket(sf)/]/b)) natural-number/c void?)))
-[/if]
-[/if]
-[/let]
 [/template]
 
 [template private reference_to_racket (sf : EStructuralFeature) ]
@@ -126,12 +64,10 @@ number?
 (define [eclass_to_racket_interface_name(aEClass)/] 
   (interface ([superiface_spec(aEClass)/])  
 [for (sf: EStructuralFeature | aEClass.eStructuralFeatures)]
-[let dec : String = decamel(sf.name)]
-	[dec/]
+	[sf.name/]
 [if sf.changeable]
-	[dec/]-set!
+	[sf.name/]-set!
 [/if]
-[/let]
 [/for]
 ))
 [/template]
@@ -139,32 +75,9 @@ number?
 
 [template private generate_EClass_proper(klass: EClass)]
 [let cname:String = eclass_to_racket_class_name(klass)] 
-;; Class [klass.name + ' (' + cname + ')'/]
-(define [cname/]/b
-  (class* [superclass_spec(klass)/] (classifier<%> [eclass_to_racket_interface_name(klass)/])
-	[comment See if generating some init method /]
-    (super-new)
-
-	;; Make it available for introspection (TODO: see a more general method)
-	(inspect #f)
-
-	;; classifier& interface methods
-    (define/override (e-name)
-		"[klass.name/]")
-	(define/override (e-attributes)
-		[attributes_list(klass)/]	
-	)
-	(define/override (e-references)
-		[references_list(klass)/]
-	)
-
-    (define/override (e-all-attributes)
-		[all_attributes_list(klass)/]	
-	)
-	(define/override (e-all-references)
-		[all_references_list(klass)/]
-	)
-
+;; Class [klass.name/]
+(eclass 
+  [cname/] [superclass_spec(klass)/] (EClassifier<%> [eclass_to_racket_interface_name(klass)/])
 
     ;; fields (features)
 	[generate_fields(klass)/]
@@ -174,111 +87,64 @@ number?
 [/template]
 
 [template private generate_fields(klass : EClass)]
-[gen_structural_features(klass, klass.eAttributes)/]
-[gen_structural_features(klass, klass.eReferences)/]
+[gen_structural_features(klass)/]
 [/template]
 
-[template private gen_structural_features(klass : EClass, set: OrderedSet(EStructuralFeature))]
-[for (sf: EStructuralFeature | set)]
-[let dec : String = decamel(sf.name)]
-; Structural Feature [dec/]
-(define -[dec/] 
-  [default_value(sf)/]
-)
-[if (sf.upperBound = 1)]
-[comment Easy version of the accessors/]
-(define/public ([dec/])
-    -[dec/])
-[if sf.changeable]
-(define/public ([dec/]-set! val)
-    (set! -[dec/] val))
-[/if]
-[else]
-(define [dec/]
-  (case-lambda
-   (() -[dec/])
-   ((pos)
-     (when (<= (vector-length -[dec/]) pos)
-      (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
-        ;; grow the vector
-        (vector-copy! new-vector 0 -[dec/])
-        (set! -[dec/] new-vector)))
-     (vector-ref -[dec/] pos))))
-(public [dec/])
-[if sf.changeable]
-(define [dec/]-set!
- (case-lambda
-  ((val) (set! -[dec/] val))
-  ((val pos)
-    (when (<= (vector-length -[dec/]) pos)
-     (let ((new-vector (make-vector (+ 1 pos) [default_value_for_type(sf)/])))
-       ;; grow the vector
-       (vector-copy! new-vector 0 -[dec/])
-       (set! -[dec/] new-vector)))
-    (vector-set! -[dec/] pos val))))
-(public [dec/]-set!)
-[/if]
-[/if]
-[/let]
-[/for]
+[template private gen_structural_features(klass : EClass)]
+[gen_attributes(klass)/]
+[gen_references(klass)/]
 [/template]
 
-[template private default_value (sf : EStructuralFeature) ]
-[comment TODO: distinguish types/]
-[let upper :Integer = sf.upperBound]
-[if (upper < 0)]
-(make-vector 0)
-[elseif (upper <> 1)] 
-(make-vector [upper/])
-[else]
-[default_value_for_type(sf)/]
-[/if]
-[/let]
-[/template]
 
-[template private default_value_for_type (sf : EStructuralFeature) ? (sf.oclIsKindOf(EAttribute)) ]
-[let att: EAttribute = sf.oclAsType(EAttribute)]
-[if (att.eType = EString)]
-""
-[elseif (att.eType = EBoolean)]
-#f
-[else][comment Integers, mainly/]
-0
-[/if]
-[/let]
-[/template]
+[query private default_value_for_type (sf : EStructuralFeature) : String =
+  if sf.oclIsKindOf(EAttribute) then
+    default_value_for_type(sf.oclAsType(EAttribute))
+  else
+    default_value_for_type(sf.oclAsType(EReference))
+  endif/]
 
-[template private default_value_for_type (sf : EStructuralFeature) ? (sf.oclIsKindOf(EReference)) ]
-[let ref: EReference = sf.oclAsType(EReference)]
-null
-[/let]
-[/template]
+
+[query private default_value_for_type (sf : EAttribute) : String =
+    let att: EAttribute = sf.oclAsType(EAttribute) in
+        if (att.eType = EString) then
+        '""'
+        else if (att.eType = EBoolean) then
+        '#f'
+        else -- numbers usually
+        '0'
+        endif 
+        endif/]
+
+
+[query private default_value_for_type (sf : EReference) : String =
+ 'null' /]
 
 
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
-[let dec : String = decamel(ref.name)]
-; reference [dec/]
-(define -[dec/] null)
-(define/public ([dec/])
-	-[dec/])
-[if ref.changeable]
-(define/public ([dec/]-set! val)
-	(set! -[dec/] val))
-[/if]
+; reference [ref.name/]
+(reference [ref.name/] [ref.eType.name/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
 
-[/let]
+[/for]
+[/template]
+
+[template private gen_attributes(klass : EClass)]
+[for (att: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
+; attribute [att.name/]
+(attribute [att.name/] [att.eType.name/] [att.lowerBound/] [att.upperBound/])
+
 [/for]
 [/template]
 
 
-[template private eclass_to_racket_class_name(klass: EClass)]
-[decamel(klass.name)/]%
-[/template]
+[query private t_f (value : EBoolean) : String =
+  if value then '#t' else '#f' endif/]
 
-[template private eclass_to_racket_interface_name(klass: EClass)]
-[decamel(klass.name)/]<%>
-[/template]
+[query private eclass_to_racket_class_name(klass: EClass) : String =
+  klass.name + '%' /]
+
+[query private eclass_to_racket_interface_name(klass: EClass) : String =
+ klass.name + '<%>' /]
 
 [template private superclass_spec(klass : EClass)]
 [let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
@@ -298,38 +164,8 @@ eobject%
 [/let]	
 [/template]
 
+[comment ]
 [template private decamel(name : EString)]
 [name.replaceAll('([a-z])([A-Z][a-z])', '$1-$2').toLowerCase()/]
 [/template]
-
-[template private attributes_list (klass : EClass) ]
-'( 
-[for (att: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
-[decamel(att.name)/]
-[/for]
-)
-[/template]
-
-[template private references_list (klass : EClass) ]
-'( 
-[for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
-[decamel(ref.name)/]
-[/for]
-)
-[/template]
-
-[template private all_attributes_list (klass : EClass) ]
-'( 
-[for (att: EAttribute | klass.eAllStructuralFeatures->filter(EAttribute))]
-[decamel(att.name)/]
-[/for]
-)
-[/template]
-
-[template private all_references_list (klass : EClass) ]
-'( 
-[for (ref: EReference | klass.eAllStructuralFeatures->filter(EReference))]
-[decamel(ref.name)/]
-[/for]
-)
-[/template]
+[/comment]

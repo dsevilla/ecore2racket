@@ -10,11 +10,11 @@
 ;; match what will appear in the XMI.
 
 (provide
-   enamedElement<%>
-   eclassifier<%>
-   estructuralFeature<%>
-   ereference<%>
-   eattribute<%>
+   ENamedElement<%>
+   EClassifier<%>
+   EStructuralFeature<%>
+   EReference<%>
+   EAttribute<%>
    EObject%
    to-xml
    to-xexpr)
@@ -23,15 +23,15 @@
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
-(define enamedElement<%> (interface () name name-set!))
-(define eclassifier<%> (interface (enamedElement<%>)
+(define ENamedElement<%> (interface () name name-set!))
+(define EClassifier<%> (interface (ENamedElement<%>)
                       ;; superclass
                       ePackage ePackage-set! eAttributes eReferences))
-(define epackage<%> (interface (enamedElement<%>)
+(define EPackage<%> (interface (ENamedElement<%>)
                       eSuperPackage eClassifiers))
-(define estructuralFeature<%> (interface (enamedElement<%>) eType))
-(define ereference<%> (interface (estructuralFeature<%>)))
-(define eattribute<%> (interface (estructuralFeature<%>)))
+(define EStructuralFeature<%> (interface (ENamedElement<%>) eType))
+(define EReference<%> (interface (EStructuralFeature<%>)))
+(define EAttribute<%> (interface (EStructuralFeature<%>)))
 
 (define EObject%
   (class* object% ()
@@ -67,7 +67,7 @@
 ;    (define/public (e-all-references) -e-all-references)))
 
 (define -EPackage%
-  (class* EObject% (epackage<%>)
+  (class* EObject% (EPackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-name ""]
@@ -117,7 +117,7 @@
          body ...))))
   
 ;  (define-macro (with-gensyms list . body)
-;    `(let (,@(map (λ (v) `(,v (gensym ,(string->symbol v)))) list))
+;    `(let (,@(map (λ (v) `(,v (gensym ,(symbol->string v)))) list))
 ;       ,@body))
 
 
@@ -231,7 +231,7 @@
      (define ,n
        (class ,super
          (super-new)
-
+         
          ;; Normal class fields
 ;       (inherit-field -e-attributes -e-references)
 ;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
@@ -275,7 +275,7 @@
 
  (eclass
   ENamedElement% EModelElement%
-  (attribute e-name 'string 1 1))
+  (attribute name 'string 1 1))
 
  (eclass
   EClassifier% ENamedElement%
@@ -289,6 +289,11 @@
   (reference eOperations EOperation% #t 0 -1)
   (reference eStructuralFeatures EStructuralFeature% #t 0 -1)
 
+  ;; Note: as eAttributes and eReferences are derived, and so
+  ;; frequently used, we'll devise a mechanism to recreate the
+  ;; list of eAttributes and eReferences from the
+  ;; e-structural-features field.
+  
   (reference* eReferences EReference% #f 0 -1)
   (reference* eAllReferences EReference% #f 0 -1)
   (reference* eAttributes EAttribute% #f 0 -1)
@@ -298,23 +303,16 @@
 
   (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1)
 
-  (reference* eAllSuperTypes EClass% #f 0 -1)
-
-  ;; Note: as eAttributes and eReferences are derived, and so
-  ;; frequently used, we'll devise a mechanism to recreate the
-  ;; list of eAttributes and eReferences from the
-  ;; e-structural-features field.
-
-  )
+  (reference* eAllSuperTypes EClass% #f 0 -1))
  (provide EClass%)
 
  (eclass
   EPackage% ENamedElement%
   (attribute nsUri 'string 0 1)
   (attribute nsPrefix 'string 0 1)
-  (reference eSuperPackage epackage% #f 0 1)
-  (reference eClassifiers eobject% #t 0 -1)
-  (reference eSubpackages epackage% #t 0 -1))
+  (reference eSuperPackage EPackage% #f 0 1)
+  (reference eClassifiers EClassifier% #t 0 -1)
+  (reference eSubpackages EPackage% #t 0 -1))
  (provide EPackage%)
 
  (eclass
@@ -325,7 +323,7 @@
   (attribute upperBound 'number 0 1)
   (attribute many 'boolean 0 1)
   (attribute required 'boolean 0 1)
-  (reference eType eclassifier% #f 0 1))
+  (reference eType EClassifier% #f 0 1))
 
  (eclass
   EOperation% ETypedElement%
@@ -351,7 +349,7 @@
  (eclass
   EAttribute% EStructuralFeature%
   (attribute iD 'boolean 0 1)
-  (reference eAttributeType EDatatype% #f 1 1))
+  (reference eAttributeType EDataType% #f 1 1))
  (provide EAttribute%)
 
  (eclass
