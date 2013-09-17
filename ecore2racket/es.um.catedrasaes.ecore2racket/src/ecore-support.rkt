@@ -35,38 +35,38 @@
 (define eobject%
   (class* object% ()
 
-    (super-new)
+    (super-new)))
 
-    (field [-e-name ""]
-           [-e-package null])
+;    (field [-e-name ""]
+;           [-e-package null])
+;
+;    ;; classifier<%> interface methods
+;    (define/public (e-name) -e-name)
+;    (define/public (e-name-set! n) (set! -e-name n))
+;
+;    (define/public (e-package) -e-package)
+;    (define/public (e-package-set! p) (set! -e-package p))))
 
-    ;; classifier<%> interface methods
-    (define/public (e-name) -e-name)
-    (define/public (e-name-set! n) (set! -e-name n))
-
-    (define/public (e-package) -e-package)
-    (define/public (e-package-set! p) (set! -e-package p))))
-
-(define -eclass%
-  (class* eobject% (eclassifier<%>)
-
-    (super-new)
-    
-    (inherit-field -e-name -e-package)
-    (set! -e-name "")
-    (set! -e-package null)
-    
-    (field [-e-attributes null]
-           [-e-references null]
-           [-e-all-attributes null]
-           [-e-all-references null])
-    (define/public (e-attributes) -e-attributes)
-    (define/public (e-references) -e-references)
-    (define/public (e-all-attributes) -e-all-attributes)
-    (define/public (e-all-references) -e-all-references)))
+;(define -eclass%
+;  (class* eobject% (eclassifier<%>)
+;
+;    (super-new)
+;    
+;    (inherit-field -e-name -e-package)
+;    (set! -e-name "")
+;    (set! -e-package null)
+;    
+;    (field [-e-attributes null]
+;           [-e-references null]
+;           [-e-all-attributes null]
+;           [-e-all-references null])
+;    (define/public (e-attributes) -e-attributes)
+;    (define/public (e-references) -e-references)
+;    (define/public (e-all-attributes) -e-all-attributes)
+;    (define/public (e-all-references) -e-all-references)))
 
 (define -epackage%
-  (class* -eclass% (epackage<%>)
+  (class* eobject% (epackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-e-super-package null]
@@ -226,9 +226,9 @@
        (class ,super
          (super-new)
        
-         (inherit-field -e-name -e-package)
-         (set! -e-name ,(symbol->string n))
-         (set! -e-package the-epackage)
+;         (inherit-field -e-name -e-package)
+;         (set! -e-name ,(symbol->string n))
+;         (set! -e-package the-epackage)
        
          ;; Normal class fields
 ;       (inherit-field -e-attributes -e-references)
@@ -260,16 +260,26 @@
 (send ecore-package e-name-set! "ecore")
 (with-epackage
  ecore-package
+ 
  (eclass
-  eclass% -eclass%
+  enamed-element% eobject%
+  (attribute e-name 'string 1 1))
+  
+ (eclass
+  eclassifier% enamed-element%
+  (reference e-package epackage% #f 0 1))
+ 
+ (eclass
+  eclass% eclassifier%
   (reference e-operations eoperation% #t 0 -1)
   (reference e-structural-features estructural-feature% #t 0 -1))
  (provide eclass%)
  
  (eclass
-  epackage% eclass%
+  epackage% enamed-element%
   (reference e-super-package epackage% #f 0 1)
-  (reference e-classifiers eobject% #t 0 -1))
+  (reference e-classifiers eobject% #t 0 -1)
+  (reference e-subpackages epackage% #t 0 -1))
  (provide epackage%)
  
  (eclass
@@ -296,7 +306,9 @@
   (reference e-containing-class eclass% #f 1 1))
  
  (eclass
-  eattribute% estructural-feature%)
+  eattribute% estructural-feature%
+  (attribute e-id 'boolean 0 1)
+  (reference e-data-type edatatype% #f 1 1))
  (provide eattribute%)
  
  (eclass
