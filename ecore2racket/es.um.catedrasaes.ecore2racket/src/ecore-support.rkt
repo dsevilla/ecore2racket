@@ -104,7 +104,7 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro (for-syntax racket/match racket))
+(require compatibility/defmacro (for-syntax racket/match racket/list))
 (provide eclass)
 
 (begin-for-syntax
