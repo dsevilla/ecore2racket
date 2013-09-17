@@ -6,15 +6,16 @@
 ;; needed to know how to treat each feature of a class (for example,
 ;; the differentiation between attributes and references even when
 ;; they're represented by the same abstraction (private field + get &
-;; set functions).
+;; set functions). Sorry for the camel case, but it is easier to
+;; match what will appear in the XMI.
 
 (provide
-   enamed-element<%>
+   enamedElement<%>
    eclassifier<%>
-   estructural-feature<%>
+   estructuralFeature<%>
    ereference<%>
    eattribute<%>
-   eobject%
+   EObject%
    to-xml
    to-xexpr)
 
@@ -22,17 +23,17 @@
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
-(define enamed-element<%> (interface () e-name e-name-set!))
-(define eclassifier<%> (interface (enamed-element<%>)
+(define enamedElement<%> (interface () name name-set!))
+(define eclassifier<%> (interface (enamedElement<%>)
                       ;; superclass
-                      e-package e-package-set! e-attributes e-references))
-(define epackage<%> (interface (enamed-element<%>)
-                      e-superpackage e-classifiers))
-(define estructural-feature<%> (interface (enamed-element<%>) e-type))
-(define ereference<%> (interface (estructural-feature<%>)))
-(define eattribute<%> (interface (estructural-feature<%>)))
+                      ePackage ePackage-set! eAttributes eReferences))
+(define epackage<%> (interface (enamedElement<%>)
+                      eSuperPackage eClassifiers))
+(define estructuralFeature<%> (interface (enamedElement<%>) eType))
+(define ereference<%> (interface (estructuralFeature<%>)))
+(define eattribute<%> (interface (estructuralFeature<%>)))
 
-(define eobject%
+(define EObject%
   (class* object% ()
 
     (super-new)))
@@ -51,11 +52,11 @@
 ;  (class* eobject% (eclassifier<%>)
 ;
 ;    (super-new)
-;    
+;
 ;    (inherit-field -e-name -e-package)
 ;    (set! -e-name "")
 ;    (set! -e-package null)
-;    
+;
 ;    (field [-e-attributes null]
 ;           [-e-references null]
 ;           [-e-all-attributes null]
@@ -65,20 +66,24 @@
 ;    (define/public (e-all-attributes) -e-all-attributes)
 ;    (define/public (e-all-references) -e-all-references)))
 
-(define -epackage%
-  (class* eobject% (epackage<%>)
+(define -EPackage%
+  (class* EObject% (epackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
-    (field [-e-super-package null]
-           [-e-classifiers (make-vector 0)])
-    
-    (define/public (e-superpackage) -e-super-package)
-    (define/public (e-super-package-set! n) (set! -e-super-package n))
-    (define/public (e-classifiers) -e-classifiers)
-    (define/public (e-classifiers-set! n) (set! -e-classifiers n))
-    (define/public (e-classifiers-append! c) 
-      (set! -e-classifiers 
-            (vector-append -e-classifiers (vector c))))))
+    (field [-name ""]
+           [-eSuperPackage null]
+           [-eClassifiers (make-vector 0)])
+
+    (define/public (name) -name)
+    (define/public (name-set! n) (set! -name n))
+
+    (define/public (eSuperPackage) -eSuperPackage)
+    (define/public (eSuperPackage-set! n) (set! -eSuperPackage n))
+    (define/public (eClassifiers) -eClassifiers)
+    (define/public (eClassifiers-set! n) (set! -eClassifiers n))
+    (define/public (eClassifiers-append! c)
+      (set! -eClassifiers
+            (vector-append -eClassifiers (vector c))))))
 
 ;; TODO: provide contracts for these.
 
@@ -99,19 +104,20 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro (for-syntax racket/match racket/list))
+(require compatibility/defmacro (for-syntax racket/match racket))
 (provide eclass)
 
 (begin-for-syntax
+
   ;; Cannot use define-macro for syntax...
   (define-syntax with-gensyms
     (syntax-rules ()
       ((_ (vars ...) body ...)
-       (let ((vars (gensym)) ...)
+       (let ((vars (gensym (symbol->string 'vars))) ...)
          body ...))))
-
+  
 ;  (define-macro (with-gensyms list . body)
-;    `(let (,@(map (λ (v) `(,v (gensym))) list))
+;    `(let (,@(map (λ (v) `(,v (gensym ,(string->symbol v)))) list))
 ;       ,@body))
 
 
@@ -225,25 +231,21 @@
      (define ,n
        (class ,super
          (super-new)
-       
-;         (inherit-field -e-name -e-package)
-;         (set! -e-name ,(symbol->string n))
-;         (set! -e-package the-epackage)
-       
+
          ;; Normal class fields
 ;       (inherit-field -e-attributes -e-references)
 ;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
 ;       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
-       
+
          ,@(expand-eclass-body body)))
-     (send the-epackage e-classifiers-append! (new ,n))))
+     (send the-epackage eClassifiers-append! (new ,n))))
 
 
 (define-syntax (with-epackage stx)
     (syntax-case stx ()
       ((_ package body ...)
        (with-syntax ([the-epackage (datum->syntax stx 'the-epackage)])
-         #'(begin 
+         #'(begin
              (define the-epackage package)
              body ...)))))
 
@@ -255,93 +257,114 @@
              (define the-eclass eclass)
              body ...)))))
 
+;;; XXX Temporary
+(define-syntax reference*
+  (syntax-rules ()
+    ((_ elems ...)
+     (begin))))
+
 ;;; Ecore classes
-(define ecore-package (new -epackage%))
-(send ecore-package e-name-set! "ecore")
+(define ecore-package (new -EPackage%))
+(send ecore-package name-set! "ecore")
 (with-epackage
  ecore-package
- 
+
  (eclass
-  emodel-element% eobject%)
- (provide emodel-element%)
- 
+  EModelElement% EObject%)
+ (provide EModelElement%)
+
  (eclass
-  enamed-element% emodel-element%
+  ENamedElement% EModelElement%
   (attribute e-name 'string 1 1))
-  
+
  (eclass
-  eclassifier% enamed-element%
-  (reference e-package epackage% #f 0 1))
- 
+  EClassifier% ENamedElement%
+  (reference ePackage EPackage% #f 0 1))
+
  (eclass
-  eclass% eclassifier%
-  (reference e-operations eoperation% #t 0 -1)
-  (reference e-structural-features estructural-feature% #t 0 -1)
-  
+  EClass% EClassifier%
+  (attribute abstract 'boolean 0 1)
+  (attribute interface 'boolean 0 1)
+  (reference eIDAttribute EAttribute% #f 0 1)
+  (reference eOperations EOperation% #t 0 -1)
+  (reference eStructuralFeatures EStructuralFeature% #t 0 -1)
+
+  (reference* eReferences EReference% #f 0 -1)
+  (reference* eAllReferences EReference% #f 0 -1)
+  (reference* eAttributes EAttribute% #f 0 -1)
+  (reference* eAllAttributes EAttribute% #f 0 -1)
+
+  (reference* eAllOperations EOperation% #f 0 -1)
+
+  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1)
+
+  (reference* eAllSuperTypes EClass% #f 0 -1)
+
   ;; Note: as eAttributes and eReferences are derived, and so
   ;; frequently used, we'll devise a mechanism to recreate the
   ;; list of eAttributes and eReferences from the
   ;; e-structural-features field.
-  
+
   )
- (provide eclass%)
- 
+ (provide EClass%)
+
  (eclass
-  epackage% enamed-element%
-  (attribute e-ns-uri 'string 0 1)
-  (attribute e-ns-prefix 'string 0 1)
-  (reference e-super-package epackage% #f 0 1)
-  (reference e-classifiers eobject% #t 0 -1)
-  (reference e-subpackages epackage% #t 0 -1))
- (provide epackage%)
- 
+  EPackage% ENamedElement%
+  (attribute nsUri 'string 0 1)
+  (attribute nsPrefix 'string 0 1)
+  (reference eSuperPackage epackage% #f 0 1)
+  (reference eClassifiers eobject% #t 0 -1)
+  (reference eSubpackages epackage% #t 0 -1))
+ (provide EPackage%)
+
  (eclass
-  etyped-element% eclass%
-  (attribute e-ordered 'boolean 0 1)
-  (attribute e-unique 'boolean 0 1)
-  (attribute e-lower-bound 'number 0 1)
-  (attribute e-upper-bound 'number 0 1)
-  (attribute e-many 'boolean 0 1)
-  (attribute e-required 'boolean 0 1)
-  (reference e-type eclassifier% #f 0 1))
-  
+  ETypedElement% EClass%
+  (attribute ordered 'boolean 0 1)
+  (attribute unique 'boolean 0 1)
+  (attribute lowerBound 'number 0 1)
+  (attribute upperBound 'number 0 1)
+  (attribute many 'boolean 0 1)
+  (attribute required 'boolean 0 1)
+  (reference eType eclassifier% #f 0 1))
+
  (eclass
-  eoperation% etyped-element%
-  (reference e-containing-class eclass% #f 1 1)
-  (reference e-parameters eparameter% #t 0 -1))
- (provide eoperation%)
- 
+  EOperation% ETypedElement%
+  (reference eContainingClass EClass% #f 1 1)
+  (reference eParameters EParameter% #t 0 -1))
+ (provide EOperation%)
+
  (eclass
-  eparameter% etyped-element%
-  (reference e-operation eoperation% #f 1 1))
- (provide eparameter%)
- 
+  EParameter% ETypedElement%
+  (reference eOperation EOperation% #f 1 1))
+ (provide EParameter%)
+
  (eclass
-  estructural-feature% eclass%
-  (attribute e-changeable 'boolean 0 1)
-  (attribute e-volatile 'boolean 0 1)
-  (attribute e-transient 'boolean 0 1)
-  (attribute e-unsettable 'boolean 0 1)
-  (attribute e-derived 'boolean 0 1)
-  (reference e-containing-class eclass% #f 0 1))
- 
+  EStructuralFeature% EClass%
+  (attribute changeable 'boolean 0 1)
+  (attribute volatile 'boolean 0 1)
+  (attribute transient 'boolean 0 1)
+  (attribute unsettable 'boolean 0 1)
+  (attribute derived 'boolean 0 1)
+  (reference eContainingClass EClass% #f 0 1))
+ (provide EStructuralFeature%)
+
  (eclass
-  eattribute% estructural-feature%
-  (attribute e-id 'boolean 0 1)
-  (reference e-data-type edatatype% #f 1 1))
- (provide eattribute%)
- 
+  EAttribute% EStructuralFeature%
+  (attribute iD 'boolean 0 1)
+  (reference eAttributeType EDatatype% #f 1 1))
+ (provide EAttribute%)
+
  (eclass
-  ereference% estructural-feature%
-  (attribute e-containment 'boolean 0 1)
-  (attribute e-container 'boolean 0 1)
-  (reference e-opposite ereference% #f 0 1)
-  (reference e-reference-type eclass% #f 1 1))
- (provide ereference%)
- 
+  EReference% EStructuralFeature%
+  (attribute containment 'boolean 0 1)
+  (attribute container 'boolean 0 1)
+  (reference eOpposite EReference% #f 0 1)
+  (reference eReferenceType EClass% #f 1 1))
+ (provide EReference%)
+
  (eclass
-  edata-type% eclassifier%
-  (attribute eserializable 'boolean 0 1))
- (provide edata-type%)
- 
+  EDataType% EClassifier%
+  (attribute serializable 'boolean 0 1))
+ (provide EDataType%)
+
  )
