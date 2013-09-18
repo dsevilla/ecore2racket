@@ -33,19 +33,16 @@
 [/file]
 [/template]
 
-[template private reference_to_racket (sf : EStructuralFeature) ]
-[eclass_to_racket_class_name(sf.eType.oclAsType(EClass))/]
-[/template]
 
-[template private datatype_to_racket (sf : EStructuralFeature) ]
-[if (sf.eType = EString)]
-string?
-[elseif (sf.eType = EBoolean)]
-boolean?
-[else][comment Integers, mainly TODOTODOTODO/]
-number?
-[/if]
-[/template]
+[query private datatype_to_racket (sf : EStructuralFeature) : String =
+	if sf.eType = EString then
+      '\'string'
+    else if sf.eType = EBoolean then
+      '\'boolean'
+    else  -- Integers, mainly TODOTODOTODO
+      '\'number'
+	endif
+    endif/]
 
 [template private generate_provides (anEPackage : EPackage) ]
 (provide
@@ -146,26 +143,18 @@ number?
 [query private eclass_to_racket_interface_name(klass: EClass) : String =
  klass.name + '<%>' /]
 
-[template private superclass_spec(klass : EClass)]
-[let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
-[if (superclasses->size() = 0)]
-eobject%
-[else]
-[eclass_to_racket_class_name(superclasses->first())/]/b
-[/if]
-[/let]	
-[/template]
+[query private superclass_spec(klass : EClass) : String = 
+  let superclasses : OrderedSet(EClass) = klass.eSuperTypes in
+    if (superclasses->size() = 0) then
+      'EObject%'
+    else
+      eclass_to_racket_class_name(superclasses->first())
+    endif /]
 
-[template private superiface_spec(klass : EClass)]
-[let superclasses : OrderedSet(EClass) = klass.eSuperTypes]
-[if (superclasses->size() <> 0)]
-[eclass_to_racket_interface_name(superclasses->first())/]
-[/if]
-[/let]	
-[/template]
-
-[comment ]
-[template private decamel(name : EString)]
-[name.replaceAll('([a-z])([A-Z][a-z])', '$1-$2').toLowerCase()/]
-[/template]
-[/comment]
+[query private superiface_spec(klass : EClass) : String = 
+  let superclasses : OrderedSet(EClass) = klass.eSuperTypes in
+    if (superclasses->size() = 0) then
+      'EObject<%>'
+    else
+      eclass_to_racket_interface_name(superclasses->first())
+    endif /]
