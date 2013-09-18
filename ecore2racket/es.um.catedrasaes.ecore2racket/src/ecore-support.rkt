@@ -211,7 +211,8 @@
         
   (define (multi-reference ref-name)
     (let ((field-name (append-id "-" ref-name))
-          (set-name (append-id ref-name "-set!")))
+          (set-name (append-id ref-name "-set!"))
+          (append-name (append-id ref-name "-append!")))
       (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
         `(begin
            (field [,field-name (make-vector 0 null)])
@@ -236,7 +237,16 @@
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
                 (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-           (public ,set-name)))))
+           (public ,set-name)
+           (define ,append-name
+             (lambda (,tmp-val-n)
+               (let* ((,tmp-pos-n (vector-length ,field-name))
+                      (,tmp-vec-n (make-vector (add1 ,tmp-pos-n))))
+                 ;; grow the vector
+                 (vector-copy! ,tmp-vec-n 0 ,field-name)
+                 (set! ,field-name ,tmp-vec-n)
+                 (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+           (public ,append-name)))))
   
   (define (expand-class-reference list)
     (match list
