@@ -25,7 +25,7 @@
   	)
 
 (define Box<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	comment
 	comment-set!
 	name
@@ -43,8 +43,7 @@
 ))
 ;; Class Box
 (eclass 
-  Box% eobject%
-   (EClassifier<%> Box<%>)
+  Box% EObject% ;(EClassifier<%> Box<%>)
 
     ;; fields (features)
 	; attribute comment
@@ -75,7 +74,7 @@
 
 
 (define BoxReference<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	box
 	box-set!
 	isPointer
@@ -87,8 +86,7 @@
 ))
 ;; Class BoxReference
 (eclass 
-  BoxReference% eobject%
-   (EClassifier<%> BoxReference<%>)
+  BoxReference% EObject% ;(EClassifier<%> BoxReference<%>)
 
     ;; fields (features)
 	; attribute isPointer
@@ -110,14 +108,13 @@
 
 
 (define WireReference<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	wire
 	wire-set!
 ))
 ;; Class WireReference
 (eclass 
-  WireReference% eobject%
-   (EClassifier<%> WireReference<%>)
+  WireReference% EObject% ;(EClassifier<%> WireReference<%>)
 
     ;; fields (features)
 	
@@ -130,13 +127,11 @@
 
 
 (define LocalWireReference<%> 
-  (interface (WireReference<%>
-  )  
+  (interface (WireReference<%>)  
 ))
 ;; Class LocalWireReference
 (eclass 
-  LocalWireReference% WireReference%/b
-   (EClassifier<%> LocalWireReference<%>)
+  LocalWireReference% WireReference% ;(EClassifier<%> LocalWireReference<%>)
 
     ;; fields (features)
 	
@@ -146,15 +141,13 @@
 
 
 (define ExternalWireReference<%> 
-  (interface (WireReference<%>
-  )  
+  (interface (WireReference<%>)  
 	boxReference
 	boxReference-set!
 ))
 ;; Class ExternalWireReference
 (eclass 
-  ExternalWireReference% WireReference%/b
-   (EClassifier<%> ExternalWireReference<%>)
+  ExternalWireReference% WireReference% ;(EClassifier<%> ExternalWireReference<%>)
 
     ;; fields (features)
 	
@@ -167,7 +160,7 @@
 
 
 (define Connection<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	from
 	from-set!
 	to
@@ -175,8 +168,7 @@
 ))
 ;; Class Connection
 (eclass 
-  Connection% eobject%
-   (EClassifier<%> Connection<%>)
+  Connection% EObject% ;(EClassifier<%> Connection<%>)
 
     ;; fields (features)
 	
@@ -192,7 +184,7 @@
 
 
 (define Wire<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	isInput
 	isInput-set!
 	name
@@ -202,8 +194,7 @@
 ))
 ;; Class Wire
 (eclass 
-  Wire% eobject%
-   (EClassifier<%> Wire<%>)
+  Wire% EObject% ;(EClassifier<%> Wire<%>)
 
     ;; fields (features)
 	; attribute isInput
@@ -222,7 +213,7 @@
 
 
 (define Type<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	isPointer
 	isPointer-set!
 	isReference
@@ -230,8 +221,7 @@
 ))
 ;; Class Type
 (eclass 
-  Type% eobject%
-   (EClassifier<%> Type<%>)
+  Type% EObject% ;(EClassifier<%> Type<%>)
 
     ;; fields (features)
 	; attribute isPointer
@@ -247,15 +237,13 @@
 
 
 (define BasicType<%> 
-  (interface (Type<%>
-  )  
+  (interface (Type<%>)  
 	basicType
 	basicType-set!
 ))
 ;; Class BasicType
 (eclass 
-  BasicType% Type%/b
-   (EClassifier<%> BasicType<%>)
+  BasicType% Type% ;(EClassifier<%> BasicType<%>)
 
     ;; fields (features)
 	; attribute basicType
@@ -268,8 +256,7 @@
 
 
 (define OtherType<%> 
-  (interface (Type<%>
-  )  
+  (interface (Type<%>)  
 	namespace
 	namespace-set!
 	name
@@ -277,8 +264,7 @@
 ))
 ;; Class OtherType
 (eclass 
-  OtherType% Type%/b
-   (EClassifier<%> OtherType<%>)
+  OtherType% Type% ;(EClassifier<%> OtherType<%>)
 
     ;; fields (features)
 	; attribute namespace
@@ -294,7 +280,7 @@
 
 
 (define Method<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	comment
 	comment-set!
 	isPrivate
@@ -308,8 +294,7 @@
 ))
 ;; Class Method
 (eclass 
-  Method% eobject%
-   (EClassifier<%> Method<%>)
+  Method% EObject% ;(EClassifier<%> Method<%>)
 
     ;; fields (features)
 	; attribute comment
@@ -334,7 +319,7 @@
 
 
 (define Param<%> 
-  (interface ()  
+  (interface (EObject<%>)  
 	comment
 	comment-set!
 	type
@@ -346,8 +331,7 @@
 ))
 ;; Class Param
 (eclass 
-  Param% eobject%
-   (EClassifier<%> Param<%>)
+  Param% EObject% ;(EClassifier<%> Param<%>)
 
     ;; fields (features)
 	; attribute comment
@@ -369,13 +353,11 @@
 
 
 (define WireMany<%> 
-  (interface (Wire<%>
-  )  
+  (interface (Wire<%>)  
 ))
 ;; Class WireMany
 (eclass 
-  WireMany% Wire%/b
-   (EClassifier<%> WireMany<%>)
+  WireMany% Wire% ;(EClassifier<%> WireMany<%>)
 
     ;; fields (features)
 	
@@ -385,15 +367,13 @@
 
 
 (define WireMethod<%> 
-  (interface (Wire<%>
-  )  
+  (interface (Wire<%>)  
 	method
 	method-set!
 ))
 ;; Class WireMethod
 (eclass 
-  WireMethod% Wire%/b
-   (EClassifier<%> WireMethod<%>)
+  WireMethod% Wire% ;(EClassifier<%> WireMethod<%>)
 
     ;; fields (features)
 	

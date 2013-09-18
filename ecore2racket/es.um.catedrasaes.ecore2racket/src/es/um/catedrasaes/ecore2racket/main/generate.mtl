@@ -74,7 +74,7 @@
 [let cname:String = eclass_to_racket_class_name(klass)] 
 ;; Class [klass.name/]
 (eclass 
-  [cname/] [superclass_spec(klass)/] (EClassifier<%> [eclass_to_racket_interface_name(klass)/])
+  [cname/] [superclass_spec(klass)/] ;(EClassifier<%> [eclass_to_racket_interface_name(klass)/])
 
     ;; fields (features)
 	[generate_fields(klass)/]
