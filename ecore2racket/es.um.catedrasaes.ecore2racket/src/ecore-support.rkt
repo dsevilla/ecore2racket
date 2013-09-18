@@ -110,8 +110,9 @@
 (begin-for-syntax
   
 ;  (define-macro (with-gensyms list . body)
-;    `(let (,@(map (λ (v) `(,v (gensym ,(symbol->string v)))) list))
+;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
 ;       ,@body))
+  
   ;; Cannot use define-macro for syntax...
   (define-syntax (with-gensyms stx)
     (syntax-case stx ()
