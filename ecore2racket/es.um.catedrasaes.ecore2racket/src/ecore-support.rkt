@@ -104,23 +104,28 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro (for-syntax racket/match racket/list))
+(require compatibility/defmacro (for-syntax racket/match racket/list racket))
 (provide eclass)
 
 (begin-for-syntax
-
-  ;; Cannot use define-macro for syntax...
-  (define-syntax with-gensyms
-    (syntax-rules ()
-      ((_ (vars ...) body ...)
-       (let ((vars (gensym (symbol->string 'vars))) ...)
-         body ...))))
   
 ;  (define-macro (with-gensyms list . body)
 ;    `(let (,@(map (λ (v) `(,v (gensym ,(symbol->string v)))) list))
 ;       ,@body))
-
-
+  ;; Cannot use define-macro for syntax...
+  (define-syntax (with-gensyms stx)
+    (syntax-case stx ()
+      ((_ (vars ...) body ...)
+       (with-syntax
+           ([(gensyms ...)
+             (map (lambda (s)
+                    (datum->syntax 
+                     stx 
+                     `(gensym ',(syntax->datum s))))
+                  (syntax->list #'(vars ...)))])
+         #'(let ((vars gensyms) ...)
+             body ...)))))
+  
   (define (filter-by-application-symbol symbol list)
     (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
 
