@@ -112,20 +112,31 @@
 ;  (define-macro (with-gensyms list . body)
 ;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
 ;       ,@body))
+
   
   ;; Cannot use define-macro for syntax...
   (define-syntax (with-gensyms stx)
     (syntax-case stx ()
       ((_ (vars ...) body ...)
        (with-syntax
-           ([(gensyms ...)
-             (map (lambda (s)
-                    (datum->syntax 
-                     stx 
-                     `(gensym ',(syntax->datum s))))
-                  (syntax->list #'(vars ...)))])
+           ([(gensyms ...) #'((gensym 'vars) ...)])
          #'(let ((vars gensyms) ...)
              body ...)))))
+  
+;  ;; same
+;  (define-syntax (with-gensyms stx)
+;    (syntax-case stx ()
+;      ((_ (vars ...) body ...)
+;       (with-syntax
+;           ([(gensyms ...)
+;             (map (lambda (s)
+;                    (datum->syntax 
+;                     stx 
+;                     `(gensym ',s)))
+;                  (syntax->datum #'(vars ...)))])
+;         #'(let ((vars gensyms) ...)
+;             body ...)))))
+
   
   (define (filter-by-application-symbol symbol list)
     (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
@@ -146,35 +157,37 @@
        (let ((field-name (append-id "-" name))
              (set-name (append-id name "-set!")))
          (if (= maxoccur 1)
-             `((field [,field-name 0])
-               (define/public (,name) ,field-name)
-               (define/public (,set-name value)
-                 (set! ,field-name value)))
+             `(begin
+                (field [,field-name 0])
+                (define/public (,name) ,field-name)
+                (define/public (,set-name value)
+                  (set! ,field-name value)))
              ;; multi-valuated
              (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
-               `((field [,field-name (make-vector 0)])
-                 (define ,name
-                   (case-lambda
-                     (() ,field-name)
-                     ((,tmp-pos-n)
-                      (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                        (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                          ;; grow the vector
-                          (vector-copy! ,tmp-vec-n 0 ,field-name)
-                          (set! ,field-name ,tmp-vec-n)))
-                      (vector-ref ,field-name ,tmp-pos-n))))
-                 (public ,name)
-                 (define ,set-name
-                   (case-lambda
-                     ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
-                     ((,tmp-val-n ,tmp-pos-n)
-                      (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                        (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                          ;; grow the vector
-                          (vector-copy! ,tmp-vec-n 0 ,field-name)
-                          (set! ,field-name ,tmp-vec-n)))
-                      (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-                 (public ,set-name))))))))
+               `(begin
+                  (field [,field-name (make-vector 0)])
+                  (define ,name
+                    (case-lambda
+                      (() ,field-name)
+                      ((,tmp-pos-n)
+                       (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                         (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                           ;; grow the vector
+                           (vector-copy! ,tmp-vec-n 0 ,field-name)
+                           (set! ,field-name ,tmp-vec-n)))
+                       (vector-ref ,field-name ,tmp-pos-n))))
+                  (public ,name)
+                  (define ,set-name
+                    (case-lambda
+                      ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
+                      ((,tmp-val-n ,tmp-pos-n)
+                       (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                         (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                           ;; grow the vector
+                           (vector-copy! ,tmp-vec-n 0 ,field-name)
+                           (set! ,field-name ,tmp-vec-n)))
+                       (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+                  (public ,set-name))))))))
 
   (define (expand-class-reference list)
     (match list
@@ -182,15 +195,17 @@
        (let ((field-name (append-id "-" name))
              (set-name (append-id name "-set!")))
          (if (= maxoccur 1)
-             `((field [,field-name null])
-               (define/public (,name) ,field-name)
-               (define/public (,set-name value)
+             `(begin
+                (field [,field-name null])
+                (define/public (,name) ,field-name)
+                (define/public (,set-name value)
                  (set! ,field-name value)))
              ;; multi-valuated
              (with-gensyms
               (tmp-vec-n tmp-pos-n tmp-val-n)
-              `((field [,field-name (make-vector 0 null)])
-                (define ,name
+              `(begin
+                 (field [,field-name (make-vector 0 null)])
+                 (define ,name
                   (case-lambda
                     (() ,field-name)
                     ((,tmp-pos-n)
@@ -214,23 +229,20 @@
                  (public ,set-name))))))))
 
   (define (expand-eclass-body body)
-    (if (null? body)
-        '()
-        (if (and (list? (car body)) (not (null? (car body))))
-            (append (cond
-                      ;; Attribute
-                      ((eq? (caar body) 'attribute)
-                       (expand-class-attribute (car body)))
-                      ;; Reference
-                      ((eq? (caar body) 'reference)
-                       (expand-class-reference (car body)))
-                      (else
-                       (list (car body))))
-                    (expand-eclass-body (cdr body)))
-            (cons (car body) (expand-eclass-body (cdr body))))))
-
-  )
-
+    (map (lambda (e)
+           (if (pair? e)
+               (cond
+                 ;; Attribute
+                 ((eq? (car e) 'attribute)
+                  (expand-class-attribute e))
+                 ;; Reference
+                 ((eq? (car e) 'reference)
+                  (expand-class-reference e))
+                 (else
+                  e))
+               e))
+         body))
+)
 ;; The macro proper.
 (define-macro (eclass n super . body)
   `(begin
