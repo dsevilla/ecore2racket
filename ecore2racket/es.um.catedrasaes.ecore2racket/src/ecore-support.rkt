@@ -104,7 +104,10 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro (for-syntax racket/match racket/list racket))
+(require compatibility/defmacro 
+         (for-syntax racket/match 
+                     racket/list 
+                     racket))
 (provide eclass)
 
 (begin-for-syntax
@@ -151,83 +154,98 @@
                  s-s))
            list))))
 
+  (define (mono-attribute att-name)
+    (let ((field-name (append-id "-" att-name))
+          (set-name (append-id att-name "-set!")))
+      `(begin
+         (field [,field-name 0])
+         (define/public (,att-name) ,field-name)
+         (define/public (,set-name value)
+           (set! ,field-name value)))))
+    
+  (define (multi-attribute att-name)
+    (let ((field-name (append-id "-" att-name))
+          (set-name (append-id att-name "-set!")))
+      (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
+        `(begin
+          (field [,field-name (make-vector 0)])
+          (define ,att-name
+            (case-lambda
+              (() ,field-name)
+              ((,tmp-pos-n)
+               (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                 (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                   ;; grow the vector
+                   (vector-copy! ,tmp-vec-n 0 ,field-name)
+                   (set! ,field-name ,tmp-vec-n)))
+               (vector-ref ,field-name ,tmp-pos-n))))
+          (public ,att-name)
+          (define ,set-name
+            (case-lambda
+              ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
+              ((,tmp-val-n ,tmp-pos-n)
+               (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                 (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                   ;; grow the vector
+                   (vector-copy! ,tmp-vec-n 0 ,field-name)
+                   (set! ,field-name ,tmp-vec-n)))
+               (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+          (public ,set-name)))))
+
   (define (expand-class-attribute list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
-       (let ((field-name (append-id "-" name))
-             (set-name (append-id name "-set!")))
-         (if (= maxoccur 1)
-             `(begin
-                (field [,field-name 0])
-                (define/public (,name) ,field-name)
-                (define/public (,set-name value)
-                  (set! ,field-name value)))
-             ;; multi-valuated
-             (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
-               `(begin
-                  (field [,field-name (make-vector 0)])
-                  (define ,name
-                    (case-lambda
-                      (() ,field-name)
-                      ((,tmp-pos-n)
-                       (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                         (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                           ;; grow the vector
-                           (vector-copy! ,tmp-vec-n 0 ,field-name)
-                           (set! ,field-name ,tmp-vec-n)))
-                       (vector-ref ,field-name ,tmp-pos-n))))
-                  (public ,name)
-                  (define ,set-name
-                    (case-lambda
-                      ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
-                      ((,tmp-val-n ,tmp-pos-n)
-                       (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                         (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                           ;; grow the vector
-                           (vector-copy! ,tmp-vec-n 0 ,field-name)
-                           (set! ,field-name ,tmp-vec-n)))
-                       (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-                  (public ,set-name))))))))
-
+       (if (= maxoccur 1)
+           (mono-attribute name)
+           ;; multi-valuated
+           (multi-attribute name)))))
+         
+  (define (mono-reference ref-name)
+    (let ((field-name (append-id "-" ref-name))
+          (set-name (append-id ref-name "-set!")))
+      `(begin
+         (field [,field-name null])
+         (define/public (,ref-name) ,field-name)
+         (define/public (,set-name value)
+           (set! ,field-name value)))))
+        
+  (define (multi-reference ref-name)
+    (let ((field-name (append-id "-" ref-name))
+          (set-name (append-id ref-name "-set!")))
+      (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
+        `(begin
+           (field [,field-name (make-vector 0 null)])
+           (define ,ref-name
+             (case-lambda
+               (() ,field-name)
+               ((,tmp-pos-n)
+                (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                    ;; grow the vector
+                    (vector-copy! ,tmp-vec-n 0 ,field-name)
+                    (set! ,field-name ,tmp-vec-n)))
+                (vector-ref ,field-name ,tmp-pos-n))))
+           (public ,ref-name)
+           (define ,set-name
+             (case-lambda
+               ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
+               ((,tmp-val-n ,tmp-pos-n)
+                (when (<= (vector-length ,field-name) ,tmp-pos-n)
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                    ;; grow the vector
+                    (vector-copy! ,tmp-vec-n 0 ,field-name)
+                    (set! ,field-name ,tmp-vec-n)))
+                (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+           (public ,set-name)))))
+  
   (define (expand-class-reference list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
-       (let ((field-name (append-id "-" name))
-             (set-name (append-id name "-set!")))
-         (if (= maxoccur 1)
-             `(begin
-                (field [,field-name null])
-                (define/public (,name) ,field-name)
-                (define/public (,set-name value)
-                 (set! ,field-name value)))
+       (if (= maxoccur 1)
+           (mono-reference name)
              ;; multi-valuated
-             (with-gensyms
-              (tmp-vec-n tmp-pos-n tmp-val-n)
-              `(begin
-                 (field [,field-name (make-vector 0 null)])
-                 (define ,name
-                  (case-lambda
-                    (() ,field-name)
-                    ((,tmp-pos-n)
-                     (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                       (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                         ;; grow the vector
-                         (vector-copy! ,tmp-vec-n 0 ,field-name)
-                         (set! ,field-name ,tmp-vec-n)))
-                     (vector-ref ,field-name ,tmp-pos-n))))
-                 (public ,name)
-                 (define ,set-name
-                   (case-lambda
-                     ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
-                     ((,tmp-val-n ,tmp-pos-n)
-                      (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                        (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                          ;; grow the vector
-                          (vector-copy! ,tmp-vec-n 0 ,field-name)
-                          (set! ,field-name ,tmp-vec-n)))
-                      (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-                 (public ,set-name))))))))
-
+           (multi-reference name)))))
+    
   (define (expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
