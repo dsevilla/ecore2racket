@@ -15,7 +15,11 @@
    EStructuralFeature<%>
    EReference<%>
    EAttribute<%>
+   EObject<%>
    EObject%
+   eclass
+   with-epackage
+   ecore-package
    to-xml
    to-xexpr)
 
@@ -23,10 +27,13 @@
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
-(define ENamedElement<%> (interface () name name-set!))
+(define EObject<%> (interface ()))
+(define ENamedElement<%> (interface (EObject<%>) name name-set!))
 (define EClassifier<%> (interface (ENamedElement<%>)
                       ;; superclass
-                      ePackage ePackage-set! eAttributes eReferences))
+                      ePackage ePackage-set!))
+(define EClass<%> (interface (EClassifier<%>)
+                      abstract interface eIDAttribute eOperations eStructuralFeatures eAttributes eReferences))
 (define EPackage<%> (interface (ENamedElement<%>)
                       eSuperPackage eClassifiers))
 (define EStructuralFeature<%> (interface (ENamedElement<%>) eType))
@@ -108,7 +115,6 @@
          (for-syntax racket/match 
                      racket/list 
                      racket))
-(provide eclass)
 
 (begin-for-syntax
   
@@ -165,7 +171,8 @@
     
   (define (multi-attribute att-name)
     (let ((field-name (append-id "-" att-name))
-          (set-name (append-id att-name "-set!")))
+          (set-name (append-id att-name "-set!"))
+          (append-name (append-id att-name "-append!")))
       (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
         `(begin
           (field [,field-name (make-vector 0)])
@@ -190,7 +197,16 @@
                    (vector-copy! ,tmp-vec-n 0 ,field-name)
                    (set! ,field-name ,tmp-vec-n)))
                (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-          (public ,set-name)))))
+          (public ,set-name)
+           (define ,append-name
+             (lambda (,tmp-val-n)
+               (let* ((,tmp-pos-n (vector-length ,field-name))
+                      (,tmp-vec-n (make-vector (add1 ,tmp-pos-n))))
+                 ;; grow the vector
+                 (vector-copy! ,tmp-vec-n 0 ,field-name)
+                 (set! ,field-name ,tmp-vec-n)
+                 (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+           (public ,append-name)))))
 
   (define (expand-class-attribute list)
     (match list
@@ -271,8 +287,9 @@
                e))
          body))
 )
-;; The macro proper.
-(define-macro (eclass n super . body)
+
+;; The macro proper. Private version to generate Ecore itself.
+(define-macro (-eclass n super . body)
   `(begin
      (define ,n
        (class ,super
@@ -315,19 +332,19 @@
 (with-epackage
  ecore-package
 
- (eclass
+ (-eclass
   EModelElement% EObject%)
  (provide EModelElement%)
 
- (eclass
+ (-eclass
   ENamedElement% EModelElement%
   (attribute name 'string 1 1))
 
- (eclass
+ (-eclass
   EClassifier% ENamedElement%
   (reference ePackage EPackage% #f 0 1))
 
- (eclass
+ (-eclass
   EClass% EClassifier%
   (attribute abstract 'boolean 0 1)
   (attribute interface 'boolean 0 1)
@@ -352,7 +369,7 @@
   (reference* eAllSuperTypes EClass% #f 0 -1))
  (provide EClass%)
 
- (eclass
+ (-eclass
   EPackage% ENamedElement%
   (attribute nsUri 'string 0 1)
   (attribute nsPrefix 'string 0 1)
@@ -361,7 +378,7 @@
   (reference eSubpackages EPackage% #t 0 -1))
  (provide EPackage%)
 
- (eclass
+ (-eclass
   ETypedElement% EClass%
   (attribute ordered 'boolean 0 1)
   (attribute unique 'boolean 0 1)
@@ -371,18 +388,18 @@
   (attribute required 'boolean 0 1)
   (reference eType EClassifier% #f 0 1))
 
- (eclass
+ (-eclass
   EOperation% ETypedElement%
   (reference eContainingClass EClass% #f 1 1)
   (reference eParameters EParameter% #t 0 -1))
  (provide EOperation%)
 
- (eclass
+ (-eclass
   EParameter% ETypedElement%
   (reference eOperation EOperation% #f 1 1))
  (provide EParameter%)
 
- (eclass
+ (-eclass
   EStructuralFeature% EClass%
   (attribute changeable 'boolean 0 1)
   (attribute volatile 'boolean 0 1)
@@ -392,13 +409,13 @@
   (reference eContainingClass EClass% #f 0 1))
  (provide EStructuralFeature%)
 
- (eclass
+ (-eclass
   EAttribute% EStructuralFeature%
   (attribute iD 'boolean 0 1)
   (reference eAttributeType EDataType% #f 1 1))
  (provide EAttribute%)
 
- (eclass
+ (-eclass
   EReference% EStructuralFeature%
   (attribute containment 'boolean 0 1)
   (attribute container 'boolean 0 1)
@@ -406,9 +423,25 @@
   (reference eReferenceType EClass% #f 1 1))
  (provide EReference%)
 
- (eclass
+ (-eclass
   EDataType% EClassifier%
   (attribute serializable 'boolean 0 1))
  (provide EDataType%)
 
  )
+
+;; The macro proper. Private version to generate Ecore itself.
+(define-macro (eclass n super ifaces . body)
+  `(begin
+     (define ,n
+       (class* ,super ,ifaces
+         (super-new)
+         
+         ;; Normal class fields
+;       (inherit-field -e-attributes -e-references)
+;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
+;       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
+
+         ,@(expand-eclass-body body)))
+     (send the-epackage eClassifiers-append! (new ,n))))
+

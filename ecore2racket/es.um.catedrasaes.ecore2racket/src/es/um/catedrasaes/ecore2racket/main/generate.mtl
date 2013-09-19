@@ -21,23 +21,33 @@
   ;; Support functions
   (require "../src/ecore-support.rkt")
 
+  ;; The package
+  (provide [pkg_var_name(anEPackage)/])
   [generate_provides(anEPackage)/]
 
+(define [pkg_var_name(anEPackage)/] (new EPackage%))
+(send* [pkg_var_name(anEPackage)/] 
+	(name-set! "[anEPackage.name/]")
+	(nsUri-set! "[anEPackage.nsURI/]")
+    (nsPrefix-set! "[anEPackage.nsPrefix/]"))
+(with-epackage
+ [pkg_var_name(anEPackage)/]
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
 
 [/for]
-
+)
 
 ;) ; end module [anEPackage.name/]
 [/file]
 [/template]
 
+[query private pkg_var_name(p : EPackage) : String = p.name + '-package' /]
 
-[query private datatype_to_racket (sf : EStructuralFeature) : String =
-	if sf.eType = EString then
+[query private datatype_to_racket (dt : EDataType) : String =
+	if dt = EString then
       '\'string'
-    else if sf.eType = EBoolean then
+    else if dt = EBoolean then
       '\'boolean'
     else  -- Integers, mainly TODOTODOTODO
       '\'number'
@@ -74,12 +84,12 @@
 [let cname:String = eclass_to_racket_class_name(klass)] 
 ;; Class [klass.name/]
 (eclass 
-  [cname/] [superclass_spec(klass)/] ;(EClassifier<%> [eclass_to_racket_interface_name(klass)/])
+  [cname/] [superclass_spec(klass)/] ([eclass_to_racket_interface_name(klass)/])
 
     ;; fields (features)
 	[generate_fields(klass)/]
 
-  ))
+  )
 [/let]
 [/template]
 
@@ -120,7 +130,7 @@
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 ; reference [ref.name/]
-(reference [ref.name/] [ref.eType.name/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
+(reference [ref.name/] [eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
 
 [/for]
 [/template]
@@ -128,7 +138,7 @@
 [template private gen_attributes(klass : EClass)]
 [for (att: EAttribute | klass.eStructuralFeatures->filter(EAttribute))]
 ; attribute [att.name/]
-(attribute [att.name/] [att.eType.name/] [att.lowerBound/] [att.upperBound/])
+(attribute [att.name/] [datatype_to_racket(att.eAttributeType)/] [att.lowerBound/] [att.upperBound/])
 
 [/for]
 [/template]
@@ -137,10 +147,10 @@
 [query private t_f (value : EBoolean) : String =
   if value then '#t' else '#f' endif/]
 
-[query private eclass_to_racket_class_name(klass: EClass) : String =
+[query private eclass_to_racket_class_name(klass: EClassifier) : String =
   klass.name + '%' /]
 
-[query private eclass_to_racket_interface_name(klass: EClass) : String =
+[query private eclass_to_racket_interface_name(klass: EClassifier) : String =
  klass.name + '<%>' /]
 
 [query private superclass_spec(klass : EClass) : String = 

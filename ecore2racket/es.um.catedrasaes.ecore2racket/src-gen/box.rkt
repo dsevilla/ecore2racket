@@ -7,6 +7,8 @@
   ;; Support functions
   (require "../src/ecore-support.rkt")
 
+  ;; The package
+  (provide box-package)
   (provide
   		Box%
   		BoxReference%
@@ -24,6 +26,13 @@
   		WireMethod%
   	)
 
+(define box-package (new EPackage%))
+(send* box-package 
+	(name-set! "box")
+	(nsUri-set! "http://www.catedrasaes.org/Box")
+    (nsPrefix-set! "box"))
+(with-epackage
+ box-package
 (define Box<%> 
   (interface (EObject<%>)  
 	comment
@@ -43,34 +52,34 @@
 ))
 ;; Class Box
 (eclass 
-  Box% EObject% ;(EClassifier<%> Box<%>)
+  Box% EObject% (Box<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment 'string 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	
 	; reference attributes
-	(reference attributes Param #t 0 -1)
+	(reference attributes Param% #t 0 -1)
 	
 	; reference methods
-	(reference methods Method #t 0 -1)
+	(reference methods Method% #t 0 -1)
 	
 	; reference wires
-	(reference wires Wire #t 0 -1)
+	(reference wires Wire% #t 0 -1)
 	
 	; reference boxes
-	(reference boxes BoxReference #t 0 -1)
+	(reference boxes BoxReference% #t 0 -1)
 	
 	; reference connection
-	(reference connection Connection #t 0 -1)
+	(reference connection Connection% #t 0 -1)
 	
 	
 
-  ))
+  )
 
 
 (define BoxReference<%> 
@@ -86,25 +95,25 @@
 ))
 ;; Class BoxReference
 (eclass 
-  BoxReference% EObject% ;(EClassifier<%> BoxReference<%>)
+  BoxReference% EObject% (BoxReference<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer EBoolean 0 1)
+	(attribute isPointer 'boolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference EBoolean 0 1)
+	(attribute isReference 'boolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	
 	; reference box
-	(reference box Box #f 0 1)
+	(reference box Box% #f 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define WireReference<%> 
@@ -114,16 +123,16 @@
 ))
 ;; Class WireReference
 (eclass 
-  WireReference% EObject% ;(EClassifier<%> WireReference<%>)
+  WireReference% EObject% (WireReference<%>)
 
     ;; fields (features)
 	
 	; reference wire
-	(reference wire Wire #f 0 1)
+	(reference wire Wire% #f 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define LocalWireReference<%> 
@@ -131,13 +140,13 @@
 ))
 ;; Class LocalWireReference
 (eclass 
-  LocalWireReference% WireReference% ;(EClassifier<%> LocalWireReference<%>)
+  LocalWireReference% WireReference% (LocalWireReference<%>)
 
     ;; fields (features)
 	
 	
 
-  ))
+  )
 
 
 (define ExternalWireReference<%> 
@@ -147,16 +156,16 @@
 ))
 ;; Class ExternalWireReference
 (eclass 
-  ExternalWireReference% WireReference% ;(EClassifier<%> ExternalWireReference<%>)
+  ExternalWireReference% WireReference% (ExternalWireReference<%>)
 
     ;; fields (features)
 	
 	; reference boxReference
-	(reference boxReference BoxReference #f 0 1)
+	(reference boxReference BoxReference% #f 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define Connection<%> 
@@ -168,19 +177,19 @@
 ))
 ;; Class Connection
 (eclass 
-  Connection% EObject% ;(EClassifier<%> Connection<%>)
+  Connection% EObject% (Connection<%>)
 
     ;; fields (features)
 	
 	; reference from
-	(reference from WireReference #t 0 1)
+	(reference from WireReference% #t 0 1)
 	
 	; reference to
-	(reference to WireReference #t 0 1)
+	(reference to WireReference% #t 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define Wire<%> 
@@ -194,22 +203,22 @@
 ))
 ;; Class Wire
 (eclass 
-  Wire% EObject% ;(EClassifier<%> Wire<%>)
+  Wire% EObject% (Wire<%>)
 
     ;; fields (features)
 	; attribute isInput
-	(attribute isInput EBoolean 0 1)
+	(attribute isInput 'boolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type Type% #t 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define Type<%> 
@@ -221,19 +230,19 @@
 ))
 ;; Class Type
 (eclass 
-  Type% EObject% ;(EClassifier<%> Type<%>)
+  Type% EObject% (Type<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer EBoolean 0 1)
+	(attribute isPointer 'boolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference EBoolean 0 1)
+	(attribute isReference 'boolean 0 1)
 	
 	
 	
 
-  ))
+  )
 
 
 (define BasicType<%> 
@@ -243,16 +252,16 @@
 ))
 ;; Class BasicType
 (eclass 
-  BasicType% Type% ;(EClassifier<%> BasicType<%>)
+  BasicType% Type% (BasicType<%>)
 
     ;; fields (features)
 	; attribute basicType
-	(attribute basicType BaseTypes 0 1)
+	(attribute basicType 'number 0 1)
 	
 	
 	
 
-  ))
+  )
 
 
 (define OtherType<%> 
@@ -264,19 +273,19 @@
 ))
 ;; Class OtherType
 (eclass 
-  OtherType% Type% ;(EClassifier<%> OtherType<%>)
+  OtherType% Type% (OtherType<%>)
 
     ;; fields (features)
 	; attribute namespace
-	(attribute namespace EString 0 -1)
+	(attribute namespace 'string 0 -1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	
 	
 
-  ))
+  )
 
 
 (define Method<%> 
@@ -294,28 +303,28 @@
 ))
 ;; Class Method
 (eclass 
-  Method% EObject% ;(EClassifier<%> Method<%>)
+  Method% EObject% (Method<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment 'string 0 1)
 	
 	; attribute isPrivate
-	(attribute isPrivate EBoolean 0 1)
+	(attribute isPrivate 'boolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type Type% #t 0 1)
 	
 	; reference parameters
-	(reference parameters Param #t 0 -1)
+	(reference parameters Param% #t 0 -1)
 	
 	
 
-  ))
+  )
 
 
 (define Param<%> 
@@ -331,25 +340,25 @@
 ))
 ;; Class Param
 (eclass 
-  Param% EObject% ;(EClassifier<%> Param<%>)
+  Param% EObject% (Param<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment 'string 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name 'string 0 1)
 	
 	; attribute defaultValue
-	(attribute defaultValue EString 0 -1)
+	(attribute defaultValue 'string 0 -1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type Type% #t 0 1)
 	
 	
 
-  ))
+  )
 
 
 (define WireMany<%> 
@@ -357,13 +366,13 @@
 ))
 ;; Class WireMany
 (eclass 
-  WireMany% Wire% ;(EClassifier<%> WireMany<%>)
+  WireMany% Wire% (WireMany<%>)
 
     ;; fields (features)
 	
 	
 
-  ))
+  )
 
 
 (define WireMethod<%> 
@@ -373,18 +382,18 @@
 ))
 ;; Class WireMethod
 (eclass 
-  WireMethod% Wire% ;(EClassifier<%> WireMethod<%>)
+  WireMethod% Wire% (WireMethod<%>)
 
     ;; fields (features)
 	
 	; reference method
-	(reference method Method #f 0 1)
+	(reference method Method% #f 0 1)
 	
 	
 
-  ))
+  )
 
 
-
+)
 
 ;) ; end module box
