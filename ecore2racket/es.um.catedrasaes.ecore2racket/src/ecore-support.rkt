@@ -27,7 +27,7 @@
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
-(define EObject<%> (interface ()))
+(define EObject<%> (interface () eClass eClass-set!))
 (define ENamedElement<%> (interface (EObject<%>) name name-set!))
 (define EClassifier<%> (interface (ENamedElement<%>)
                       ;; superclass
@@ -41,9 +41,14 @@
 (define EAttribute<%> (interface (EStructuralFeature<%>)))
 
 (define EObject%
-  (class* object% ()
+  (class* object% (EObject<%>)
 
-    (super-new)))
+    (super-new)
+    
+    ;; Class pointer
+    (field [-eClass null])
+    (define/public (eClass) -eClass)
+    (define/public (eClass-set! klass) (set! -eClass klass))))
 
 ;    (field [-e-name ""]
 ;           [-e-package null])
@@ -430,13 +435,21 @@
 
  )
 
+
 ;; The macro proper. Private version to generate Ecore itself.
 (define-macro (eclass n super ifaces . body)
   `(begin
      (define ,n
        (class* ,super ,ifaces
          (super-new)
-         
+
+         (inherit-field -eClass)
+         (set! -eClass
+               (let ((the-class (new EClass%)))
+                 (send* the-class
+                   (name-set! ,(symbol->string n))
+                   (ePackage-set! the-epackage))
+                 the-class))
          ;; Normal class fields
 ;       (inherit-field -e-attributes -e-references)
 ;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
