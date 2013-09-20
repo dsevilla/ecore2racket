@@ -30,10 +30,10 @@
 (define EObject<%> (interface () eClass eClass-set!))
 (define ENamedElement<%> (interface (EObject<%>) name name-set!))
 (define EClassifier<%> (interface (ENamedElement<%>)
-                      ;; superclass
-                      ePackage ePackage-set!))
+                         ;; superclass
+                         ePackage ePackage-set!))
 (define EClass<%> (interface (EClassifier<%>)
-                      abstract interface eIDAttribute eOperations eStructuralFeatures eAttributes eReferences))
+                    abstract interface eIDAttribute eOperations eStructuralFeatures eAttributes eReferences))
 (define EPackage<%> (interface (ENamedElement<%>)
                       eSuperPackage eClassifiers))
 (define EStructuralFeature<%> (interface (ENamedElement<%>) eType))
@@ -44,50 +44,28 @@
   (class* object% (EObject<%>)
 
     (super-new)
-    
+
     ;; Class pointer
     (field [-eClass null])
     (define/public (eClass) -eClass)
     (define/public (eClass-set! klass) (set! -eClass klass))))
-
-;    (field [-e-name ""]
-;           [-e-package null])
-;
-;    ;; classifier<%> interface methods
-;    (define/public (e-name) -e-name)
-;    (define/public (e-name-set! n) (set! -e-name n))
-;
-;    (define/public (e-package) -e-package)
-;    (define/public (e-package-set! p) (set! -e-package p))))
-
-;(define -eclass%
-;  (class* eobject% (eclassifier<%>)
-;
-;    (super-new)
-;
-;    (inherit-field -e-name -e-package)
-;    (set! -e-name "")
-;    (set! -e-package null)
-;
-;    (field [-e-attributes null]
-;           [-e-references null]
-;           [-e-all-attributes null]
-;           [-e-all-references null])
-;    (define/public (e-attributes) -e-attributes)
-;    (define/public (e-references) -e-references)
-;    (define/public (e-all-attributes) -e-all-attributes)
-;    (define/public (e-all-references) -e-all-references)))
 
 (define -EPackage%
   (class* EObject% (EPackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-name ""]
+           [-nsURI ""]
+           [-nsPrefix ""]
            [-eSuperPackage null]
            [-eClassifiers (make-vector 0)])
 
     (define/public (name) -name)
     (define/public (name-set! n) (set! -name n))
+    (define/public (nsURI) -nsURI)
+    (define/public (nsURI-set! n) (set! -nsURI n))
+    (define/public (nsPrefix) -nsPrefix)
+    (define/public (nsPrefix-set! n) (set! -nsPrefix n))
 
     (define/public (eSuperPackage) -eSuperPackage)
     (define/public (eSuperPackage-set! n) (set! -eSuperPackage n))
@@ -116,18 +94,18 @@
      (xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require compatibility/defmacro 
-         (for-syntax racket/match 
-                     racket/list 
+(require compatibility/defmacro
+         (for-syntax racket/match
+                     racket/list
                      racket))
 
 (begin-for-syntax
-  
+
 ;  (define-macro (with-gensyms list . body)
 ;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
 ;       ,@body))
 
-  
+
   ;; Cannot use define-macro for syntax...
   (define-syntax (with-gensyms stx)
     (syntax-case stx ()
@@ -136,7 +114,7 @@
            ([(gensyms ...) #'((gensym 'vars) ...)])
          #'(let ((vars gensyms) ...)
              body ...)))))
-  
+
 ;  ;; same
 ;  (define-syntax (with-gensyms stx)
 ;    (syntax-case stx ()
@@ -144,14 +122,14 @@
 ;       (with-syntax
 ;           ([(gensyms ...)
 ;             (map (lambda (s)
-;                    (datum->syntax 
-;                     stx 
+;                    (datum->syntax
+;                     stx
 ;                     `(gensym ',s)))
 ;                  (syntax->datum #'(vars ...)))])
 ;         #'(let ((vars gensyms) ...)
 ;             body ...)))))
 
-  
+
   (define (filter-by-application-symbol symbol list)
     (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
 
@@ -172,7 +150,7 @@
            (new-field-mono name 0) ;; TODO: exact type
            ;; multi-valuated
            (new-field-multi name 0)))))
-         
+
   (define (new-field-mono f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!")))
@@ -181,7 +159,7 @@
          (define/public (,f-name) ,field-name)
          (define/public (,set-name value)
            (set! ,field-name value)))))
-        
+
   (define (new-field-multi f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!"))
@@ -215,15 +193,15 @@
              (lambda (,tmp-val-n)
                (,set-name ,tmp-val-n (vector-length ,field-name))))
            (public ,append-name)))))
-  
+
   (define (-expand-class-reference list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        (if (= maxoccur 1)
            (new-field-mono name)
-             ;; multi-valuated
+           ;; multi-valuated
            (new-field-multi name)))))
-    
+
   (define (-expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
@@ -276,6 +254,8 @@
 ;;; Ecore classes
 (define ecore-package (new -EPackage%))
 (send ecore-package name-set! "ecore")
+(send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
+(send ecore-package nsPrefix-set! "ecore")
 (with-epackage
  ecore-package
 
@@ -303,7 +283,7 @@
   ;; frequently used, we'll devise a mechanism to recreate the
   ;; list of eAttributes and eReferences from the
   ;; e-structural-features field.
-  
+
   (reference* eReferences EReference% #f 0 -1)
   (reference* eAllReferences EReference% #f 0 -1)
   (reference* eAttributes EAttribute% #f 0 -1)
@@ -379,22 +359,22 @@
 
 ;; The macro proper. Private version to generate Ecore itself.
 (begin-for-syntax
-           
+
   (define (expand-class-attribute list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
-       `(begin 
+       `(begin
           ,(if (= maxoccur 1)
-              (new-field-mono name 0)
-              ;; multi-valuated
-              (new-field-multi name 0))
-          
+               (new-field-mono name 0)
+               ;; multi-valuated
+               (new-field-multi name 0))
+
           (let ((att (new EAttribute%)))
             (send* att
               (name-set! ,(symbol->string name))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
-            
+
             (send -eClass eStructuralFeatures-append! att))))))
 
   (define (expand-class-reference list)
@@ -404,7 +384,7 @@
            (new-field-mono name)
              ;; multi-valuated
            (new-field-multi name)))))
-  
+
   (define (expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
@@ -438,4 +418,3 @@
          ,@(expand-eclass-body body)
          ))
      (send the-epackage eClassifiers-append! (new ,n))))
-

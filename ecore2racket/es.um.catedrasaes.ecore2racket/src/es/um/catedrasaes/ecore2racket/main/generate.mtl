@@ -28,7 +28,7 @@
 (define [pkg_var_name(anEPackage)/] (new EPackage%))
 (send* [pkg_var_name(anEPackage)/] 
 	(name-set! "[anEPackage.name/]")
-	(nsUri-set! "[anEPackage.nsURI/]")
+	(nsURI-set! "[anEPackage.nsURI/]")
     (nsPrefix-set! "[anEPackage.nsPrefix/]"))
 (with-epackage
  [pkg_var_name(anEPackage)/]
