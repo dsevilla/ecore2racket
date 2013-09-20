@@ -37,18 +37,30 @@
   (interface (EObject<%>)  
 	comment
 	comment-set!
+
 	name
 	name-set!
+
 	attributes
 	attributes-set!
+    attributes-append!
+
 	methods
 	methods-set!
+    methods-append!
+
 	wires
 	wires-set!
+    wires-append!
+
 	boxes
 	boxes-set!
+    boxes-append!
+
 	connection
 	connection-set!
+    connection-append!
+
 ))
 ;; Class Box
 (eclass 
@@ -86,12 +98,16 @@
   (interface (EObject<%>)  
 	box
 	box-set!
+
 	isPointer
 	isPointer-set!
+
 	isReference
 	isReference-set!
+
 	name
 	name-set!
+
 ))
 ;; Class BoxReference
 (eclass 
@@ -120,6 +136,7 @@
   (interface (EObject<%>)  
 	wire
 	wire-set!
+
 ))
 ;; Class WireReference
 (eclass 
@@ -153,6 +170,7 @@
   (interface (WireReference<%>)  
 	boxReference
 	boxReference-set!
+
 ))
 ;; Class ExternalWireReference
 (eclass 
@@ -172,8 +190,10 @@
   (interface (EObject<%>)  
 	from
 	from-set!
+
 	to
 	to-set!
+
 ))
 ;; Class Connection
 (eclass 
@@ -196,10 +216,13 @@
   (interface (EObject<%>)  
 	isInput
 	isInput-set!
+
 	name
 	name-set!
+
 	type
 	type-set!
+
 ))
 ;; Class Wire
 (eclass 
@@ -225,8 +248,10 @@
   (interface (EObject<%>)  
 	isPointer
 	isPointer-set!
+
 	isReference
 	isReference-set!
+
 ))
 ;; Class Type
 (eclass 
@@ -249,6 +274,7 @@
   (interface (Type<%>)  
 	basicType
 	basicType-set!
+
 ))
 ;; Class BasicType
 (eclass 
@@ -268,8 +294,11 @@
   (interface (Type<%>)  
 	namespace
 	namespace-set!
+    namespace-append!
+
 	name
 	name-set!
+
 ))
 ;; Class OtherType
 (eclass 
@@ -292,14 +321,20 @@
   (interface (EObject<%>)  
 	comment
 	comment-set!
+
 	isPrivate
 	isPrivate-set!
+
 	type
 	type-set!
+
 	name
 	name-set!
+
 	parameters
 	parameters-set!
+    parameters-append!
+
 ))
 ;; Class Method
 (eclass 
@@ -331,12 +366,17 @@
   (interface (EObject<%>)  
 	comment
 	comment-set!
+
 	type
 	type-set!
+
 	name
 	name-set!
+
 	defaultValue
 	defaultValue-set!
+    defaultValue-append!
+
 ))
 ;; Class Param
 (eclass 
@@ -379,6 +419,7 @@
   (interface (Wire<%>)  
 	method
 	method-set!
+
 ))
 ;; Class WireMethod
 (eclass 

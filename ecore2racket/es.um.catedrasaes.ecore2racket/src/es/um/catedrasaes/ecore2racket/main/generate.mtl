@@ -75,6 +75,10 @@
 [if sf.changeable]
 	[sf.name/]-set!
 [/if]
+[if (sf.upperBound <> 1)]
+    [sf.name/]-append!
+[/if]
+
 [/for]
 ))
 [/template]

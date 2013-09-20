@@ -165,79 +165,31 @@
                  s-s))
            list))))
 
-  (define (mono-attribute att-name)
-    (let ((field-name (append-id "-" att-name))
-          (set-name (append-id att-name "-set!")))
-      `(begin
-         (field [,field-name 0])
-         (define/public (,att-name) ,field-name)
-         (define/public (,set-name value)
-           (set! ,field-name value)))))
-    
-  (define (multi-attribute att-name)
-    (let ((field-name (append-id "-" att-name))
-          (set-name (append-id att-name "-set!"))
-          (append-name (append-id att-name "-append!")))
-      (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
-        `(begin
-          (field [,field-name (make-vector 0)])
-          (define ,att-name
-            (case-lambda
-              (() ,field-name)
-              ((,tmp-pos-n)
-               (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                 (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                   ;; grow the vector
-                   (vector-copy! ,tmp-vec-n 0 ,field-name)
-                   (set! ,field-name ,tmp-vec-n)))
-               (vector-ref ,field-name ,tmp-pos-n))))
-          (public ,att-name)
-          (define ,set-name
-            (case-lambda
-              ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
-              ((,tmp-val-n ,tmp-pos-n)
-               (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                 (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
-                   ;; grow the vector
-                   (vector-copy! ,tmp-vec-n 0 ,field-name)
-                   (set! ,field-name ,tmp-vec-n)))
-               (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-          (public ,set-name)
-           (define ,append-name
-             (lambda (,tmp-val-n)
-               (let* ((,tmp-pos-n (vector-length ,field-name))
-                      (,tmp-vec-n (make-vector (add1 ,tmp-pos-n))))
-                 ;; grow the vector
-                 (vector-copy! ,tmp-vec-n 0 ,field-name)
-                 (set! ,field-name ,tmp-vec-n)
-                 (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
-           (public ,append-name)))))
-
-  (define (expand-class-attribute list)
+  (define (-expand-class-attribute list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
        (if (= maxoccur 1)
-           (mono-attribute name)
+           (new-field-mono name 0) ;; TODO: exact type
            ;; multi-valuated
-           (multi-attribute name)))))
+           (new-field-multi name 0)))))
          
-  (define (mono-reference ref-name)
-    (let ((field-name (append-id "-" ref-name))
-          (set-name (append-id ref-name "-set!")))
+  (define (new-field-mono f-name (default-value null))
+    (let ((field-name (append-id "-" f-name))
+          (set-name (append-id f-name "-set!")))
       `(begin
          (field [,field-name null])
-         (define/public (,ref-name) ,field-name)
+         (define/public (,f-name) ,field-name)
          (define/public (,set-name value)
            (set! ,field-name value)))))
         
-  (define (multi-reference ref-name)
-    (let ((field-name (append-id "-" ref-name))
-          (set-name (append-id ref-name "-set!"))
-          (append-name (append-id ref-name "-append!")))
+  (define (new-field-multi f-name (default-value null))
+    (let ((field-name (append-id "-" f-name))
+          (set-name (append-id f-name "-set!"))
+          (append-name (append-id f-name "-append!")))
       (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
         `(begin
            (field [,field-name (make-vector 0 null)])
-           (define ,ref-name
+           (define ,f-name
              (case-lambda
                (() ,field-name)
                ((,tmp-pos-n)
@@ -247,7 +199,7 @@
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
                 (vector-ref ,field-name ,tmp-pos-n))))
-           (public ,ref-name)
+           (public ,f-name)
            (define ,set-name
              (case-lambda
                ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
@@ -261,32 +213,27 @@
            (public ,set-name)
            (define ,append-name
              (lambda (,tmp-val-n)
-               (let* ((,tmp-pos-n (vector-length ,field-name))
-                      (,tmp-vec-n (make-vector (add1 ,tmp-pos-n))))
-                 ;; grow the vector
-                 (vector-copy! ,tmp-vec-n 0 ,field-name)
-                 (set! ,field-name ,tmp-vec-n)
-                 (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+               (,set-name ,tmp-val-n (vector-length ,field-name))))
            (public ,append-name)))))
   
-  (define (expand-class-reference list)
+  (define (-expand-class-reference list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        (if (= maxoccur 1)
-           (mono-reference name)
+           (new-field-mono name)
              ;; multi-valuated
-           (multi-reference name)))))
+           (new-field-multi name)))))
     
-  (define (expand-eclass-body body)
+  (define (-expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
                (cond
                  ;; Attribute
                  ((eq? (car e) 'attribute)
-                  (expand-class-attribute e))
+                  (-expand-class-attribute e))
                  ;; Reference
                  ((eq? (car e) 'reference)
-                  (expand-class-reference e))
+                  (-expand-class-reference e))
                  (else
                   e))
                e))
@@ -299,13 +246,8 @@
      (define ,n
        (class ,super
          (super-new)
-         
-         ;; Normal class fields
-;       (inherit-field -e-attributes -e-references)
-;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
-;       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
 
-         ,@(expand-eclass-body body)))
+         ,@(-expand-eclass-body body)))
      (send the-epackage eClassifiers-append! (new ,n))))
 
 
@@ -384,7 +326,7 @@
  (provide EPackage%)
 
  (-eclass
-  ETypedElement% EClass%
+  ETypedElement% ENamedElement%
   (attribute ordered 'boolean 0 1)
   (attribute unique 'boolean 0 1)
   (attribute lowerBound 'number 0 1)
@@ -405,7 +347,7 @@
  (provide EParameter%)
 
  (-eclass
-  EStructuralFeature% EClass%
+  EStructuralFeature% ETypedElement%
   (attribute changeable 'boolean 0 1)
   (attribute volatile 'boolean 0 1)
   (attribute transient 'boolean 0 1)
@@ -435,8 +377,50 @@
 
  )
 
-
 ;; The macro proper. Private version to generate Ecore itself.
+(begin-for-syntax
+           
+  (define (expand-class-attribute list)
+    (match list
+      ((list 'attribute name type minoccur maxoccur)
+       `(begin 
+          ,(if (= maxoccur 1)
+              (new-field-mono name 0)
+              ;; multi-valuated
+              (new-field-multi name 0))
+          
+          (let ((att (new EAttribute%)))
+            (send* att
+              (name-set! ,(symbol->string name))
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+            
+            (send -eClass eStructuralFeatures-append! att))))))
+
+  (define (expand-class-reference list)
+    (match list
+      ((list 'reference name type contained? minoccur maxoccur)
+       (if (= maxoccur 1)
+           (new-field-mono name)
+             ;; multi-valuated
+           (new-field-multi name)))))
+  
+  (define (expand-eclass-body body)
+    (map (lambda (e)
+           (if (pair? e)
+               (cond
+                 ;; Attribute
+                 ((eq? (car e) 'attribute)
+                  (expand-class-attribute e))
+                 ;; Reference
+                 ((eq? (car e) 'reference)
+                  (expand-class-reference e))
+                 (else
+                  e))
+               e))
+         body))
+)
+
 (define-macro (eclass n super ifaces . body)
   `(begin
      (define ,n
@@ -450,11 +434,8 @@
                    (name-set! ,(symbol->string n))
                    (ePackage-set! the-epackage))
                  the-class))
-         ;; Normal class fields
-;       (inherit-field -e-attributes -e-references)
-;       (set! -e-attributes #[,@(filter-by-application-symbol 'attribute body)])
-;       (set! -e-references #[,@(filter-by-application-symbol 'reference body)])
 
-         ,@(expand-eclass-body body)))
+         ,@(expand-eclass-body body)
+         ))
      (send the-epackage eClassifiers-append! (new ,n))))
 
