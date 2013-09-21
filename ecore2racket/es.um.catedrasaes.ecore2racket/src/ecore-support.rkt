@@ -105,7 +105,6 @@
 ;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
 ;       ,@body))
 
-
   ;; Cannot use define-macro for syntax...
   (define-syntax (with-gensyms stx)
     (syntax-case stx ()
@@ -298,7 +297,7 @@
 
  (-eclass
   EPackage% ENamedElement%
-  (attribute nsUri 'string 0 1)
+  (attribute nsURI 'string 0 1)
   (attribute nsPrefix 'string 0 1)
   (reference eSuperPackage EPackage% #f 0 1)
   (reference eClassifiers EClassifier% #t 0 -1)
@@ -369,6 +368,7 @@
                ;; multi-valuated
                (new-field-multi name 0))
 
+          ;;; TODO: Keep this as a separate final step
           (let ((att (new EAttribute%)))
             (send* att
               (name-set! ,(symbol->string name))
@@ -380,10 +380,21 @@
   (define (expand-class-reference list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
-       (if (= maxoccur 1)
-           (new-field-mono name)
-             ;; multi-valuated
-           (new-field-multi name)))))
+       `(begin
+          ,(if (= maxoccur 1)
+               (new-field-mono name)
+               ;; multi-valuated
+               (new-field-multi name))
+          ;;; TODO: Keep this as a separate final step
+          (let ((ref (new EReference%)))
+            (send* ref
+              (name-set! ,(symbol->string name))
+              (eType-set! ,type)
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+
+            (send -eClass eStructuralFeatures-append! ref))))))
+
 
   (define (expand-eclass-body body)
     (map (lambda (e)
@@ -409,12 +420,13 @@
 
          (inherit-field -eClass)
          (set! -eClass
-               (let ((the-class (new EClass%)))
-                 (send* the-class
-                   (name-set! ,(symbol->string n))
-                   (ePackage-set! the-epackage))
-                 the-class))
+               null)
+         ;; (the-epackage class-for-id ',n)
 
-         ,@(expand-eclass-body body)
-         ))
-     (send the-epackage eClassifiers-append! (new ,n))))
+         ,@(expand-eclass-body body)))
+
+     (let ((the-class (new EClass%)))
+       (send* the-class
+         (name-set! ,(symbol->string n))
+         (ePackage-set! the-epackage))
+       (send the-epackage eClassifiers-append! the-class))))

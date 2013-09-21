@@ -134,7 +134,7 @@
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 ; reference [ref.name/]
-(reference [ref.name/] [eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
+(reference [ref.name/] '[eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
 
 [/for]
 [/template]

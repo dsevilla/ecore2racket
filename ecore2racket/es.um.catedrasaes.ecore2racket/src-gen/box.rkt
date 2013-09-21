@@ -29,7 +29,7 @@
 (define box-package (new EPackage%))
 (send* box-package 
 	(name-set! "box")
-	(nsUri-set! "http://www.catedrasaes.org/Box")
+	(nsURI-set! "http://www.catedrasaes.org/Box")
     (nsPrefix-set! "box"))
 (with-epackage
  box-package
@@ -75,19 +75,19 @@
 	
 	
 	; reference attributes
-	(reference attributes Param% #t 0 -1)
+	(reference attributes 'Param% #t 0 -1)
 	
 	; reference methods
-	(reference methods Method% #t 0 -1)
+	(reference methods 'Method% #t 0 -1)
 	
 	; reference wires
-	(reference wires Wire% #t 0 -1)
+	(reference wires 'Wire% #t 0 -1)
 	
 	; reference boxes
-	(reference boxes BoxReference% #t 0 -1)
+	(reference boxes 'BoxReference% #t 0 -1)
 	
 	; reference connection
-	(reference connection Connection% #t 0 -1)
+	(reference connection 'Connection% #t 0 -1)
 	
 	
 
@@ -125,7 +125,7 @@
 	
 	
 	; reference box
-	(reference box Box% #f 0 1)
+	(reference box 'Box% #f 0 1)
 	
 	
 
@@ -145,7 +145,7 @@
     ;; fields (features)
 	
 	; reference wire
-	(reference wire Wire% #f 0 1)
+	(reference wire 'Wire% #f 0 1)
 	
 	
 
@@ -179,7 +179,7 @@
     ;; fields (features)
 	
 	; reference boxReference
-	(reference boxReference BoxReference% #f 0 1)
+	(reference boxReference 'BoxReference% #f 0 1)
 	
 	
 
@@ -202,10 +202,10 @@
     ;; fields (features)
 	
 	; reference from
-	(reference from WireReference% #t 0 1)
+	(reference from 'WireReference% #t 0 1)
 	
 	; reference to
-	(reference to WireReference% #t 0 1)
+	(reference to 'WireReference% #t 0 1)
 	
 	
 
@@ -237,7 +237,7 @@
 	
 	
 	; reference type
-	(reference type Type% #t 0 1)
+	(reference type 'Type% #t 0 1)
 	
 	
 
@@ -352,10 +352,10 @@
 	
 	
 	; reference type
-	(reference type Type% #t 0 1)
+	(reference type 'Type% #t 0 1)
 	
 	; reference parameters
-	(reference parameters Param% #t 0 -1)
+	(reference parameters 'Param% #t 0 -1)
 	
 	
 
@@ -394,7 +394,7 @@
 	
 	
 	; reference type
-	(reference type Type% #t 0 1)
+	(reference type 'Type% #t 0 1)
 	
 	
 
@@ -428,7 +428,7 @@
     ;; fields (features)
 	
 	; reference method
-	(reference method Method% #f 0 1)
+	(reference method 'Method% #f 0 1)
 	
 	
 
