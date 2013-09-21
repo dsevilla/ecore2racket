@@ -50,7 +50,16 @@
     (define/public (eClass) -eClass)
     (define/public (eClass-set! klass) (set! -eClass klass))))
 
-(define -EPackage%
+(define (eclassifier-hash-table-mixin% %)
+  (class %
+    (super-new)
+    (field [-eClassifiers-hash-table (make-hash)])
+    (define/public (eClassifiers-table-add! id classifier)
+      (hash-set! -eClassifiers-hash-table id classifier))
+    (define/public (eClassifiers-get-by-id id)
+      (hash-ref -eClassifiers-hash-table id null))))
+    
+(define -EPackage-base%
   (class* EObject% (EPackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
@@ -75,6 +84,9 @@
       (set! -eClassifiers
             (vector-append -eClassifiers (vector c))))))
 
+(define -EPackage%
+  (eclassifier-hash-table-mixin% -EPackage-base%))
+   
 ;; TODO: provide contracts for these.
 
 (require xml)
@@ -297,12 +309,15 @@
  (provide EClass%)
 
  (-eclass
-  EPackage% ENamedElement%
+  EPackage-base% ENamedElement%
   (attribute nsURI 'string 0 1)
   (attribute nsPrefix 'string 0 1)
   (reference eSuperPackage EPackage% #f 0 1)
   (reference eClassifiers EClassifier% #t 0 -1)
   (reference eSubpackages EPackage% #t 0 -1))
+ (define EPackage%
+  (eclassifier-hash-table-mixin% EPackage-base%))
+
  (provide EPackage%)
 
  (-eclass
@@ -379,7 +394,6 @@
     (match list
       ((list 'attribute name type minoccur maxoccur)
        `(begin
-          ;;; TODO: Keep this as a separate final step
           (let ((att (new EAttribute%)))
             (send* att
               (name-set! ,(symbol->string name))
@@ -387,7 +401,6 @@
               (upperBound-set! ,maxoccur))
 
             (send the-eclass eStructuralFeatures-append! att))))))
-  
   
   (define (create-reference-metaclass list)
     (match list
@@ -426,7 +439,8 @@
        
        ,@(metaclass-creation body)
     
-       (send the-epackage eClassifiers-append! the-eclass)))
+       (send the-epackage eClassifiers-append! the-eclass)
+       (send the-epackage eClassifiers-table-add! ',n the-eclass)))
 )
 
 (define-macro (eclass n super ifaces . body)
@@ -436,9 +450,7 @@
          (super-new)
 
          (inherit-field -eClass)
-         (set! -eClass
-               null)
-         ;; (the-epackage class-for-id ',n)
+         (set! -eClass (send the-epackage eClassifiers-get-by-id ',n))
 
          ,@(expand-eclass-body body)))
      
