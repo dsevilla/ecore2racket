@@ -33,7 +33,7 @@
                          ;; superclass
                          ePackage ePackage-set!))
 (define EClass<%> (interface (EClassifier<%>)
-                    abstract interface eIDAttribute eOperations eStructuralFeatures eAttributes eReferences))
+                    abstract interface eIDAttribute eOperations eSuperTypes eStructuralFeatures eAttributes eReferences))
 (define EPackage<%> (interface (ENamedElement<%>)
                       eSuperPackage eClassifiers))
 (define EStructuralFeature<%> (interface (ENamedElement<%>) eType))
@@ -142,7 +142,7 @@
                  s-s))
            list))))
 
-  (define (-expand-class-attribute list)
+  (define (expand-class-attribute list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
        (if (= maxoccur 1)
@@ -193,7 +193,7 @@
                (,set-name ,tmp-val-n (vector-length ,field-name))))
            (public ,append-name)))))
 
-  (define (-expand-class-reference list)
+  (define (expand-class-reference list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        (if (= maxoccur 1)
@@ -207,10 +207,10 @@
                (cond
                  ;; Attribute
                  ((eq? (car e) 'attribute)
-                  (-expand-class-attribute e))
+                  (expand-class-attribute e))
                  ;; Reference
                  ((eq? (car e) 'reference)
-                  (-expand-class-reference e))
+                  (expand-class-reference e))
                  (else
                   e))
                e))
@@ -276,6 +276,7 @@
   (attribute interface 'boolean 0 1)
   (reference eIDAttribute EAttribute% #f 0 1)
   (reference eOperations EOperation% #t 0 -1)
+  (reference eSuperTypes EClass% #f 0 -1)
   (reference eStructuralFeatures EStructuralFeature% #t 0 -1)
 
   ;; Note: as eAttributes and eReferences are derived, and so
@@ -359,43 +360,6 @@
 ;; The macro proper. Private version to generate Ecore itself.
 (begin-for-syntax
 
-  (define (expand-class-attribute list)
-    (match list
-      ((list 'attribute name type minoccur maxoccur)
-       `(begin
-          ,(if (= maxoccur 1)
-               (new-field-mono name 0)
-               ;; multi-valuated
-               (new-field-multi name 0))
-
-          ;;; TODO: Keep this as a separate final step
-          (let ((att (new EAttribute%)))
-            (send* att
-              (name-set! ,(symbol->string name))
-              (lowerBound-set! ,minoccur)
-              (upperBound-set! ,maxoccur))
-
-            (send -eClass eStructuralFeatures-append! att))))))
-
-  (define (expand-class-reference list)
-    (match list
-      ((list 'reference name type contained? minoccur maxoccur)
-       `(begin
-          ,(if (= maxoccur 1)
-               (new-field-mono name)
-               ;; multi-valuated
-               (new-field-multi name))
-          ;;; TODO: Keep this as a separate final step
-          (let ((ref (new EReference%)))
-            (send* ref
-              (name-set! ,(symbol->string name))
-              (eType-set! ,type)
-              (lowerBound-set! ,minoccur)
-              (upperBound-set! ,maxoccur))
-
-            (send -eClass eStructuralFeatures-append! ref))))))
-
-
   (define (expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
@@ -410,6 +374,59 @@
                   e))
                e))
          body))
+
+  (define (create-attribute-metaclass list)
+    (match list
+      ((list 'attribute name type minoccur maxoccur)
+       `(begin
+          ;;; TODO: Keep this as a separate final step
+          (let ((att (new EAttribute%)))
+            (send* att
+              (name-set! ,(symbol->string name))
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+
+            (send the-eclass eStructuralFeatures-append! att))))))
+  
+  
+  (define (create-reference-metaclass list)
+    (match list
+      ((list 'reference name type contained? minoccur maxoccur)
+       `(begin
+          (let ((ref (new EReference%)))
+            (send* ref
+              (name-set! ,(symbol->string name))
+              (eType-set! ,type)
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+
+            (send the-eclass eStructuralFeatures-append! ref))))))
+  
+  (define (metaclass-creation body)
+    (map (lambda (e)
+           (if (pair? e)
+               (cond
+                 ;; Attribute
+                 ((eq? (car e) 'attribute)
+                  (create-attribute-metaclass e))
+                 ;; Reference
+                 ((eq? (car e) 'reference)
+                  (create-reference-metaclass e))
+                 (else
+                  e))
+               e))
+         body))
+
+  (define (create-metaclass n super ifaces body)
+    `(let ((the-eclass (new EClass%)))
+       (send* the-eclass
+         (name-set! ,(symbol->string n))
+         (eSuperTypes-append! ,super)
+         (ePackage-set! the-epackage))
+       
+       ,@(metaclass-creation body)
+    
+       (send the-epackage eClassifiers-append! the-eclass)))
 )
 
 (define-macro (eclass n super ifaces . body)
@@ -424,9 +441,5 @@
          ;; (the-epackage class-for-id ',n)
 
          ,@(expand-eclass-body body)))
-
-     (let ((the-class (new EClass%)))
-       (send* the-class
-         (name-set! ,(symbol->string n))
-         (ePackage-set! the-epackage))
-       (send the-epackage eClassifiers-append! the-class))))
+     
+     ,(create-metaclass n super ifaces body)))
