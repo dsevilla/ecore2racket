@@ -249,18 +249,18 @@
              body ...)))))
 
 (define-syntax (with-eclass stx)
-    (syntax-case stx ()
-      ((_ eclass body ...)
-       (with-syntax ([the-eclass (datum->syntax stx 'the-eclass)])
-         #'(begin
-             (define the-eclass eclass)
-             body ...)))))
+  (syntax-case stx ()
+    ((_ eclass body ...)
+     (with-syntax ([the-eclass (datum->syntax stx 'the-eclass)])
+       #'(begin
+           (define the-eclass eclass)
+           body ...)))))
 
-;;; XXX Temporary
-(define-syntax reference*
-  (syntax-rules ()
-    ((_ elems ...)
-     (begin))))
+(define-macro (reference* name type contained? minoccur maxoccur body)
+  `(begin
+     (field [,(append-id "-" name) (make-vector 0)])
+     (define/public (,name)
+       ,body)))
 
 ;;; Ecore classes
 (define ecore-package (new -EPackage%))
@@ -296,16 +296,22 @@
   ;; list of eAttributes and eReferences from the
   ;; e-structural-features field.
 
-  (reference* eReferences EReference% #f 0 -1)
-  (reference* eAllReferences EReference% #f 0 -1)
-  (reference* eAttributes EAttribute% #f 0 -1)
-  (reference* eAllAttributes EAttribute% #f 0 -1)
+  (reference* eReferences EReference% #f 0 -1
+              (vector-filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
+  (reference* eAllReferences EReference% #f 0 -1 (void))
+  (reference* eAttributes EAttribute% #f 0 -1
+              (vector-filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
+  (reference* eAllAttributes EAttribute% #f 0 -1 (void))
 
-  (reference* eAllOperations EOperation% #f 0 -1)
+  (reference* eAllOperations EOperation% #f 0 -1 (void))
 
-  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1)
+  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1 
+              (void))
 
-  (reference* eAllSuperTypes EClass% #f 0 -1))
+  (reference* eAllSuperTypes EClass% #f 0 -1 
+              (apply vector-append 
+                     -eSuperTypes 
+                     (vector-map (lambda (t) (send t eAllSuperTypes)) -eSuperTypes))))
  (provide EClass%)
 
  (-eclass
@@ -439,8 +445,9 @@
        
        ,@(metaclass-creation body)
     
-       (send the-epackage eClassifiers-append! the-eclass)
-       (send the-epackage eClassifiers-table-add! ',n the-eclass)))
+       (send* the-epackage 
+         (eClassifiers-append! the-eclass)
+         (eClassifiers-table-add! ',n the-eclass))))
 )
 
 (define-macro (eclass n super ifaces . body)
