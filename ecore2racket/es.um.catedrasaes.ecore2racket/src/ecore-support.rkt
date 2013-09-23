@@ -58,7 +58,7 @@
       (hash-set! -eClassifiers-hash-table id classifier))
     (define/public (eClassifiers-get-by-id id)
       (hash-ref -eClassifiers-hash-table id null))))
-    
+
 (define -EPackage-base%
   (class* EObject-base% (EPackage<%>)
     (super-new)
@@ -86,7 +86,7 @@
 
 (define -EPackage%
   (eclassifier-hash-table-mixin% -EPackage-base%))
-   
+
 ;; TODO: provide contracts for these.
 
 (require xml)
@@ -209,9 +209,9 @@
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        (if (= maxoccur 1)
-           (new-field-mono name 25)
+           (new-field-mono name)
            ;; multi-valuated
-           (new-field-multi name 25)))))
+           (new-field-multi name)))))
 
   (define (-expand-eclass-body body)
     (map (lambda (e)
@@ -272,7 +272,7 @@
  (-eclass
   EObject% EObject-base%)
  (provide EObject%)
- 
+
  (-eclass
   EModelElement% EObject%)
  (provide EModelElement%)
@@ -308,15 +308,15 @@
 
   (reference* eAllOperations EOperation% #f 0 -1 (void))
 
-  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1 
+  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1
               (void))
 
-  (reference* eAllSuperTypes EClass% #f 0 -1 
+  (reference* eAllSuperTypes EClass% #f 0 -1
               (apply vector-append
                      -eSuperTypes
                      (vector-map (lambda (t)
                                    (send
-                                    (send (send this ePackage) eClassifiers-get-by-id t) 
+                                    (send (send this ePackage) eClassifiers-get-by-id t)
                                     eAllSuperTypes))
                                  -eSuperTypes))))
  (provide EClass%)
@@ -413,7 +413,7 @@
               (upperBound-set! ,maxoccur))
 
             (send the-eclass eStructuralFeatures-append! att))))))
-  
+
   (define (create-reference-metaclass list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
@@ -426,7 +426,7 @@
               (upperBound-set! ,maxoccur))
 
             (send the-eclass eStructuralFeatures-append! ref))))))
-  
+
   (define (metaclass-creation body)
     (map (lambda (e)
            (if (pair? e)
@@ -447,13 +447,13 @@
        (send* the-eclass
          (name-set! ,(symbol->string n))
          (ePackage-set! the-epackage))
-       
+
        ,(unless (eq? super 'EObject%)
             `(send the-eclass eSuperTypes-append! ',super))
-       
+
        ,@(metaclass-creation body)
-    
-       (send* the-epackage 
+
+       (send* the-epackage
          (eClassifiers-append! the-eclass)
          (eClassifiers-table-add! ',n the-eclass))))
 )
@@ -468,5 +468,5 @@
          (set! -eClass (send the-epackage eClassifiers-get-by-id ',n))
 
          ,@(expand-eclass-body body)))
-     
+
      ,(create-metaclass n super ifaces body)))
