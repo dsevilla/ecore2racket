@@ -314,11 +314,12 @@
   (reference* eAllSuperTypes EClass% #f 0 -1
               (apply vector-append
                      -eSuperTypes
-                     (vector-map (lambda (t)
-                                   (send
-                                    (send (send this ePackage) eClassifiers-get-by-id t)
-                                    eAllSuperTypes))
-                                 -eSuperTypes))))
+                     (vector->list 
+                      (vector-map (lambda (t)
+                                    (send
+                                     (send (send this ePackage) eClassifiers-get-by-id t)
+                                     eAllSuperTypes))
+                                 -eSuperTypes)))))
  (provide EClass%)
 
  (-eclass
