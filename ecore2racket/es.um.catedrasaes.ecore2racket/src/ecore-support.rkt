@@ -40,7 +40,7 @@
 (define EReference<%> (interface (EStructuralFeature<%>)))
 (define EAttribute<%> (interface (EStructuralFeature<%>)))
 
-(define EObject%
+(define EObject-base%
   (class* object% (EObject<%>)
 
     (super-new)
@@ -60,7 +60,7 @@
       (hash-ref -eClassifiers-hash-table id null))))
     
 (define -EPackage-base%
-  (class* EObject% (EPackage<%>)
+  (class* EObject-base% (EPackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-name ""]
@@ -166,7 +166,7 @@
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!")))
       `(begin
-         (field [,field-name null])
+         (field [,field-name ,default-value])
          (define/public (,f-name) ,field-name)
          (define/public (,set-name value)
            (set! ,field-name value)))))
@@ -177,13 +177,13 @@
           (append-name (append-id f-name "-append!")))
       (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
         `(begin
-           (field [,field-name (make-vector 0 null)])
+           (field [,field-name (make-vector 0 ,default-value)])
            (define ,f-name
              (case-lambda
                (() ,field-name)
                ((,tmp-pos-n)
                 (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ,default-value)))
                     ;; grow the vector
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
@@ -194,7 +194,7 @@
                ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
                ((,tmp-val-n ,tmp-pos-n)
                 (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) null)))
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ,default-value)))
                     ;; grow the vector
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
@@ -209,9 +209,9 @@
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        (if (= maxoccur 1)
-           (new-field-mono name)
+           (new-field-mono name 25)
            ;; multi-valuated
-           (new-field-multi name)))))
+           (new-field-multi name 25)))))
 
   (define (-expand-eclass-body body)
     (map (lambda (e)
@@ -238,7 +238,6 @@
 
          ,@(-expand-eclass-body body)))
      (send the-epackage eClassifiers-append! (new ,n))))
-
 
 (define-syntax (with-epackage stx)
     (syntax-case stx ()
@@ -270,6 +269,10 @@
 (with-epackage
  ecore-package
 
+ (-eclass
+  EObject% EObject-base%)
+ (provide EObject%)
+ 
  (-eclass
   EModelElement% EObject%)
  (provide EModelElement%)
@@ -309,9 +312,13 @@
               (void))
 
   (reference* eAllSuperTypes EClass% #f 0 -1 
-              (apply vector-append 
-                     -eSuperTypes 
-                     (vector-map (lambda (t) (send t eAllSuperTypes)) -eSuperTypes))))
+              (apply vector-append
+                     -eSuperTypes
+                     (vector-map (lambda (t)
+                                   (send
+                                    (send (send this ePackage) eClassifiers-get-by-id t) 
+                                    eAllSuperTypes))
+                                 -eSuperTypes))))
  (provide EClass%)
 
  (-eclass
@@ -323,7 +330,6 @@
   (reference eSubpackages EPackage% #t 0 -1))
  (define EPackage%
   (eclassifier-hash-table-mixin% EPackage-base%))
-
  (provide EPackage%)
 
  (-eclass
@@ -440,8 +446,10 @@
     `(let ((the-eclass (new EClass%)))
        (send* the-eclass
          (name-set! ,(symbol->string n))
-         (eSuperTypes-append! ,super)
          (ePackage-set! the-epackage))
+       
+       ,(unless (eq? super 'EObject%)
+            `(send the-eclass eSuperTypes-append! ',super))
        
        ,@(metaclass-creation body)
     
