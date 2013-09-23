@@ -162,28 +162,28 @@
            ;; multi-valuated
            (new-field-multi name 0)))))
 
-  (define (new-field-mono f-name (default-value (letrec ([x x]) x)))
+  (define (new-field-mono f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!")))
       `(begin
-         (field [,field-name ,default-value])
+         (field [,field-name ',default-value])
          (define/public (,f-name) ,field-name)
          (define/public (,set-name value)
            (set! ,field-name value)))))
 
-  (define (new-field-multi f-name (default-value (letrec ([x x]) x)))
+  (define (new-field-multi f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!"))
           (append-name (append-id f-name "-append!")))
       (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
         `(begin
-           (field [,field-name (make-vector 0 ,default-value)])
+           (field [,field-name (make-vector 0 ',default-value)])
            (define ,f-name
              (case-lambda
                (() ,field-name)
                ((,tmp-pos-n)
                 (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ,default-value)))
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ',default-value)))
                     ;; grow the vector
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
@@ -194,7 +194,7 @@
                ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
                ((,tmp-val-n ,tmp-pos-n)
                 (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ,default-value)))
+                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ',default-value)))
                     ;; grow the vector
                     (vector-copy! ,tmp-vec-n 0 ,field-name)
                     (set! ,field-name ,tmp-vec-n)))
