@@ -162,7 +162,7 @@
            ;; multi-valuated
            (new-field-multi name 0)))))
 
-  (define (new-field-mono f-name (default-value null))
+  (define (new-field-mono f-name (default-value '(if #f #f #f)))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!")))
       `(begin
@@ -171,7 +171,7 @@
          (define/public (,set-name value)
            (set! ,field-name value)))))
 
-  (define (new-field-multi f-name (default-value null))
+  (define (new-field-multi f-name (default-value '(if #f #f #f)))
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!"))
           (append-name (append-id f-name "-append!")))
