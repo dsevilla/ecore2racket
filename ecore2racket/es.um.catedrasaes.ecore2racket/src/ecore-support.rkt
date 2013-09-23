@@ -255,7 +255,7 @@
            (define the-eclass eclass)
            body ...)))))
 
-(define-macro (reference/derived name type contained? minoccur maxoccur body)
+(define-macro (ref/derived name type contained? minoccur maxoccur body)
   `(begin
      (field [,(append-id "-" name) (make-vector 0)])
      (define/public (,name)
@@ -285,19 +285,27 @@
   EClassifier% ENamedElement%
   (reference ePackage EPackage% #f 0 1))
 
- (define-syntax collect-from-supers
-   (syntax-rules ()
-     ((_ all-att-super att)
-      (let ((att-value att))
-        (apply vector-append
-               att-value
+ (define-macro (collect-from-supers all-att-super att)
+   (let ([att-value-n (gensym)])
+     `(let* ([,att-value-n ,att]
+             [the-package (send this ePackage)]
+             [direct-superclasses (vector-map 
+                                   (lambda (c) (send the-package eClassifiers-get-by-id c))
+                                   -eSuperTypes)]
+             [all-superclasses
+              (apply vector-append
+                     direct-superclasses
+                     (vector->list
+                      (vector-map
+                       (lambda (c) (send c eAllSuperTypes))
+                       direct-superclasses)))])
+             (apply vector-append
+               ,att-value-n
                (vector->list
-                (vector-map (lambda (t)
-                              (send
-                               (send (send this ePackage) eClassifiers-get-by-id t)
-                               all-att-super))
-                            att-value)))))))
- 
+                (vector-map 
+                 (lambda (c) (send c ,all-att-super))
+                 all-superclasses))))))
+                 
  (-eclass
   EClass% EClassifier%
   (attribute abstract 'boolean 0 1)
@@ -310,25 +318,25 @@
   ;; Note: as eAttributes and eReferences (and all the "allXX" references) are derived,
   ;; and so frequently used, so we implement them by hand
 
-  (reference/derived eReferences EReference% #f 0 -1
+  (ref/derived eReferences EReference% #f 0 -1
               (vector-filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
   
-  (reference/derived eAllReferences EReference% #f 0 -1
+  (ref/derived eAllReferences EReference% #f 0 -1
               (collect-from-supers eAllReferences (eReferences)))
   
-  (reference/derived eAttributes EAttribute% #f 0 -1
+  (ref/derived eAttributes EAttribute% #f 0 -1
               (vector-filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
 
-  (reference/derived eAllAttributes EAttribute% #f 0 -1
+  (ref/derived eAllAttributes EAttribute% #f 0 -1
               (collect-from-supers eAllAttributes (eAttributes)))
 
-  (reference/derived eAllOperations EOperation% #f 0 -1
+  (ref/derived eAllOperations EOperation% #f 0 -1
               (collect-from-supers eAllOperations -eOperations))
 
-  (reference/derived eAllStructuralFeatures EStructuralFeature% #f 0 -1
+  (ref/derived eAllStructuralFeatures EStructuralFeature% #f 0 -1
               (collect-from-supers eAllStructuralFeatures -eStructuralFeatures))
 
-  (reference/derived eAllSuperTypes EClass% #f 0 -1
+  (ref/derived eAllSuperTypes EClass% #f 0 -1
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
  (provide EClass%)
 
