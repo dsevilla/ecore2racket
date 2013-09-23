@@ -255,7 +255,7 @@
            (define the-eclass eclass)
            body ...)))))
 
-(define-macro (reference* name type contained? minoccur maxoccur body)
+(define-macro (reference/derived name type contained? minoccur maxoccur body)
   `(begin
      (field [,(append-id "-" name) (make-vector 0)])
      (define/public (,name)
@@ -285,6 +285,19 @@
   EClassifier% ENamedElement%
   (reference ePackage EPackage% #f 0 1))
 
+ (define-syntax collect-from-supers
+   (syntax-rules ()
+     ((_ all-att-super att)
+      (let ((att-value att))
+        (apply vector-append
+               att-value
+               (vector->list
+                (vector-map (lambda (t)
+                              (send
+                               (send (send this ePackage) eClassifiers-get-by-id t)
+                               all-att-super))
+                            att-value)))))))
+ 
  (-eclass
   EClass% EClassifier%
   (attribute abstract 'boolean 0 1)
@@ -294,32 +307,29 @@
   (reference eSuperTypes EClass% #f 0 -1)
   (reference eStructuralFeatures EStructuralFeature% #t 0 -1)
 
-  ;; Note: as eAttributes and eReferences are derived, and so
-  ;; frequently used, we'll devise a mechanism to recreate the
-  ;; list of eAttributes and eReferences from the
-  ;; e-structural-features field.
+  ;; Note: as eAttributes and eReferences (and all the "allXX" references) are derived,
+  ;; and so frequently used, so we implement them by hand
 
-  (reference* eReferences EReference% #f 0 -1
+  (reference/derived eReferences EReference% #f 0 -1
               (vector-filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
-  (reference* eAllReferences EReference% #f 0 -1 (void))
-  (reference* eAttributes EAttribute% #f 0 -1
+  
+  (reference/derived eAllReferences EReference% #f 0 -1
+              (collect-from-supers eAllReferences (eReferences)))
+  
+  (reference/derived eAttributes EAttribute% #f 0 -1
               (vector-filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
-  (reference* eAllAttributes EAttribute% #f 0 -1 (void))
 
-  (reference* eAllOperations EOperation% #f 0 -1 (void))
+  (reference/derived eAllAttributes EAttribute% #f 0 -1
+              (collect-from-supers eAllAttributes (eAttributes)))
 
-  (reference* eAllStructuralFeatures EStructuralFeature% #f 0 -1
-              (void))
+  (reference/derived eAllOperations EOperation% #f 0 -1
+              (collect-from-supers eAllOperations -eOperations))
 
-  (reference* eAllSuperTypes EClass% #f 0 -1
-              (apply vector-append
-                     -eSuperTypes
-                     (vector->list 
-                      (vector-map (lambda (t)
-                                    (send
-                                     (send (send this ePackage) eClassifiers-get-by-id t)
-                                     eAllSuperTypes))
-                                 -eSuperTypes)))))
+  (reference/derived eAllStructuralFeatures EStructuralFeature% #f 0 -1
+              (collect-from-supers eAllStructuralFeatures -eStructuralFeatures))
+
+  (reference/derived eAllSuperTypes EClass% #f 0 -1
+              (collect-from-supers eAllSuperTypes -eSuperTypes)))
  (provide EClass%)
 
  (-eclass
