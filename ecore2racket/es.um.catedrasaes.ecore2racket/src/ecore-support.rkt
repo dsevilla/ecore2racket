@@ -498,4 +498,8 @@
      (send c eClass))))
 
 (define (eobject->xexpr o nameattr)
-  `(,nameattr))
+  `(,nameattr 
+    ,(map (lambda (att) 
+            (let ((attname (send att name)))
+              (list attname (dynamic-send o (string->symbol name)))))
+          (send (eclass-of o) eAllAttributes))))
