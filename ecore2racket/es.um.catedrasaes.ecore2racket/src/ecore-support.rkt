@@ -20,6 +20,7 @@
    eclass
    with-epackage
    ecore-package
+   eclass-of
    to-xml
    to-xexpr)
 
@@ -289,9 +290,9 @@
    (let ([att-value-n (gensym)])
      `(let* ([,att-value-n ,att]
              [the-package (send this ePackage)]
-             [direct-superclasses (vector-map 
-                                   (lambda (c) (send the-package eClassifiers-get-by-id c))
-                                   -eSuperTypes)]
+             [direct-superclasses 
+              (vector-map (curry dynamic-send the-package 'eClassifiers-get-by-id)
+                          -eSuperTypes)]
              [all-superclasses
               (apply vector-append
                      direct-superclasses
@@ -489,3 +490,12 @@
          ,@(expand-eclass-body body)))
 
      ,(create-metaclass n super ifaces body)))
+
+;; Utility macros
+(define-syntax eclass-of
+  (syntax-rules ()
+    ((_ c)
+     (send c eClass))))
+
+(define (eobject->xexpr o nameattr)
+  `(,nameattr))
