@@ -21,6 +21,7 @@
    with-epackage
    ecore-package
    eclass-of
+   eobject->xexpr
    to-xml
    to-xexpr)
 
@@ -498,8 +499,15 @@
      (send c eClass))))
 
 (define (eobject->xexpr o nameattr)
-  `(,nameattr 
-    ,(map (lambda (att) 
-            (let ((attname (send att name)))
-              (list attname (dynamic-send o (string->symbol name)))))
-          (send (eclass-of o) eAllAttributes))))
+  `(,nameattr
+    ,(vector->list
+      (vector-map 
+       (lambda (att) 
+         (let ((attname (string->symbol (send att name))))
+           (list attname (dynamic-send o attname))))
+       (send (eclass-of o) eAllAttributes)))
+    ,(vector-map
+      (lambda (ref)
+        (let ((refsym (string->symbol (send ref name))))
+          (eobject->xexpr (dynamic-send o refsym) refsym)))
+       (send (eclass-of o) eAllReferences))))
