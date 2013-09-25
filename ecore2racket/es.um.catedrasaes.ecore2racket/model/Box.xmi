@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ASCII"?>
+<box:Box xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:box="http://www.catedrasaes.org/Box"
+    xsi:schemaLocation="http://www.catedrasaes.org/Box Box.ecore"
+    comment="comment"
+    name="box1">
+  <attributes
+      comment="comment"
+      name="param1">
+    <type xsi:type="box:BasicType"/>
+    <defaultValue>0</defaultValue>
+    <defaultValue>1</defaultValue>
+  </attributes>
+</box:Box>

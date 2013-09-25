@@ -512,9 +512,9 @@
                     (vector->list refval)))))
       
 (define (eobject->xexpr o nameattr)
-  (apply 
+  (apply
    append
-   (list 
+   (list
     nameattr
     
     ;; Attributes
@@ -525,9 +525,9 @@
      (vector->list (send (eclass-of o) eAllAttributes))))
    
    ;; References
-    (filter-map
-     (lambda (ref)
-       (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
-         (and (not (null? result))
-              result)))
-     (vector->list (send (eclass-of o) eAllReferences)))))
+   (filter-map
+    (lambda (ref)
+      (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
+        (and (not (null? result))
+             result)))
+    (vector->list (send (eclass-of o) eAllReferences)))))
