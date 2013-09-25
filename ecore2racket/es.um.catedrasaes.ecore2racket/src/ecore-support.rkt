@@ -498,16 +498,34 @@
     ((_ c)
      (send c eClass))))
 
+(define (ref->xexpr obj refname r)
+  (let ((refval (dynamic-send obj refname)))
+    ;; Mono or multi-valuated?
+    (if (= (send r upperBound) 1)
+      ;; Mono
+        (and refval
+             (list (eobject->xexpr refval refname)))
+        ;; Multi
+        (filter-map (lambda (ref) (and (not (null? ref)) 
+                                       (eobject->xexpr ref refname)))
+                    (vector->list refval)))))
+      
 (define (eobject->xexpr o nameattr)
-  `(,nameattr
-    ,(vector->list
-      (vector-map 
-       (lambda (att) 
-         (let ((attname (string->symbol (send att name))))
-           (list attname (dynamic-send o attname))))
-       (send (eclass-of o) eAllAttributes)))
-    ,(vector-map
-      (lambda (ref)
-        (let ((refsym (string->symbol (send ref name))))
-          (eobject->xexpr (dynamic-send o refsym) refsym)))
-       (send (eclass-of o) eAllReferences))))
+  (list 
+   nameattr
+   
+   ;; Attributes
+   (vector->list
+    (vector-map 
+     (lambda (att) 
+       (let ((attname (string->symbol (send att name))))
+         (list attname (dynamic-send o attname))))
+     (send (eclass-of o) eAllAttributes)))
+   
+   ;; References
+   (filter-map
+       (lambda (ref)
+         (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
+           (and (not (null? result))
+                result)))
+       (vector->list (send (eclass-of o) eAllReferences)))))
