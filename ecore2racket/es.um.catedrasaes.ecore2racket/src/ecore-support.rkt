@@ -503,29 +503,31 @@
     ;; Mono or multi-valuated?
     (if (= (send r upperBound) 1)
       ;; Mono
-        (and refval
-             (list (eobject->xexpr refval refname)))
+        (if (not (null? refval))
+             (list (eobject->xexpr refval refname))
+             null)
         ;; Multi
         (filter-map (lambda (ref) (and (not (null? ref)) 
                                        (eobject->xexpr ref refname)))
                     (vector->list refval)))))
       
 (define (eobject->xexpr o nameattr)
-  (list 
-   nameattr
-   
-   ;; Attributes
-   (vector->list
-    (vector-map 
+  (apply 
+   append
+   (list 
+    nameattr
+    
+    ;; Attributes
+    (map
      (lambda (att) 
        (let ((attname (string->symbol (send att name))))
          (list attname (dynamic-send o attname))))
-     (send (eclass-of o) eAllAttributes)))
+     (vector->list (send (eclass-of o) eAllAttributes))))
    
    ;; References
-   (filter-map
-       (lambda (ref)
-         (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
-           (and (not (null? result))
-                result)))
-       (vector->list (send (eclass-of o) eAllReferences)))))
+    (filter-map
+     (lambda (ref)
+       (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
+         (and (not (null? result))
+              result)))
+     (vector->list (send (eclass-of o) eAllReferences)))))
