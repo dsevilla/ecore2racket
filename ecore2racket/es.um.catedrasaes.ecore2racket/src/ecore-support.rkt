@@ -522,7 +522,21 @@
      (lambda (att) 
        (let ((attname (string->symbol (send att name))))
          (list attname (dynamic-send o attname))))
-     (vector->list (send (eclass-of o) eAllAttributes))))
+     (filter (lambda (att)
+               (= (send att upperBound) 1))
+             (vector->list (send (eclass-of o) eAllAttributes)))))
+   
+   ;; Multi-valuated attributes
+   (filter-map
+    (lambda (att) 
+      (and (not (= (send att upperBound) 1))
+           (let* ((attname (string->symbol (send att name)))
+                  (attvalue (vector->list (dynamic-send o attname))))
+             (and (not (null? attvalue))
+                  (map (lambda (v) 
+                         (list attname (list) v)) 
+                       attvalue)))))
+    (vector->list (send (eclass-of o) eAllAttributes)))
    
    ;; References
    (filter-map
