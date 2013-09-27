@@ -502,28 +502,43 @@
 (define (eobject->xexpr o nameattr)
   (-eobject->xexpr o null nameattr 0))
 
-(define (-eobject->xexpr o parent nameattr n)
-  
-  ;; Keeps track of the different objects used in the serialization/deserialization
-  (struct xmi-pos (self parent label pos))
 
-  (define (ref->xexpr obj refname r)
-    (let ((refval (dynamic-send obj refname)))
-      ;; Mono or multi-valuated?
-      (if (= (send r upperBound) 1)
-          ;; Mono
-          (if (not (null? refval))
-             (list (eobject->xexpr refval refname))
-             null)
-          ;; Multi
-          (filter-map (lambda (ref) (and (not (null? ref)) 
-                                         (eobject->xexpr ref refname)))
-                      (vector->list refval)))))
+;; Keeps track of the different objects used in the serialization/deserialization
+(struct xmi-pos (self parent label pos))
 
-  (define xmi-object-hash (make-hasheq))
+(define xmi-object-hash (make-hasheq))
+
+(define (ref-repr xmip)
+  (let* ((parent (xmi-pos-parent xmip))
+         (parent-string 
+          (if (null? parent)
+              ""
+              (ref-repr (hash-ref xmi-object-hash parent)))))
+    (string-append parent-string (format "/@~a.~a" (xmi-pos-label xmip) (xmi-pos-pos xmip)))))
+
+(define (ref->xexpr o refname r)
+  (let ((refval (dynamic-send o refname)))
+    ;; Mono or multi-valuated?
+    (if (= (send r upperBound) 1)
+        ;; Mono
+        (if (not (null? refval))
+            (list (-eobject->xexpr refval o refname 0))
+            null)
+        ;; Multi
+        (let ((counter 0))
+          (filter-map (lambda (ref) (begin0
+                                      (and (not (null? ref)) 
+                                           (-eobject->xexpr ref o refname counter))
+                                      (set! counter (+ 1 counter))))
+                      (vector->list refval))))))
+
+
+(define (-eobject->xexpr o parent nameattr n)  
 
   ;; Insert this object in the hash
-  (hash-set! xmi-object-hash (xmi-pos o parent nameattr n))
+  (let ((xmip (xmi-pos o parent nameattr n)))
+    (displayln (ref-repr xmip))
+    (hash-set! xmi-object-hash o xmip))
    
   (apply
    append
