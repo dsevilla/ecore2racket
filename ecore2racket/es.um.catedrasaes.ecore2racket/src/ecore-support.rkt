@@ -498,20 +498,33 @@
     ((_ c)
      (send c eClass))))
 
-(define (ref->xexpr obj refname r)
-  (let ((refval (dynamic-send obj refname)))
-    ;; Mono or multi-valuated?
-    (if (= (send r upperBound) 1)
-      ;; Mono
-        (if (not (null? refval))
+
+(define (eobject->xexpr o nameattr)
+  (-eobject->xexpr o null nameattr 0))
+
+(define (-eobject->xexpr o parent nameattr n)
+  
+  ;; Keeps track of the different objects used in the serialization/deserialization
+  (struct xmi-pos (self parent label pos))
+
+  (define (ref->xexpr obj refname r)
+    (let ((refval (dynamic-send obj refname)))
+      ;; Mono or multi-valuated?
+      (if (= (send r upperBound) 1)
+          ;; Mono
+          (if (not (null? refval))
              (list (eobject->xexpr refval refname))
              null)
-        ;; Multi
-        (filter-map (lambda (ref) (and (not (null? ref)) 
-                                       (eobject->xexpr ref refname)))
-                    (vector->list refval)))))
-      
-(define (eobject->xexpr o nameattr)
+          ;; Multi
+          (filter-map (lambda (ref) (and (not (null? ref)) 
+                                         (eobject->xexpr ref refname)))
+                      (vector->list refval)))))
+
+  (define xmi-object-hash (make-hasheq))
+
+  ;; Insert this object in the hash
+  (hash-set! xmi-object-hash (xmi-pos o parent nameattr n))
+   
   (apply
    append
    (list
