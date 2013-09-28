@@ -13,5 +13,5 @@
     <defaultValue>0</defaultValue>
     <defaultValue>1</defaultValue>
   </attributes>
-  <boxes box="/"/>
+  <boxes box="/0"/>
 </box:Box>

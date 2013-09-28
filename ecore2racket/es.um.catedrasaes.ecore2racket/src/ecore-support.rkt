@@ -508,13 +508,21 @@
 
 (define xmi-object-hash (make-hasheq))
 
+
+;; Reference format:
+;; URL#/<parent-spec>/<child-spec>
+;; parent-spec and child-spec can be either @refname.pos or simply name, where "name" comes from
+;; the property "name" of the object at that position.
+;; Multiple references are stored as an attribute like this:
+;; ref="ref-pointer1 refpointer2"
+
 (define (ref-repr xmip)
-  (let* ((parent (xmi-pos-parent xmip))
-         (parent-string 
-          (if (null? parent)
-              ""
-              (ref-repr (hash-ref xmi-object-hash parent)))))
-    (string-append parent-string (format "/@~a.~a" (xmi-pos-label xmip) (xmi-pos-pos xmip)))))
+  (let ((parent (xmi-pos-parent xmip)))
+    (if (null? parent)
+        (format "/~a" (xmi-pos-pos xmip))
+        (let ((parent-string 
+               (ref-repr (hash-ref xmi-object-hash parent))))
+          (string-append parent-string (format "/@~a.~a" (xmi-pos-label xmip) (xmi-pos-pos xmip)))))))
 
 (define (ref->xexpr o refname r)
   (let ((refval (dynamic-send o refname)))
