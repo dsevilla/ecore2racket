@@ -244,10 +244,9 @@
 (define-syntax (with-epackage stx)
     (syntax-case stx ()
       ((_ package body ...)
-       (with-syntax ([the-epackage (datum->syntax stx 'the-epackage)])
-         #'(begin
-             (define the-epackage package)
-             body ...)))))
+         #`(begin
+             (define #,(datum->syntax stx 'the-epackage) package)
+             body ...))))
 
 (define-syntax (with-eclass stx)
   (syntax-case stx ()
@@ -522,7 +521,9 @@
         (format "/~a" (xmi-pos-pos xmip))
         (let ((parent-string 
                (ref-repr (hash-ref xmi-object-hash parent))))
-          (string-append parent-string (format "/@~a.~a" (xmi-pos-label xmip) (xmi-pos-pos xmip)))))))
+          (string-append parent-string (format "/@~a.~a"
+                                               (xmi-pos-label xmip)
+                                               (xmi-pos-pos xmip)))))))
 
 (define (ref->xexpr o refname r)
   (let ((refval (dynamic-send o refname)))
@@ -581,3 +582,17 @@
         (and (not (null? result))
              result)))
     (vector->list (send (eclass-of o) eAllReferences)))))
+
+; Idea
+;(struct -ecore# (EClass))
+;
+;(define ecore (-ecore# (class object% (super-new))))
+;
+;(define-syntax (ecore# stx)
+;  (syntax-case stx ()
+;    ((_ c . body)
+;     (let ((base #`(#,(string->symbol (format "-ecore#-~a" (syntax->datum #'c))) ecore)))
+;       (syntax-case #'body (new)
+;         [(new)
+;            #`(new #,base)]
+;         [_ base])))))
