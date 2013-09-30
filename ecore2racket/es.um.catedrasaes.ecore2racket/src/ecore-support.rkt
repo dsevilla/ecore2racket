@@ -22,6 +22,7 @@
    ecore-package
    eclass-of
    eobject->xexpr
+   generate-fast-accessors
    to-xml
    to-xexpr)
 
@@ -215,24 +216,63 @@
                   e))
                e))
          body))
-)
+
+  (define -method-hash
+    (make-hasheq))
+  
+  (define (-gen-fast-accessors hash)
+    (hash-map
+     hash
+     (lambda (k v)
+       (let ((method-name
+              (if (eq? (caddr v) 'boolean)
+                  (append-id k "?")
+                  (append-id k "-of"))))
+         `(define (,method-name o)
+            (send o ,k))))))
+
+  (define (-add-methods-to-hash body)
+    (for-each 
+     (lambda (e)
+       (when (and (pair? e)
+                  (member (car e) '(attribute reference ref/derived)))
+         (hash-set! -method-hash (cadr e) e)))
+     body))
+
+  )
 
 ;; The macro proper. Private version to generate Ecore itself.
 (define-macro (-eclass n super . body)
+  (-add-methods-to-hash body)
   `(begin
      (define ,n
        (class ,super
          (super-new)
-
          ,@(-expand-eclass-body body)))
+
      (send the-epackage eClassifiers-append! (new ,n))))
 
-(define-syntax (with-epackage stx)
-    (syntax-case stx ()
-      ((_ package body ...)
-         #`(begin
-             (define #,(datum->syntax stx 'the-epackage) package)
-             body ...))))
+;(define-syntax (with-epackage stx)
+;    (syntax-case stx ()
+;      ((_ package body ...)
+;         #`(begin
+;             (define #,(datum->syntax stx 'the-epackage) package)
+;             body ...))))
+
+(define-macro (with-epackage package . body)
+  `(begin
+     (define the-epackage ,package)
+     ,@body
+     ;; We generate here a call o a macro so that it is
+     ;; at the same level to all the previous calls to
+     ;; eclass, so it is run *after* all the classes
+     ;; have been created.
+     (generate-fast-accessors)))
+
+(define-macro (generate-fast-accessors)
+  ;; Generate all the accessor methods
+  `(begin
+     ,@(-gen-fast-accessors -method-hash)))
 
 (define-syntax (with-eclass stx)
   (syntax-case stx ()
@@ -266,7 +306,7 @@
 
  (-eclass
   ENamedElement% EModelElement%
-  (attribute name 'string 1 1))
+  (attribute name string 1 1))
 
  (-eclass
   EClassifier% ENamedElement%
@@ -291,8 +331,8 @@
 
  (-eclass
   EClass% EClassifier%
-  (attribute abstract 'boolean 0 1)
-  (attribute interface 'boolean 0 1)
+  (attribute abstract boolean 0 1)
+  (attribute interface boolean 0 1)
   (reference eIDAttribute EAttribute% #f 0 1)
   (reference eOperations EOperation% #t 0 -1)
   (reference eSuperTypes EClass% #f 0 -1)
@@ -325,8 +365,8 @@
 
  (-eclass
   EPackage-base% ENamedElement%
-  (attribute nsURI 'string 0 1)
-  (attribute nsPrefix 'string 0 1)
+  (attribute nsURI string 0 1)
+  (attribute nsPrefix string 0 1)
   (reference eSuperPackage EPackage% #f 0 1)
   (reference eClassifiers EClassifier% #t 0 -1)
   (reference eSubpackages EPackage% #t 0 -1))
@@ -336,12 +376,12 @@
 
  (-eclass
   ETypedElement% ENamedElement%
-  (attribute ordered 'boolean 0 1)
-  (attribute unique 'boolean 0 1)
-  (attribute lowerBound 'number 0 1)
-  (attribute upperBound 'number 0 1)
-  (attribute many 'boolean 0 1)
-  (attribute required 'boolean 0 1)
+  (attribute ordered boolean 0 1)
+  (attribute unique boolean 0 1)
+  (attribute lowerBound number 0 1)
+  (attribute upperBound number 0 1)
+  (attribute many boolean 0 1)
+  (attribute required boolean 0 1)
   (reference eType EClassifier% #f 0 1))
 
  (-eclass
@@ -357,31 +397,31 @@
 
  (-eclass
   EStructuralFeature% ETypedElement%
-  (attribute changeable 'boolean 0 1)
-  (attribute volatile 'boolean 0 1)
-  (attribute transient 'boolean 0 1)
-  (attribute unsettable 'boolean 0 1)
-  (attribute derived 'boolean 0 1)
+  (attribute changeable boolean 0 1)
+  (attribute volatile boolean 0 1)
+  (attribute transient boolean 0 1)
+  (attribute unsettable boolean 0 1)
+  (attribute derived boolean 0 1)
   (reference eContainingClass EClass% #f 0 1))
  (provide EStructuralFeature%)
 
  (-eclass
   EAttribute% EStructuralFeature%
-  (attribute iD 'boolean 0 1)
+  (attribute iD boolean 0 1)
   (reference eAttributeType EDataType% #f 1 1))
  (provide EAttribute%)
 
  (-eclass
   EReference% EStructuralFeature%
-  (attribute containment 'boolean 0 1)
-  (attribute container 'boolean 0 1)
+  (attribute containment boolean 0 1)
+  (attribute container boolean 0 1)
   (reference eOpposite EReference% #f 0 1)
   (reference eReferenceType EClass% #f 1 1))
  (provide EReference%)
 
  (-eclass
   EDataType% EClassifier%
-  (attribute serializable 'boolean 0 1))
+  (attribute serializable boolean 0 1))
  (provide EDataType%)
 
  )
@@ -461,6 +501,7 @@
 )
 
 (define-macro (eclass n super ifaces . body)
+  (-add-methods-to-hash body)
   `(begin
      (define ,n
        (class* ,super ,ifaces

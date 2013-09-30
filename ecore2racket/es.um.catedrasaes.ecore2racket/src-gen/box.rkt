@@ -68,10 +68,10 @@
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment 'string 0 1)
+	(attribute comment string 0 1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	
 	; reference attributes
@@ -115,13 +115,13 @@
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer 'boolean 0 1)
+	(attribute isPointer boolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference 'boolean 0 1)
+	(attribute isReference boolean 0 1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	
 	; reference box
@@ -230,10 +230,10 @@
 
     ;; fields (features)
 	; attribute isInput
-	(attribute isInput 'boolean 0 1)
+	(attribute isInput boolean 0 1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	
 	; reference type
@@ -259,10 +259,10 @@
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer 'boolean 0 1)
+	(attribute isPointer boolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference 'boolean 0 1)
+	(attribute isReference boolean 0 1)
 	
 	
 	
@@ -282,7 +282,7 @@
 
     ;; fields (features)
 	; attribute basicType
-	(attribute basicType 'number 0 1)
+	(attribute basicType number 0 1)
 	
 	
 	
@@ -306,10 +306,10 @@
 
     ;; fields (features)
 	; attribute namespace
-	(attribute namespace 'string 0 -1)
+	(attribute namespace string 0 -1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	
 	
@@ -342,13 +342,13 @@
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment 'string 0 1)
+	(attribute comment string 0 1)
 	
 	; attribute isPrivate
-	(attribute isPrivate 'boolean 0 1)
+	(attribute isPrivate boolean 0 1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	
 	; reference type
@@ -384,13 +384,13 @@
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment 'string 0 1)
+	(attribute comment string 0 1)
 	
 	; attribute name
-	(attribute name 'string 0 1)
+	(attribute name string 0 1)
 	
 	; attribute defaultValue
-	(attribute defaultValue 'string 0 -1)
+	(attribute defaultValue string 0 -1)
 	
 	
 	; reference type
@@ -438,10 +438,3 @@
 )
 
 ;) ; end module box
-(define b1 (new Box%))
- (send b1 name-set! "box1")
- (define p1 (new Param%))
- (send p1 name-set! "param1")
- (send b1 attributes-append! p1)
- (send b1 comment-set! "comment")
- 

@@ -46,11 +46,11 @@
 
 [query private datatype_to_racket (dt : EDataType) : String =
 	if dt = EString then
-      '\'string'
+      'string'
     else if dt = EBoolean then
-      '\'boolean'
+      'boolean'
     else  -- Integers, mainly TODOTODOTODO
-      '\'number'
+      'number'
 	endif
     endif/]
 
