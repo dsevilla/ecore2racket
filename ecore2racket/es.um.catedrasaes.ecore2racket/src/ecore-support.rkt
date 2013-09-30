@@ -69,7 +69,7 @@
            [-nsURI ""]
            [-nsPrefix ""]
            [-eSuperPackage null]
-           [-eClassifiers (make-vector 0)])
+           [-eClassifiers (list)])
 
     (define/public (name) -name)
     (define/public (name-set! n) (set! -name n))
@@ -84,7 +84,7 @@
     (define/public (eClassifiers-set! n) (set! -eClassifiers n))
     (define/public (eClassifiers-append! c)
       (set! -eClassifiers
-            (vector-append -eClassifiers (vector c))))))
+            (append -eClassifiers (list c))))))
 
 (define -EPackage%
   (eclassifier-hash-table-mixin% -EPackage-base%))
@@ -177,34 +177,20 @@
     (let ((field-name (append-id "-" f-name))
           (set-name (append-id f-name "-set!"))
           (append-name (append-id f-name "-append!")))
-      (with-gensyms (tmp-vec-n tmp-pos-n tmp-val-n)
+      (with-gensyms (tmp-val-n)
         `(begin
-           (field [,field-name (make-vector 0 ',default-value)])
-           (define ,f-name
-             (case-lambda
-               (() ,field-name)
-               ((,tmp-pos-n)
-                (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ',default-value)))
-                    ;; grow the vector
-                    (vector-copy! ,tmp-vec-n 0 ,field-name)
-                    (set! ,field-name ,tmp-vec-n)))
-                (vector-ref ,field-name ,tmp-pos-n))))
+           (field [,field-name (list)])
+           (define ,f-name 
+             (lambda () ,field-name))
            (public ,f-name)
            (define ,set-name
-             (case-lambda
-               ((,tmp-val-n) (set! ,field-name ,tmp-val-n))
-               ((,tmp-val-n ,tmp-pos-n)
-                (when (<= (vector-length ,field-name) ,tmp-pos-n)
-                  (let ((,tmp-vec-n (make-vector (add1 ,tmp-pos-n) ',default-value)))
-                    ;; grow the vector
-                    (vector-copy! ,tmp-vec-n 0 ,field-name)
-                    (set! ,field-name ,tmp-vec-n)))
-                (vector-set! ,field-name ,tmp-pos-n ,tmp-val-n))))
+             (lambda (,tmp-val-n) (set! ,field-name ,tmp-val-n)))
            (public ,set-name)
            (define ,append-name
              (lambda (,tmp-val-n)
-               (,set-name ,tmp-val-n (vector-length ,field-name))))
+               (set! ,field-name (append ,field-name (if (list? ,tmp-val-n)
+                                                         ,tmp-val-n
+                                                         (list ,tmp-val-n))))))
            (public ,append-name)))))
 
   (define (expand-class-reference list)
@@ -259,7 +245,7 @@
 
 (define-macro (ref/derived name type contained? minoccur maxoccur body)
   `(begin
-     (field [,(append-id "-" name) (make-vector 0)])
+     (field [,(append-id "-" name) (list)])
      (define/public (,name)
        ,body)))
 
@@ -292,21 +278,17 @@
      `(let* ([,att-value-n ,att]
              [the-package (send this ePackage)]
              [direct-superclasses 
-              (vector-map (curry dynamic-send the-package 'eClassifiers-get-by-id)
-                          -eSuperTypes)]
+              (map (curry dynamic-send the-package 'eClassifiers-get-by-id)
+                   -eSuperTypes)]
              [all-superclasses
-              (apply vector-append
+              (apply append
                      direct-superclasses
-                     (vector->list
-                      (vector-map
-                       (lambda (c) (send c eAllSuperTypes))
-                       direct-superclasses)))])
-             (apply vector-append
+                     (map (lambda (c) (send c eAllSuperTypes))
+                          direct-superclasses))])
+        (apply append
                ,att-value-n
-               (vector->list
-                (vector-map 
-                 (lambda (c) (send c ,all-att-super))
-                 all-superclasses))))))
+               (map (lambda (c) (send c ,all-att-super))
+                    all-superclasses)))))
                  
  (-eclass
   EClass% EClassifier%
@@ -321,13 +303,13 @@
   ;; and so frequently used, so we implement them by hand
 
   (ref/derived eReferences EReference% #f 0 -1
-              (vector-filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
+              (filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
   
   (ref/derived eAllReferences EReference% #f 0 -1
               (collect-from-supers eAllReferences (eReferences)))
   
   (ref/derived eAttributes EAttribute% #f 0 -1
-              (vector-filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
+              (filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
 
   (ref/derived eAllAttributes EAttribute% #f 0 -1
               (collect-from-supers eAllAttributes (eAttributes)))
@@ -534,11 +516,12 @@
             null)
         ;; Multi
         (let ((counter 0))
-          (filter-map (lambda (ref) (begin0
-                                      (and (not (null? ref)) 
-                                           (-eobject->xexpr ref o refname counter))
-                                      (set! counter (+ 1 counter))))
-                      (vector->list refval))))))
+          (filter-map (lambda (ref)
+                        (begin0
+                          (and (not (null? ref)) 
+                               (-eobject->xexpr ref o refname counter))
+                          (set! counter (+ 1 counter))))
+                      refval)))))
 
 
 (define (-eobject->xexpr o parent nameattr n)  
@@ -560,19 +543,19 @@
          (list attname (dynamic-send o attname))))
      (filter (lambda (att)
                (= (send att upperBound) 1))
-             (vector->list (send (eclass-of o) eAllAttributes)))))
+             (send (eclass-of o) eAllAttributes))))
    
    ;; Multi-valuated attributes
    (filter-map
     (lambda (att) 
       (and (not (= (send att upperBound) 1))
            (let* ((attname (string->symbol (send att name)))
-                  (attvalue (vector->list (dynamic-send o attname))))
+                  (attvalue (dynamic-send o attname)))
              (and (not (null? attvalue))
                   (map (lambda (v) 
                          (list attname (list) v)) 
                        attvalue)))))
-    (vector->list (send (eclass-of o) eAllAttributes)))
+    (send (eclass-of o) eAllAttributes))
    
    ;; References
    (filter-map
@@ -580,4 +563,4 @@
       (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
         (and (not (null? result))
              result)))
-    (vector->list (send (eclass-of o) eAllReferences)))))
+    (send (eclass-of o) eAllReferences))))
