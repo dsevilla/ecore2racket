@@ -20,7 +20,7 @@
    eclass
    with-epackage
    ecore-package
-   eclass-of
+   ~eclass
    eobject->xexpr
    generate-fast-accessors
    to-xml
@@ -114,6 +114,20 @@
                      racket/list
                      racket))
 
+(module utils racket
+  
+  (define (default-value type)
+    (let ((val (assq type '([number 0]
+                            [string ""]
+                            [boolean #f]))))
+      (if val (cadr val) null)))
+  
+  (provide default-value)
+  )
+
+(require (submod "." utils) 
+         (for-syntax (submod "." utils)))
+
 (begin-for-syntax
 
 ;  (define-macro (with-gensyms list . body)
@@ -144,9 +158,7 @@
 ;             body ...)))))
 
 
-  (define (filter-by-application-symbol symbol list)
-    (filter-map (lambda (x) (and (eq? (car x) symbol) (cadr x))) list))
-
+  
   (define (append-id . list)
     (string->symbol
      (apply
@@ -161,9 +173,9 @@
     (match list
       ((list 'attribute name type minoccur maxoccur)
        (if (= maxoccur 1)
-           (new-field-mono name 0) ;; TODO: exact type
+           (new-field-mono name (default-value type)) ;; TODO: exact type
            ;; multi-valuated
-           (new-field-multi name 0)))))
+           (new-field-multi name (default-value type))))))
 
   (define (new-field-mono f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
@@ -217,20 +229,26 @@
                e))
          body))
 
-  (define -method-hash
-    (make-hasheq))
-  
+  (define -method-hash (make-hasheq))
+
   (define (-gen-fast-accessors hash)
     (hash-map
      hash
      (lambda (k v)
        (let ((method-name
               (if (eq? (caddr v) 'boolean)
-                  (append-id k "?")
-                  (append-id k "-of"))))
-         `(define (,method-name o)
-            (send o ,k))))))
-
+                  (append-id "~" k "?")
+                  (append-id "~" k))))
+         `(begin
+            (define-syntax ,method-name
+              (syntax-rules ()
+                ([_ o]
+                 (send o ,k))
+                ;; Allow also to be apply-able
+                ([_] 
+                 (lambda (o) (send o ,k)))))
+            (provide ,method-name))))))
+    
   (define (-add-methods-to-hash body)
     (for-each 
      (lambda (e)
@@ -259,7 +277,7 @@
 ;             (define #,(datum->syntax stx 'the-epackage) package)
 ;             body ...))))
 
-(define-macro (with-epackage package . body)
+(define-macro (-with-epackage package . body)
   `(begin
      (define the-epackage ,package)
      ,@body
@@ -273,6 +291,11 @@
   ;; Generate all the accessor methods
   `(begin
      ,@(-gen-fast-accessors -method-hash)))
+
+(define-macro (with-epackage package . body)
+  `(begin
+     (define the-epackage ,package)
+     ,@body))
 
 (define-syntax (with-eclass stx)
   (syntax-case stx ()
@@ -293,7 +316,7 @@
 (send ecore-package name-set! "ecore")
 (send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
 (send ecore-package nsPrefix-set! "ecore")
-(with-epackage
+(-with-epackage
  ecore-package
 
  (-eclass
@@ -501,7 +524,6 @@
 )
 
 (define-macro (eclass n super ifaces . body)
-  (-add-methods-to-hash body)
   `(begin
      (define ,n
        (class* ,super ,ifaces
@@ -515,7 +537,7 @@
      ,(create-metaclass n super ifaces body)))
 
 ;; Utility macros
-(define-syntax eclass-of
+(define-syntax ~eclass
   (syntax-rules ()
     ((_ c)
      (send c eClass))))
@@ -584,20 +606,20 @@
        (let ((attname (string->symbol (send att name))))
          (list attname (dynamic-send o attname))))
      (filter (lambda (att)
-               (= (send att upperBound) 1))
-             (send (eclass-of o) eAllAttributes))))
+               (= (~upperBound att) 1))
+             (~eAllAttributes (~eclass o)))))
 
    ;; Multi-valuated attributes
    (filter-map
     (lambda (att)
-      (and (not (= (send att upperBound) 1))
-           (let* ((attname (string->symbol (send att name)))
+      (and (not (= (~upperBound att) 1))
+           (let* ((attname (string->symbol (~name att)))
                   (attvalue (dynamic-send o attname)))
              (and (not (null? attvalue))
                   (map (lambda (v)
                          (list attname (list) v))
                        attvalue)))))
-    (send (eclass-of o) eAllAttributes))
+    (~eAllAttributes (~eclass o)))
 
    ;; References
    (filter-map
@@ -605,7 +627,7 @@
       (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
         (and (not (null? result))
              result)))
-    (send (eclass-of o) eAllReferences))))
+    (~eAllReferences (~eclass o)))))
 
 ;; ; Idea
 ;; ;(struct -ecore# (EClass))
