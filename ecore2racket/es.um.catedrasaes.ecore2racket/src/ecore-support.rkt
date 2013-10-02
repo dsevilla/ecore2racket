@@ -259,7 +259,7 @@
 
   )
 
-;; The macro proper. Private version to generate Ecore itself.
+;; The eclass macro proper. Private version to generate Ecore itself.
 (define-macro (-eclass n super . body)
   (-add-methods-to-hash body)
   `(begin
@@ -269,6 +269,17 @@
          ,@(-expand-eclass-body body)))
 
      (send the-epackage eClassifiers-append! (new ,n))))
+
+;; The eclass macro proper. Private version to generate Ecore itself.
+(define-macro (-edatatype n serializable?)
+  (let ((dt (gensym))
+        (name-symbol (symbol->string n)))
+    `(let ((,dt (new EDataType%)))
+       (send* ,dt
+         (name-set! ,name-symbol)
+         (serializable-set! ,serializable?))
+       (send the-epackage eClassifiers-append! ,dt))))
+
 
 ;(define-syntax (with-epackage stx)
 ;    (syntax-case stx ()
@@ -447,6 +458,9 @@
   (attribute serializable boolean 0 1))
  (provide EDataType%)
 
+ ;; Datatypes
+ (-edatatype EString #t)
+ 
  )
 
 ;; The macro proper. Private version to generate Ecore itself.
@@ -600,14 +614,15 @@
    (list
     nameattr
 
-    ;; Attributes
-    (map
-     (lambda (att)
-       (let ((attname (string->symbol (~name att))))
-         (list attname (dynamic-send o attname))))
-     (filter (lambda (att)
-               (= (~upperBound att) 1))
-             (~eAllAttributes (~eclass o)))))
+    ;; Attributes (with non-default value) + non-contained references
+    (append
+     (filter-map
+      (lambda (att)
+        (and (= (~upperBound att) 1)
+             (let* ((attname (string->symbol (~name att)))
+                    (value (dynamic-send o attname)))
+                    (list attname value))))
+      (~eAllAttributes (~eclass o))))))
 
    ;; Multi-valuated attributes
    (filter-map
@@ -627,7 +642,7 @@
       (let ((result (ref->xexpr o (string->symbol (~name ref)) ref)))
         (and (not (null? result))
              result)))
-    (~eAllReferences (~eclass o)))))
+    (~eAllReferences (~eclass o))))
 
 ;; ; Idea
 ;; ;(struct -ecore# (EClass))
