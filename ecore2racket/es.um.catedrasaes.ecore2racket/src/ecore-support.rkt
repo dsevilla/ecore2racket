@@ -573,7 +573,7 @@
 (define (ref->xexpr o refname r)
   (let ((refval (dynamic-send o refname)))
     ;; Mono or multi-valuated?
-    (if (= (send r upperBound) 1)
+    (if (= (~upperBound r) 1)
         ;; Mono
         (if (not (null? refval))
             (list (-eobject->xexpr refval o refname 0))
@@ -603,7 +603,7 @@
     ;; Attributes
     (map
      (lambda (att)
-       (let ((attname (string->symbol (send att name))))
+       (let ((attname (string->symbol (~name att))))
          (list attname (dynamic-send o attname))))
      (filter (lambda (att)
                (= (~upperBound att) 1))
@@ -617,14 +617,14 @@
                   (attvalue (dynamic-send o attname)))
              (and (not (null? attvalue))
                   (map (lambda (v)
-                         (list attname (list) v))
+                         (list attname '() v))
                        attvalue)))))
     (~eAllAttributes (~eclass o)))
 
    ;; References
    (filter-map
     (lambda (ref)
-      (let ((result (ref->xexpr o (string->symbol (send ref name)) ref)))
+      (let ((result (ref->xexpr o (string->symbol (~name ref)) ref)))
         (and (not (null? result))
              result)))
     (~eAllReferences (~eclass o)))))

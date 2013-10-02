@@ -6,6 +6,7 @@
 
   ;; Support functions
   (require "../src/ecore-support.rkt")
+  (provide (all-from-out "../src/ecore-support.rkt"))
 
   ;; The package
   (provide box-package)
