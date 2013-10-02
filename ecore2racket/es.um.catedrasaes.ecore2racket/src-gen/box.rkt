@@ -11,23 +11,23 @@
   ;; The package
   (provide box-package)
   (provide
-  		Box%
-  		BoxReference%
-  		WireReference%
-  		LocalWireReference%
-  		ExternalWireReference%
-  		Connection%
-  		Wire%
-  		Type%
-  		BasicType%
-  		OtherType%
-  		Method%
-  		Param%
-  		WireMany%
-  		WireMethod%
+  		Box
+  		BoxReference
+  		WireReference
+  		LocalWireReference
+  		ExternalWireReference
+  		Connection
+  		Wire
+  		Type
+  		BasicType
+  		OtherType
+  		Method
+  		Param
+  		WireMany
+  		WireMethod
   	)
 
-(define box-package (new EPackage%))
+(define box-package (new EPackage))
 (send* box-package 
 	(name-set! "box")
 	(nsURI-set! "http://www.catedrasaes.org/Box")
@@ -65,30 +65,30 @@
 ))
 ;; Class Box
 (eclass 
-  Box% EObject% (Box<%>)
+  Box EObject (Box<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment string 0 1)
+	(attribute comment EString 0 1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	
 	; reference attributes
-	(reference attributes 'Param% #t 0 -1)
+	(reference attributes Param #t 0 -1)
 	
 	; reference methods
-	(reference methods 'Method% #t 0 -1)
+	(reference methods Method #t 0 -1)
 	
 	; reference wires
-	(reference wires 'Wire% #t 0 -1)
+	(reference wires Wire #t 0 -1)
 	
 	; reference boxes
-	(reference boxes 'BoxReference% #t 0 -1)
+	(reference boxes BoxReference #t 0 -1)
 	
 	; reference connection
-	(reference connection 'Connection% #t 0 -1)
+	(reference connection Connection #t 0 -1)
 	
 	
 
@@ -112,21 +112,21 @@
 ))
 ;; Class BoxReference
 (eclass 
-  BoxReference% EObject% (BoxReference<%>)
+  BoxReference EObject (BoxReference<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer boolean 0 1)
+	(attribute isPointer EBoolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference boolean 0 1)
+	(attribute isReference EBoolean 0 1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	
 	; reference box
-	(reference box 'Box% #f 0 1)
+	(reference box Box #f 0 1)
 	
 	
 
@@ -141,12 +141,12 @@
 ))
 ;; Class WireReference
 (eclass 
-  WireReference% EObject% (WireReference<%>)
+  WireReference EObject (WireReference<%>)
 
     ;; fields (features)
 	
 	; reference wire
-	(reference wire 'Wire% #f 0 1)
+	(reference wire Wire #f 0 1)
 	
 	
 
@@ -158,7 +158,7 @@
 ))
 ;; Class LocalWireReference
 (eclass 
-  LocalWireReference% WireReference% (LocalWireReference<%>)
+  LocalWireReference WireReference (LocalWireReference<%>)
 
     ;; fields (features)
 	
@@ -175,12 +175,12 @@
 ))
 ;; Class ExternalWireReference
 (eclass 
-  ExternalWireReference% WireReference% (ExternalWireReference<%>)
+  ExternalWireReference WireReference (ExternalWireReference<%>)
 
     ;; fields (features)
 	
 	; reference boxReference
-	(reference boxReference 'BoxReference% #f 0 1)
+	(reference boxReference BoxReference #f 0 1)
 	
 	
 
@@ -198,15 +198,15 @@
 ))
 ;; Class Connection
 (eclass 
-  Connection% EObject% (Connection<%>)
+  Connection EObject (Connection<%>)
 
     ;; fields (features)
 	
 	; reference from
-	(reference from 'WireReference% #t 0 1)
+	(reference from WireReference #t 0 1)
 	
 	; reference to
-	(reference to 'WireReference% #t 0 1)
+	(reference to WireReference #t 0 1)
 	
 	
 
@@ -227,18 +227,18 @@
 ))
 ;; Class Wire
 (eclass 
-  Wire% EObject% (Wire<%>)
+  Wire EObject (Wire<%>)
 
     ;; fields (features)
 	; attribute isInput
-	(attribute isInput boolean 0 1)
+	(attribute isInput EBoolean 0 1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	
 	; reference type
-	(reference type 'Type% #t 0 1)
+	(reference type Type #t 0 1)
 	
 	
 
@@ -256,14 +256,14 @@
 ))
 ;; Class Type
 (eclass 
-  Type% EObject% (Type<%>)
+  Type EObject (Type<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer boolean 0 1)
+	(attribute isPointer EBoolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference boolean 0 1)
+	(attribute isReference EBoolean 0 1)
 	
 	
 	
@@ -279,11 +279,11 @@
 ))
 ;; Class BasicType
 (eclass 
-  BasicType% Type% (BasicType<%>)
+  BasicType Type (BasicType<%>)
 
     ;; fields (features)
 	; attribute basicType
-	(attribute basicType number 0 1)
+	(attribute basicType BaseTypes 0 1)
 	
 	
 	
@@ -303,14 +303,14 @@
 ))
 ;; Class OtherType
 (eclass 
-  OtherType% Type% (OtherType<%>)
+  OtherType Type (OtherType<%>)
 
     ;; fields (features)
 	; attribute namespace
-	(attribute namespace string 0 -1)
+	(attribute namespace EString 0 -1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	
 	
@@ -339,24 +339,24 @@
 ))
 ;; Class Method
 (eclass 
-  Method% EObject% (Method<%>)
+  Method EObject (Method<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment string 0 1)
+	(attribute comment EString 0 1)
 	
 	; attribute isPrivate
-	(attribute isPrivate boolean 0 1)
+	(attribute isPrivate EBoolean 0 1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	
 	; reference type
-	(reference type 'Type% #t 0 1)
+	(reference type Type #t 0 1)
 	
 	; reference parameters
-	(reference parameters 'Param% #t 0 -1)
+	(reference parameters Param #t 0 -1)
 	
 	
 
@@ -381,21 +381,21 @@
 ))
 ;; Class Param
 (eclass 
-  Param% EObject% (Param<%>)
+  Param EObject (Param<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment string 0 1)
+	(attribute comment EString 0 1)
 	
 	; attribute name
-	(attribute name string 0 1)
+	(attribute name EString 0 1)
 	
 	; attribute defaultValue
-	(attribute defaultValue string 0 -1)
+	(attribute defaultValue EString 0 -1)
 	
 	
 	; reference type
-	(reference type 'Type% #t 0 1)
+	(reference type Type #t 0 1)
 	
 	
 
@@ -407,7 +407,7 @@
 ))
 ;; Class WireMany
 (eclass 
-  WireMany% Wire% (WireMany<%>)
+  WireMany Wire (WireMany<%>)
 
     ;; fields (features)
 	
@@ -424,12 +424,12 @@
 ))
 ;; Class WireMethod
 (eclass 
-  WireMethod% Wire% (WireMethod<%>)
+  WireMethod Wire (WireMethod<%>)
 
     ;; fields (features)
 	
 	; reference method
-	(reference method 'Method% #f 0 1)
+	(reference method Method #f 0 1)
 	
 	
 

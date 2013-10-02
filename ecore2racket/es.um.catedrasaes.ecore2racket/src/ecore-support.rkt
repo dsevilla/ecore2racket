@@ -16,7 +16,7 @@
    EReference<%>
    EAttribute<%>
    EObject<%>
-   EObject%
+   EObject
    eclass
    with-epackage
    ecore-package
@@ -43,7 +43,7 @@
 (define EReference<%> (interface (EStructuralFeature<%>)))
 (define EAttribute<%> (interface (EStructuralFeature<%>)))
 
-(define EObject-base%
+(define EObject-base
   (class* object% (EObject<%>)
 
     (super-new)
@@ -62,8 +62,8 @@
     (define/public (eClassifiers-get-by-id id)
       (hash-ref -eClassifiers-hash-table id null))))
 
-(define -EPackage-base%
-  (class* EObject-base% (EPackage<%>)
+(define -EPackage-base
+  (class* EObject-base (EPackage<%>)
     (super-new)
     ;; Fake class symbols to close the circle
     (field [-name ""]
@@ -87,8 +87,8 @@
       (set! -eClassifiers
             (append -eClassifiers (list c))))))
 
-(define -EPackage%
-  (eclassifier-hash-table-mixin% -EPackage-base%))
+(define -EPackage
+  (eclassifier-hash-table-mixin% -EPackage-base))
 
 ;; TODO: provide contracts for these.
 
@@ -110,22 +110,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require compatibility/defmacro
-         (for-syntax racket/match
-                     racket/list
-                     racket))
+         (for-syntax racket))
 
 (module utils racket
-  
+
   (define (default-value type)
-    (let ((val (assq type '([number 0]
-                            [string ""]
-                            [boolean #f]))))
+    (let ((val (assq type '([EInt 0]
+                            [EFloat 0.0]
+                            [EByte 0]
+                            [EChar #\x0]
+                            [EDouble 0.0]
+                            [ELong 0]
+                            [EString ""]
+                            [EBoolean #f]))))
       (if val (cadr val) null)))
-  
+
   (provide default-value)
   )
 
-(require (submod "." utils) 
+(require (submod "." utils)
          (for-syntax (submod "." utils)))
 
 (begin-for-syntax
@@ -158,7 +161,7 @@
 ;             body ...)))))
 
 
-  
+
   (define (append-id . list)
     (string->symbol
      (apply
@@ -245,12 +248,12 @@
                 ([_ o]
                  (send o ,k))
                 ;; Allow also to be apply-able
-                ([_] 
+                ([_]
                  (lambda (o) (send o ,k)))))
             (provide ,method-name))))))
-    
+
   (define (-add-methods-to-hash body)
-    (for-each 
+    (for-each
      (lambda (e)
        (when (and (pair? e)
                   (member (car e) '(attribute reference ref/derived)))
@@ -274,7 +277,7 @@
 (define-macro (-edatatype n serializable?)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
-    `(let ((,dt (new EDataType%)))
+    `(let ((,dt (new EDataType)))
        (send* ,dt
          (name-set! ,name-symbol)
          (serializable-set! ,serializable?))
@@ -323,7 +326,7 @@
        ,body)))
 
 ;;; Ecore classes
-(define ecore-package (new -EPackage%))
+(define ecore-package (new -EPackage))
 (send ecore-package name-set! "ecore")
 (send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
 (send ecore-package nsPrefix-set! "ecore")
@@ -331,20 +334,20 @@
  ecore-package
 
  (-eclass
-  EObject% EObject-base%)
- (provide EObject%)
+  EObject EObject-base)
+ (provide EObject)
 
  (-eclass
-  EModelElement% EObject%)
- (provide EModelElement%)
+  EModelElement EObject)
+ (provide EModelElement)
 
  (-eclass
-  ENamedElement% EModelElement%
+  ENamedElement EModelElement
   (attribute name string 1 1))
 
  (-eclass
-  EClassifier% ENamedElement%
-  (reference ePackage EPackage% #f 0 1))
+  EClassifier ENamedElement
+  (reference ePackage EPackage #f 0 1))
 
  (define-macro (collect-from-supers all-att-super att)
    (let ([att-value-n (gensym)])
@@ -364,102 +367,108 @@
                     all-superclasses)))))
 
  (-eclass
-  EClass% EClassifier%
+  EClass EClassifier
   (attribute abstract boolean 0 1)
   (attribute interface boolean 0 1)
-  (reference eIDAttribute EAttribute% #f 0 1)
-  (reference eOperations EOperation% #t 0 -1)
-  (reference eSuperTypes EClass% #f 0 -1)
-  (reference eStructuralFeatures EStructuralFeature% #t 0 -1)
+  (reference eIDAttribute EAttribute #f 0 1)
+  (reference eOperations EOperation #t 0 -1)
+  (reference eSuperTypes EClass #f 0 -1)
+  (reference eStructuralFeatures EStructuralFeature #t 0 -1)
 
   ;; Note: as eAttributes and eReferences (and all the "allXX" references) are derived,
   ;; and so frequently used, so we implement them by hand
 
-  (ref/derived eReferences EReference% #f 0 -1
-              (filter (lambda (f) (is-a? f EReference%)) -eStructuralFeatures))
+  (ref/derived eReferences EReference #f 0 -1
+              (filter (lambda (f) (is-a? f EReference)) -eStructuralFeatures))
 
-  (ref/derived eAllReferences EReference% #f 0 -1
+  (ref/derived eAllReferences EReference #f 0 -1
               (collect-from-supers eAllReferences (eReferences)))
 
-  (ref/derived eAttributes EAttribute% #f 0 -1
-              (filter (lambda (f) (is-a? f EAttribute%)) -eStructuralFeatures))
+  (ref/derived eAttributes EAttribute #f 0 -1
+              (filter (lambda (f) (is-a? f EAttribute)) -eStructuralFeatures))
 
-  (ref/derived eAllAttributes EAttribute% #f 0 -1
+  (ref/derived eAllAttributes EAttribute #f 0 -1
               (collect-from-supers eAllAttributes (eAttributes)))
 
-  (ref/derived eAllOperations EOperation% #f 0 -1
+  (ref/derived eAllOperations EOperation #f 0 -1
               (collect-from-supers eAllOperations -eOperations))
 
-  (ref/derived eAllStructuralFeatures EStructuralFeature% #f 0 -1
+  (ref/derived eAllStructuralFeatures EStructuralFeature #f 0 -1
               (collect-from-supers eAllStructuralFeatures -eStructuralFeatures))
 
-  (ref/derived eAllSuperTypes EClass% #f 0 -1
+  (ref/derived eAllSuperTypes EClass #f 0 -1
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
- (provide EClass%)
+ (provide EClass)
 
  (-eclass
-  EPackage-base% ENamedElement%
+  EPackage-base ENamedElement
   (attribute nsURI string 0 1)
   (attribute nsPrefix string 0 1)
-  (reference eSuperPackage EPackage% #f 0 1)
-  (reference eClassifiers EClassifier% #t 0 -1)
-  (reference eSubpackages EPackage% #t 0 -1))
- (define EPackage%
-  (eclassifier-hash-table-mixin% EPackage-base%))
- (provide EPackage%)
+  (reference eSuperPackage EPackage #f 0 1)
+  (reference eClassifiers EClassifier #t 0 -1)
+  (reference eSubpackages EPackage #t 0 -1))
+ (define EPackage
+  (eclassifier-hash-table-mixin% EPackage-base))
+ (provide EPackage)
 
  (-eclass
-  ETypedElement% ENamedElement%
+  ETypedElement ENamedElement
   (attribute ordered boolean 0 1)
   (attribute unique boolean 0 1)
   (attribute lowerBound number 0 1)
   (attribute upperBound number 0 1)
   (attribute many boolean 0 1)
   (attribute required boolean 0 1)
-  (reference eType EClassifier% #f 0 1))
+  (reference eType EClassifier #f 0 1))
 
  (-eclass
-  EOperation% ETypedElement%
-  (reference eContainingClass EClass% #f 1 1)
-  (reference eParameters EParameter% #t 0 -1))
- (provide EOperation%)
+  EOperation ETypedElement
+  (reference eContainingClass EClass #f 1 1)
+  (reference eParameters EParameter #t 0 -1))
+ (provide EOperation)
 
  (-eclass
-  EParameter% ETypedElement%
-  (reference eOperation EOperation% #f 1 1))
- (provide EParameter%)
+  EParameter ETypedElement
+  (reference eOperation EOperation #f 1 1))
+ (provide EParameter)
 
  (-eclass
-  EStructuralFeature% ETypedElement%
+  EStructuralFeature ETypedElement
   (attribute changeable boolean 0 1)
   (attribute volatile boolean 0 1)
   (attribute transient boolean 0 1)
   (attribute unsettable boolean 0 1)
   (attribute derived boolean 0 1)
-  (reference eContainingClass EClass% #f 0 1))
- (provide EStructuralFeature%)
+  (reference eContainingClass EClass #f 0 1))
+ (provide EStructuralFeature)
 
  (-eclass
-  EAttribute% EStructuralFeature%
+  EAttribute EStructuralFeature
   (attribute iD boolean 0 1)
-  (reference eAttributeType EDataType% #f 1 1))
- (provide EAttribute%)
+  (reference eAttributeType EDataType #f 1 1))
+ (provide EAttribute)
 
  (-eclass
-  EReference% EStructuralFeature%
+  EReference EStructuralFeature
   (attribute containment boolean 0 1)
   (attribute container boolean 0 1)
-  (reference eOpposite EReference% #f 0 1)
-  (reference eReferenceType EClass% #f 1 1))
- (provide EReference%)
+  (reference eOpposite EReference #f 0 1)
+  (reference eReferenceType EClass #f 1 1))
+ (provide EReference)
 
  (-eclass
-  EDataType% EClassifier%
+  EDataType EClassifier
   (attribute serializable boolean 0 1))
- (provide EDataType%)
+ (provide EDataType)
 
  ;; Datatypes
  (-edatatype EString #t)
+ (-edatatype ELong #t)
+ (-edatatype EInt #t)
+ (-edatatype EChar #t)
+ (-edatatype EFloat #t)
+ (-edatatype EDouble #t)
+ (-edatatype EBoolean #t)
  
  )
 
@@ -485,9 +494,10 @@
     (match list
       ((list 'attribute name type minoccur maxoccur)
        `(begin
-          (let ((att (new EAttribute%)))
+          (let ((att (new EAttribute)))
             (send* att
               (name-set! ,(symbol->string name))
+              (eType-set! ',type)
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
@@ -497,10 +507,10 @@
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        `(begin
-          (let ((ref (new EReference%)))
+          (let ((ref (new EReference)))
             (send* ref
               (name-set! ,(symbol->string name))
-              (eType-set! ,type)
+              (eType-set! ',type)
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
@@ -522,12 +532,12 @@
          body))
 
   (define (create-metaclass n super ifaces body)
-    `(let ((the-eclass (new EClass%)))
+    `(let ((the-eclass (new EClass)))
        (send* the-eclass
          (name-set! ,(symbol->string n))
          (ePackage-set! the-epackage))
 
-       ,(unless (eq? super 'EObject%)
+       ,(unless (eq? super 'EObject)
             `(send the-eclass eSuperTypes-append! ',super))
 
        ,@(metaclass-creation body)
@@ -621,7 +631,8 @@
         (and (= (~upperBound att) 1)
              (let* ((attname (string->symbol (~name att)))
                     (value (dynamic-send o attname)))
-                    (list attname value))))
+               (and (not (equal? value (default-value (string->symbol (~name (~eType att))))))
+                    (list attname value)))))
       (~eAllAttributes (~eclass o))))))
 
    ;; Multi-valuated attributes

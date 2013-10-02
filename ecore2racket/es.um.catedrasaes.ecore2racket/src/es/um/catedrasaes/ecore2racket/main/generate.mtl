@@ -26,7 +26,7 @@
   (provide [pkg_var_name(anEPackage)/])
   [generate_provides(anEPackage)/]
 
-(define [pkg_var_name(anEPackage)/] (new EPackage%))
+(define [pkg_var_name(anEPackage)/] (new EPackage))
 (send* [pkg_var_name(anEPackage)/] 
 	(name-set! "[anEPackage.name/]")
 	(nsURI-set! "[anEPackage.nsURI/]")
@@ -46,14 +46,7 @@
 [query private pkg_var_name(p : EPackage) : String = p.name + '-package' /]
 
 [query private datatype_to_racket (dt : EDataType) : String =
-	if dt = EString then
-      'string'
-    else if dt = EBoolean then
-      'boolean'
-    else  -- Integers, mainly TODOTODOTODO
-      'number'
-	endif
-    endif/]
+ dt.name/]
 
 [template private generate_provides (anEPackage : EPackage) ]
 (provide
@@ -135,7 +128,7 @@
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 ; reference [ref.name/]
-(reference [ref.name/] '[eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
+(reference [ref.name/] [eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
 
 [/for]
 [/template]
@@ -153,7 +146,7 @@
   if value then '#t' else '#f' endif/]
 
 [query private eclass_to_racket_class_name(klass: EClassifier) : String =
-  klass.name + '%' /]
+  klass.name/]
 
 [query private eclass_to_racket_interface_name(klass: EClassifier) : String =
  klass.name + '<%>' /]
@@ -161,7 +154,7 @@
 [query private superclass_spec(klass : EClass) : String = 
   let superclasses : OrderedSet(EClass) = klass.eSuperTypes in
     if (superclasses->size() = 0) then
-      'EObject%'
+      'EObject'
     else
       eclass_to_racket_class_name(superclasses->first())
     endif /]
