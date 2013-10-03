@@ -9,28 +9,29 @@
 ;; set functions). Sorry for the camel case, but it is easier to
 ;; match what will appear in the XMI.
 
-(provide
-   ENamedElement<%>
-   EClassifier<%>
-   EStructuralFeature<%>
-   EReference<%>
-   EAttribute<%>
-   EObject<%>
-   EObject
-   eclass
-   with-epackage
-   ecore-package
-   ~eclass
-   eobject->xexpr
-   generate-fast-accessors
-   update-references
-   to-xml
-   to-xexpr)
+(provide (prefix-out ecore: ENamedElement<%>)
+         (prefix-out ecore: EClassifier<%>)
+         (prefix-out ecore: EStructuralFeature<%>)
+         (prefix-out ecore: EReference<%>)
+         (prefix-out ecore: EAttribute<%>)
+         (prefix-out ecore: EObject<%>)
+         (prefix-out ecore: EObject)
+         eclass
+         with-epackage
+         ecore-package
+         ~eclass
+         eobject->xexpr
+         generate-fast-accessors
+         update-references
+         to-xml
+         to-xexpr)
 
 ;;; Interfaces describing the different Ecore metamodel elements. In a
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
 ;;; process first.
+(define EResource<%> (interface () ))
+(define EResourceSet<%> (interface () ))
 (define EObject<%> (interface () eClass eClass-set!))
 (define ENamedElement<%> (interface (EObject<%>) name name-set!))
 (define EClassifier<%> (interface (ENamedElement<%>)
@@ -44,8 +45,16 @@
 (define EReference<%> (interface (EStructuralFeature<%>)))
 (define EAttribute<%> (interface (EStructuralFeature<%>)))
 
+(define EResourceSet
+  (class* object% (EResourceSet<%>)
+    (super-new)))
+
+(define EResource
+  (class* object% (EResource<%>)
+    (super-new)))
+
 (define EObject-base
-  (class* object% (EObject<%>)
+  (class* EResource (EObject<%>)
 
     (super-new)
 
@@ -167,7 +176,7 @@
     (match list
       ((list 'attribute name type minoccur maxoccur)
        (if (= maxoccur 1)
-           (new-field-mono name (default-value type)) ;; TODO: exact type
+           (new-field-mono name (default-value type))
            ;; multi-valuated
            (new-field-multi name (default-value type))))))
 
@@ -268,12 +277,16 @@
 (define-macro (-edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
-    `(let ((,dt (new EDataType)))
-       (send* ,dt
-         (name-set! ,name-symbol)
-         (serializable-set! ,serializable?)
-         (defaultValue-set! ,default-value))
-       (send the-epackage eClassifiers-append! ,dt))))
+    `(define ,n
+         (let ((,dt (new EDataType)))
+           (send* ,dt
+             (name-set! ,name-symbol)
+             (serializable-set! ,serializable?)
+             (defaultValue-set! ,default-value))
+
+           (send the-epackage eClassifiers-append! ,dt)
+
+           ,dt))))
 
 
 ;(define-syntax (with-epackage stx)
@@ -291,10 +304,10 @@
      ;; at the same level to all the previous calls to
      ;; eclass, so it is run *after* all the classes
      ;; have been created.
-     
+
      ;; Generate ~xxx methods
      (generate-fast-accessors)
-     
+
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      (update-references)))
@@ -302,7 +315,7 @@
 (define-macro (update-references)
   ;; Update all the references in the model
   `(begin
-     
+
      ))
 
 (define-macro (generate-fast-accessors)
@@ -339,11 +352,11 @@
 
  (-eclass
   EObject EObject-base)
- (provide EObject)
+ (provide (prefix-out ecore: EObject))
 
  (-eclass
   EModelElement EObject)
- (provide EModelElement)
+ (provide (prefix-out ecore: EModelElement))
 
  (-eclass
   ENamedElement EModelElement
@@ -403,7 +416,7 @@
 
   (ref/derived eAllSuperTypes EClass #f 0 -1
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
- (provide EClass)
+ (provide (prefix-out ecore: EClass))
 
  (-eclass
   EPackage-base ENamedElement
@@ -414,7 +427,7 @@
   (reference eSubpackages EPackage #t 0 -1))
  (define EPackage
   (eclassifier-hash-table-mixin% EPackage-base))
- (provide EPackage)
+ (provide (prefix-out ecore: EPackage))
 
  (-eclass
   ETypedElement ENamedElement
@@ -430,12 +443,12 @@
   EOperation ETypedElement
   (reference eContainingClass EClass #f 1 1)
   (reference eParameters EParameter #t 0 -1))
- (provide EOperation)
+ (provide (prefix-out ecore: EOperation))
 
  (-eclass
   EParameter ETypedElement
   (reference eOperation EOperation #f 1 1))
- (provide EParameter)
+ (provide (prefix-out ecore: EParameter))
 
  (-eclass
   EStructuralFeature ETypedElement
@@ -445,13 +458,13 @@
   (attribute unsettable EBoolean 0 1)
   (attribute derived EBoolean 0 1)
   (reference eContainingClass EClass #f 0 1))
- (provide EStructuralFeature)
+ (provide (prefix-out ecore: EStructuralFeature))
 
  (-eclass
   EAttribute EStructuralFeature
   (attribute iD EBoolean 0 1)
   (reference eAttributeType EDataType #f 1 1))
- (provide EAttribute)
+ (provide (prefix-out ecore: EAttribute))
 
  (-eclass
   EReference EStructuralFeature
@@ -459,22 +472,29 @@
   (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
   (reference eReferenceType EClass #f 1 1))
- (provide EReference)
+ (provide (prefix-out ecore: EReference))
 
  (-eclass
   EDataType EClassifier
   (attribute serializable EBoolean 0 1))
- (provide EDataType)
+ (provide (prefix-out ecore: EDataType))
 
  ;; Datatypes
  (-edatatype EString #t "")
+ (provide (prefix-out ecore: EString))
  (-edatatype ELong #t 0)
+ (provide (prefix-out ecore: ELong))
  (-edatatype EInt #t 0)
+ (provide (prefix-out ecore: EInt))
  (-edatatype EChar #t #\u0)
+ (provide (prefix-out ecore: EChar))
  (-edatatype EFloat #t 0.0)
+ (provide (prefix-out ecore: EFloat))
  (-edatatype EDouble #t 0.0)
+ (provide (prefix-out ecore: EDouble))
  (-edatatype EBoolean #t #f)
- 
+ (provide (prefix-out ecore: EBoolean))
+
  )
 
 ;; The macro proper. Private version to generate Ecore itself.
