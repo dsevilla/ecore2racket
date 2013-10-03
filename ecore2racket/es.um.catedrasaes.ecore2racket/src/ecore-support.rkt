@@ -23,6 +23,7 @@
    ~eclass
    eobject->xexpr
    generate-fast-accessors
+   update-references
    to-xml
    to-xexpr)
 
@@ -286,11 +287,23 @@
   `(begin
      (define the-epackage ,package)
      ,@body
-     ;; We generate here a call o a macro so that it is
+     ;; We generate here a call to macros so that they are
      ;; at the same level to all the previous calls to
      ;; eclass, so it is run *after* all the classes
      ;; have been created.
-     (generate-fast-accessors)))
+     
+     ;; Generate ~xxx methods
+     (generate-fast-accessors)
+     
+     ;; Resolve references for this model. If a symbol naming a EClassifier
+     ;; is introduced, search in the package the concrete classifier and reference it
+     (update-references)))
+
+(define-macro (update-references)
+  ;; Update all the references in the model
+  `(begin
+     
+     ))
 
 (define-macro (generate-fast-accessors)
   ;; Generate all the accessor methods
@@ -508,7 +521,7 @@
 
             (send the-eclass eStructuralFeatures-append! ref))))))
 
-  (define (metaclass-creation body)
+  (define (metaclass-body-creation body)
     (map (lambda (e)
            (if (pair? e)
                (cond
@@ -532,7 +545,7 @@
        ,(unless (eq? super 'EObject)
             `(send the-eclass eSuperTypes-append! ',super))
 
-       ,@(metaclass-creation body)
+       ,@(metaclass-body-creation body)
 
        (send* the-epackage
          (eClassifiers-append! the-eclass)
