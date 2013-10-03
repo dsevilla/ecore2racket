@@ -112,25 +112,6 @@
 (require compatibility/defmacro
          (for-syntax racket))
 
-(module utils racket
-
-  (define (default-value type)
-    (let ((val (assq type '([EInt 0]
-                            [EFloat 0.0]
-                            [EByte 0]
-                            [EChar #\x0]
-                            [EDouble 0.0]
-                            [ELong 0]
-                            [EString ""]
-                            [EBoolean #f]))))
-      (if val (cadr val) null)))
-
-  (provide default-value)
-  )
-
-(require (submod "." utils)
-         (for-syntax (submod "." utils)))
-
 (begin-for-syntax
 
 ;  (define-macro (with-gensyms list . body)
@@ -160,7 +141,16 @@
 ;         #'(let ((vars gensyms) ...)
 ;             body ...)))))
 
-
+  (define (default-value type)
+    (let ((val (assq type '([EInt 0]
+                            [EFloat 0.0]
+                            [EByte 0]
+                            [EChar #\x0]
+                            [EDouble 0.0]
+                            [ELong 0]
+                            [EString ""]
+                            [EBoolean #f]))))
+      (if val (cadr val) null)))
 
   (define (append-id . list)
     (string->symbol
@@ -239,7 +229,7 @@
      hash
      (lambda (k v)
        (let ((method-name
-              (if (eq? (caddr v) 'boolean)
+              (if (eq? (caddr v) 'EBoolean)
                   (append-id "~" k "?")
                   (append-id "~" k))))
          `(begin
@@ -274,13 +264,14 @@
      (send the-epackage eClassifiers-append! (new ,n))))
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
-(define-macro (-edatatype n serializable?)
+(define-macro (-edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
     `(let ((,dt (new EDataType)))
        (send* ,dt
          (name-set! ,name-symbol)
-         (serializable-set! ,serializable?))
+         (serializable-set! ,serializable?)
+         (defaultValue-set! ,default-value))
        (send the-epackage eClassifiers-append! ,dt))))
 
 
@@ -343,10 +334,11 @@
 
  (-eclass
   ENamedElement EModelElement
-  (attribute name string 1 1))
+  (attribute name EString 1 1))
 
  (-eclass
   EClassifier ENamedElement
+  (attribute defaultValue EObject 0 1)
   (reference ePackage EPackage #f 0 1))
 
  (define-macro (collect-from-supers all-att-super att)
@@ -368,8 +360,8 @@
 
  (-eclass
   EClass EClassifier
-  (attribute abstract boolean 0 1)
-  (attribute interface boolean 0 1)
+  (attribute abstract EBoolean 0 1)
+  (attribute interface EBoolean 0 1)
   (reference eIDAttribute EAttribute #f 0 1)
   (reference eOperations EOperation #t 0 -1)
   (reference eSuperTypes EClass #f 0 -1)
@@ -402,8 +394,8 @@
 
  (-eclass
   EPackage-base ENamedElement
-  (attribute nsURI string 0 1)
-  (attribute nsPrefix string 0 1)
+  (attribute nsURI EString 0 1)
+  (attribute nsPrefix EString 0 1)
   (reference eSuperPackage EPackage #f 0 1)
   (reference eClassifiers EClassifier #t 0 -1)
   (reference eSubpackages EPackage #t 0 -1))
@@ -413,12 +405,12 @@
 
  (-eclass
   ETypedElement ENamedElement
-  (attribute ordered boolean 0 1)
-  (attribute unique boolean 0 1)
-  (attribute lowerBound number 0 1)
-  (attribute upperBound number 0 1)
-  (attribute many boolean 0 1)
-  (attribute required boolean 0 1)
+  (attribute ordered EBoolean 0 1)
+  (attribute unique EBoolean 0 1)
+  (attribute lowerBound EInt 0 1)
+  (attribute upperBound EInt 0 1)
+  (attribute many EBoolean 0 1)
+  (attribute required EBoolean 0 1)
   (reference eType EClassifier #f 0 1))
 
  (-eclass
@@ -434,41 +426,41 @@
 
  (-eclass
   EStructuralFeature ETypedElement
-  (attribute changeable boolean 0 1)
-  (attribute volatile boolean 0 1)
-  (attribute transient boolean 0 1)
-  (attribute unsettable boolean 0 1)
-  (attribute derived boolean 0 1)
+  (attribute changeable EBoolean 0 1)
+  (attribute volatile EBoolean 0 1)
+  (attribute transient EBoolean 0 1)
+  (attribute unsettable EBoolean 0 1)
+  (attribute derived EBoolean 0 1)
   (reference eContainingClass EClass #f 0 1))
  (provide EStructuralFeature)
 
  (-eclass
   EAttribute EStructuralFeature
-  (attribute iD boolean 0 1)
+  (attribute iD EBoolean 0 1)
   (reference eAttributeType EDataType #f 1 1))
  (provide EAttribute)
 
  (-eclass
   EReference EStructuralFeature
-  (attribute containment boolean 0 1)
-  (attribute container boolean 0 1)
+  (attribute containment EBoolean 0 1)
+  (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
   (reference eReferenceType EClass #f 1 1))
  (provide EReference)
 
  (-eclass
   EDataType EClassifier
-  (attribute serializable boolean 0 1))
+  (attribute serializable EBoolean 0 1))
  (provide EDataType)
 
  ;; Datatypes
- (-edatatype EString #t)
- (-edatatype ELong #t)
- (-edatatype EInt #t)
- (-edatatype EChar #t)
- (-edatatype EFloat #t)
- (-edatatype EDouble #t)
- (-edatatype EBoolean #t)
+ (-edatatype EString #t "")
+ (-edatatype ELong #t 0)
+ (-edatatype EInt #t 0)
+ (-edatatype EChar #t #\u0)
+ (-edatatype EFloat #t 0.0)
+ (-edatatype EDouble #t 0.0)
+ (-edatatype EBoolean #t #f)
  
  )
 
@@ -631,7 +623,7 @@
         (and (= (~upperBound att) 1)
              (let* ((attname (string->symbol (~name att)))
                     (value (dynamic-send o attname)))
-               (and (not (equal? value (default-value (string->symbol (~name (~eType att))))))
+               (and (not (equal? value (~defaultValue (~eType att))))
                     (list attname value)))))
       (~eAllAttributes (~eclass o))))))
 
