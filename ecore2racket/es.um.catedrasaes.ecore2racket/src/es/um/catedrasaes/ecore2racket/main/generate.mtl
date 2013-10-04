@@ -154,7 +154,7 @@
 [query private superclass_spec(klass : EClass) : String = 
   let superclasses : OrderedSet(EClass) = klass.eSuperTypes in
     if (superclasses->size() = 0) then
-      'EObject'
+      'ecore:EObject'
     else
       eclass_to_racket_class_name(superclasses->first())
     endif /]
@@ -162,7 +162,7 @@
 [query private superiface_spec(klass : EClass) : String = 
   let superclasses : OrderedSet(EClass) = klass.eSuperTypes in
     if (superclasses->size() = 0) then
-      'EObject<%>'
+      'ecore:EObject<%>'
     else
       eclass_to_racket_interface_name(superclasses->first())
     endif /]

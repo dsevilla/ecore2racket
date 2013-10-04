@@ -24,7 +24,13 @@
          generate-fast-accessors
          update-references
          to-xml
-         to-xexpr)
+         to-xexpr
+         alias-id)
+
+(define-syntax-rule (alias-id from to)
+  (define-syntax to
+    (syntax-id-rules ()
+      [to from])))
 
 ;;; Interfaces describing the different Ecore metamodel elements. In a
 ;;; perfect world, these entities would have been generated with the
@@ -260,13 +266,25 @@
          (hash-set! -method-hash (cadr e) e)))
      body))
 
+  (define (generate-defines-for-classifiers package-prefix body)
+    (filter-map 
+     (lambda (e)
+       (and (pair? e)
+            (or (eq? (car e) '-eclass)
+                (eq? (car e) '-edatatype))
+            (let ((class-name (cadr e)))
+              `(begin
+                 (define ,class-name null)
+                 (alias-id ,class-name ,(append-id package-prefix ":" class-name))))))
+     body))
+
   )
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
 (define-macro (-eclass n super . body)
   (-add-methods-to-hash body)
   `(begin
-     (define ,n
+     (set! ,n
        (class ,super
          (super-new)
          ,@(-expand-eclass-body body)))
@@ -277,7 +295,7 @@
 (define-macro (-edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
-    `(define ,n
+    `(set! ,n
          (let ((,dt (new EDataType)))
            (send* ,dt
              (name-set! ,name-symbol)
@@ -296,9 +314,15 @@
 ;             (define #,(datum->syntax stx 'the-epackage) package)
 ;             body ...))))
 
-(define-macro (-with-epackage package . body)
+
+
+(define-macro (-with-epackage package package-prefix . body)
   `(begin
      (define the-epackage ,package)
+     
+     ;; Predefine the classes so that they can self-reference later.
+     ,@(generate-defines-for-classifiers package-prefix body)
+     
      ,@body
      ;; We generate here a call to macros so that they are
      ;; at the same level to all the previous calls to
@@ -348,7 +372,7 @@
 (send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
 (send ecore-package nsPrefix-set! "ecore")
 (-with-epackage
- ecore-package
+ ecore-package ecore
 
  (-eclass
   EObject EObject-base)
