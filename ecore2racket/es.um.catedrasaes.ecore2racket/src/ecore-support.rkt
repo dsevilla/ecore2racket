@@ -15,7 +15,6 @@
          (prefix-out ecore: EReference<%>)
          (prefix-out ecore: EAttribute<%>)
          (prefix-out ecore: EObject<%>)
-         (prefix-out ecore: EObject)
          eclass
          with-epackage
          ecore-package
@@ -210,9 +209,11 @@
            (public ,set-name)
            (define ,append-name
              (lambda (,tmp-val-n)
-               (set! ,field-name (append ,field-name (if (list? ,tmp-val-n)
-                                                         ,tmp-val-n
-                                                         (list ,tmp-val-n))))))
+               (set! ,field-name 
+                     (append ,field-name 
+                             (if (list? ,tmp-val-n)
+                                 ,tmp-val-n
+                                 (list ,tmp-val-n))))))
            (public ,append-name)))))
 
   (define (expand-class-reference list)
@@ -376,21 +377,23 @@
 
  (-eclass
   EObject EObject-base)
- (provide (prefix-out ecore: EObject))
+ (provide ecore:EObject)
 
  (-eclass
   EModelElement EObject)
- (provide (prefix-out ecore: EModelElement))
+ (provide ecore:EModelElement)
 
  (-eclass
   ENamedElement EModelElement
   (attribute name EString 1 1))
-
+ (provide ecore:EModelElement)
+ 
  (-eclass
   EClassifier ENamedElement
   (attribute defaultValue EObject 0 1)
   (reference ePackage EPackage #f 0 1))
-
+ (provide ecore:EClassifier)
+ 
  (define-macro (collect-from-supers all-att-super att)
    (let ([att-value-n (gensym)])
      `(let* ([,att-value-n ,att]
@@ -440,18 +443,17 @@
 
   (ref/derived eAllSuperTypes EClass #f 0 -1
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
- (provide (prefix-out ecore: EClass))
+ (provide ecore:EClass)
 
  (-eclass
-  EPackage-base ENamedElement
+  EPackage ENamedElement
   (attribute nsURI EString 0 1)
   (attribute nsPrefix EString 0 1)
   (reference eSuperPackage EPackage #f 0 1)
   (reference eClassifiers EClassifier #t 0 -1)
   (reference eSubpackages EPackage #t 0 -1))
- (define EPackage
-  (eclassifier-hash-table-mixin% EPackage-base))
- (provide (prefix-out ecore: EPackage))
+ (set! EPackage (eclassifier-hash-table-mixin% EPackage))
+ (provide ecore:EPackage)
 
  (-eclass
   ETypedElement ENamedElement
@@ -462,17 +464,18 @@
   (attribute many EBoolean 0 1)
   (attribute required EBoolean 0 1)
   (reference eType EClassifier #f 0 1))
-
+ (provide ecore:ETypedElement)
+ 
  (-eclass
   EOperation ETypedElement
   (reference eContainingClass EClass #f 1 1)
   (reference eParameters EParameter #t 0 -1))
- (provide (prefix-out ecore: EOperation))
+ (provide ecore:EOperation)
 
  (-eclass
   EParameter ETypedElement
   (reference eOperation EOperation #f 1 1))
- (provide (prefix-out ecore: EParameter))
+ (provide ecore:EParameter)
 
  (-eclass
   EStructuralFeature ETypedElement
@@ -482,13 +485,13 @@
   (attribute unsettable EBoolean 0 1)
   (attribute derived EBoolean 0 1)
   (reference eContainingClass EClass #f 0 1))
- (provide (prefix-out ecore: EStructuralFeature))
+ (provide ecore:EStructuralFeature)
 
  (-eclass
   EAttribute EStructuralFeature
   (attribute iD EBoolean 0 1)
   (reference eAttributeType EDataType #f 1 1))
- (provide (prefix-out ecore: EAttribute))
+ (provide ecore:EAttribute)
 
  (-eclass
   EReference EStructuralFeature
@@ -496,28 +499,28 @@
   (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
   (reference eReferenceType EClass #f 1 1))
- (provide (prefix-out ecore: EReference))
+ (provide ecore:EReference)
 
  (-eclass
   EDataType EClassifier
   (attribute serializable EBoolean 0 1))
- (provide (prefix-out ecore: EDataType))
+ (provide EDataType)
 
  ;; Datatypes
  (-edatatype EString #t "")
- (provide (prefix-out ecore: EString))
+ (provide ecore:EString)
  (-edatatype ELong #t 0)
- (provide (prefix-out ecore: ELong))
+ (provide ecore:ELong)
  (-edatatype EInt #t 0)
- (provide (prefix-out ecore: EInt))
+ (provide ecore:EInt)
  (-edatatype EChar #t #\u0)
- (provide (prefix-out ecore: EChar))
+ (provide ecore:EChar)
  (-edatatype EFloat #t 0.0)
- (provide (prefix-out ecore: EFloat))
+ (provide ecore:EFloat)
  (-edatatype EDouble #t 0.0)
- (provide (prefix-out ecore: EDouble))
+ (provide ecore:EDouble)
  (-edatatype EBoolean #t #f)
- (provide (prefix-out ecore: EBoolean))
+ (provide ecore:EBoolean)
 
  )
 
@@ -543,7 +546,7 @@
     (match list
       ((list 'attribute name type minoccur maxoccur)
        `(begin
-          (let ((att (new EAttribute)))
+          (let ((att (new ecore:EAttribute)))
             (send* att
               (name-set! ,(symbol->string name))
               (eType-set! ',type)
@@ -556,7 +559,7 @@
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        `(begin
-          (let ((ref (new EReference)))
+          (let ((ref (new ecore:EReference)))
             (send* ref
               (name-set! ,(symbol->string name))
               (eType-set! ',type)
@@ -581,12 +584,12 @@
          body))
 
   (define (create-metaclass n super ifaces body)
-    `(let ((the-eclass (new EClass)))
+    `(let ((the-eclass (new ecore:EClass)))
        (send* the-eclass
          (name-set! ,(symbol->string n))
          (ePackage-set! the-epackage))
 
-       ,(unless (eq? super 'EObject)
+       ,(unless (eq? super 'ecore:EObject)
             `(send the-eclass eSuperTypes-append! ',super))
 
        ,@(metaclass-body-creation body)

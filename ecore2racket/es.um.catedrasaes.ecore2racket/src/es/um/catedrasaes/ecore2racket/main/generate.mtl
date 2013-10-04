@@ -26,13 +26,13 @@
   (provide [pkg_var_name(anEPackage)/])
   [generate_provides(anEPackage)/]
 
-(define [pkg_var_name(anEPackage)/] (new EPackage))
+(define [pkg_var_name(anEPackage)/] (new ecore:EPackage))
 (send* [pkg_var_name(anEPackage)/] 
 	(name-set! "[anEPackage.name/]")
 	(nsURI-set! "[anEPackage.nsURI/]")
     (nsPrefix-set! "[anEPackage.nsPrefix/]"))
 (with-epackage
- [pkg_var_name(anEPackage)/]
+ [pkg_var_name(anEPackage)/] [anEPackage.nsPrefix/]
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
 
@@ -46,7 +46,7 @@
 [query private pkg_var_name(p : EPackage) : String = p.name + '-package' /]
 
 [query private datatype_to_racket (dt : EDataType) : String =
- dt.name/]
+ dt.ePackage.nsPrefix + ':' + dt.name/]
 
 [template private generate_provides (anEPackage : EPackage) ]
 (provide
@@ -128,7 +128,7 @@
 [template private gen_references(klass : EClass)]
 [for (ref: EReference | klass.eStructuralFeatures->filter(EReference))]
 ; reference [ref.name/]
-(reference [ref.name/] [eclass_to_racket_class_name(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
+(reference [ref.name/] [eclass_to_racket_class_fqn(ref.eType)/] [t_f(ref.containment)/] [ref.lowerBound/] [ref.upperBound/])
 
 [/for]
 [/template]
@@ -166,3 +166,6 @@
     else
       eclass_to_racket_interface_name(superclasses->first())
     endif /]
+
+[query private eclass_to_racket_class_fqn (c : EClassifier) : String =
+  c.ePackage.nsPrefix + ':' + c.name /]

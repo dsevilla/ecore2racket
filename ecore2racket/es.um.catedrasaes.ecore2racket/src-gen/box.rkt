@@ -27,15 +27,15 @@
   		WireMethod
   	)
 
-(define box-package (new EPackage))
+(define box-package (new ecore:EPackage))
 (send* box-package 
 	(name-set! "box")
 	(nsURI-set! "http://www.catedrasaes.org/Box")
     (nsPrefix-set! "box"))
 (with-epackage
- box-package
+ box-package box
 (define Box<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	comment
 	comment-set!
 
@@ -65,30 +65,30 @@
 ))
 ;; Class Box
 (eclass 
-  Box EObject (Box<%>)
+  Box ecore:EObject (Box<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment ecore:EString 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	
 	; reference attributes
-	(reference attributes Param #t 0 -1)
+	(reference attributes box:Param #t 0 -1)
 	
 	; reference methods
-	(reference methods Method #t 0 -1)
+	(reference methods box:Method #t 0 -1)
 	
 	; reference wires
-	(reference wires Wire #t 0 -1)
+	(reference wires box:Wire #t 0 -1)
 	
 	; reference boxes
-	(reference boxes BoxReference #t 0 -1)
+	(reference boxes box:BoxReference #t 0 -1)
 	
 	; reference connection
-	(reference connection Connection #t 0 -1)
+	(reference connection box:Connection #t 0 -1)
 	
 	
 
@@ -96,7 +96,7 @@
 
 
 (define BoxReference<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	box
 	box-set!
 
@@ -112,21 +112,21 @@
 ))
 ;; Class BoxReference
 (eclass 
-  BoxReference EObject (BoxReference<%>)
+  BoxReference ecore:EObject (BoxReference<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer EBoolean 0 1)
+	(attribute isPointer ecore:EBoolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference EBoolean 0 1)
+	(attribute isReference ecore:EBoolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	
 	; reference box
-	(reference box Box #f 0 1)
+	(reference box box:Box #f 0 1)
 	
 	
 
@@ -134,19 +134,19 @@
 
 
 (define WireReference<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	wire
 	wire-set!
 
 ))
 ;; Class WireReference
 (eclass 
-  WireReference EObject (WireReference<%>)
+  WireReference ecore:EObject (WireReference<%>)
 
     ;; fields (features)
 	
 	; reference wire
-	(reference wire Wire #f 0 1)
+	(reference wire box:Wire #f 0 1)
 	
 	
 
@@ -180,7 +180,7 @@
     ;; fields (features)
 	
 	; reference boxReference
-	(reference boxReference BoxReference #f 0 1)
+	(reference boxReference box:BoxReference #f 0 1)
 	
 	
 
@@ -188,7 +188,7 @@
 
 
 (define Connection<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	from
 	from-set!
 
@@ -198,15 +198,15 @@
 ))
 ;; Class Connection
 (eclass 
-  Connection EObject (Connection<%>)
+  Connection ecore:EObject (Connection<%>)
 
     ;; fields (features)
 	
 	; reference from
-	(reference from WireReference #t 0 1)
+	(reference from box:WireReference #t 0 1)
 	
 	; reference to
-	(reference to WireReference #t 0 1)
+	(reference to box:WireReference #t 0 1)
 	
 	
 
@@ -214,7 +214,7 @@
 
 
 (define Wire<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	isInput
 	isInput-set!
 
@@ -227,18 +227,18 @@
 ))
 ;; Class Wire
 (eclass 
-  Wire EObject (Wire<%>)
+  Wire ecore:EObject (Wire<%>)
 
     ;; fields (features)
 	; attribute isInput
-	(attribute isInput EBoolean 0 1)
+	(attribute isInput ecore:EBoolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type box:Type #t 0 1)
 	
 	
 
@@ -246,7 +246,7 @@
 
 
 (define Type<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	isPointer
 	isPointer-set!
 
@@ -256,14 +256,14 @@
 ))
 ;; Class Type
 (eclass 
-  Type EObject (Type<%>)
+  Type ecore:EObject (Type<%>)
 
     ;; fields (features)
 	; attribute isPointer
-	(attribute isPointer EBoolean 0 1)
+	(attribute isPointer ecore:EBoolean 0 1)
 	
 	; attribute isReference
-	(attribute isReference EBoolean 0 1)
+	(attribute isReference ecore:EBoolean 0 1)
 	
 	
 	
@@ -283,7 +283,7 @@
 
     ;; fields (features)
 	; attribute basicType
-	(attribute basicType BaseTypes 0 1)
+	(attribute basicType box:BaseTypes 0 1)
 	
 	
 	
@@ -307,10 +307,10 @@
 
     ;; fields (features)
 	; attribute namespace
-	(attribute namespace EString 0 -1)
+	(attribute namespace ecore:EString 0 -1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	
 	
@@ -319,7 +319,7 @@
 
 
 (define Method<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	comment
 	comment-set!
 
@@ -339,24 +339,24 @@
 ))
 ;; Class Method
 (eclass 
-  Method EObject (Method<%>)
+  Method ecore:EObject (Method<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment ecore:EString 0 1)
 	
 	; attribute isPrivate
-	(attribute isPrivate EBoolean 0 1)
+	(attribute isPrivate ecore:EBoolean 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type box:Type #t 0 1)
 	
 	; reference parameters
-	(reference parameters Param #t 0 -1)
+	(reference parameters box:Param #t 0 -1)
 	
 	
 
@@ -364,7 +364,7 @@
 
 
 (define Param<%> 
-  (interface (EObject<%>)  
+  (interface (ecore:EObject<%>)  
 	comment
 	comment-set!
 
@@ -381,21 +381,21 @@
 ))
 ;; Class Param
 (eclass 
-  Param EObject (Param<%>)
+  Param ecore:EObject (Param<%>)
 
     ;; fields (features)
 	; attribute comment
-	(attribute comment EString 0 1)
+	(attribute comment ecore:EString 0 1)
 	
 	; attribute name
-	(attribute name EString 0 1)
+	(attribute name ecore:EString 0 1)
 	
 	; attribute defaultValue
-	(attribute defaultValue EString 0 -1)
+	(attribute defaultValue ecore:EString 0 -1)
 	
 	
 	; reference type
-	(reference type Type #t 0 1)
+	(reference type box:Type #t 0 1)
 	
 	
 
@@ -429,7 +429,7 @@
     ;; fields (features)
 	
 	; reference method
-	(reference method Method #f 0 1)
+	(reference method box:Method #f 0 1)
 	
 	
 
