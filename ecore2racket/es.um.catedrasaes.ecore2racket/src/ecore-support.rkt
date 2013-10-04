@@ -271,8 +271,7 @@
     (filter-map 
      (lambda (e)
        (and (pair? e)
-            (or (eq? (car e) '-eclass)
-                (eq? (car e) '-edatatype))
+            (member (car e) '(eclass edatatype -eclass -edatatype))
             (let ((class-name (cadr e)))
               `(begin
                  (define ,class-name null)
@@ -340,7 +339,7 @@
 (define-macro (update-references)
   ;; Update all the references in the model
   `(begin
-
+     ;; TODO
      ))
 
 (define-macro (generate-fast-accessors)
@@ -348,9 +347,13 @@
   `(begin
      ,@(-gen-fast-accessors -method-hash)))
 
-(define-macro (with-epackage package . body)
+(define-macro (with-epackage package package-prefix . body)
   `(begin
      (define the-epackage ,package)
+     
+     ;; Predefine the classes so that they can self-reference later.
+     ,@(generate-defines-for-classifiers package-prefix body)
+     
      ,@body))
 
 (define-syntax (with-eclass stx)
@@ -601,7 +604,7 @@
 
 (define-macro (eclass n super ifaces . body)
   `(begin
-     (define ,n
+     (set! ,n
        (class* ,super ,ifaces
          (super-new)
 
