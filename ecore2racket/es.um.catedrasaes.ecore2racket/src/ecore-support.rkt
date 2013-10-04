@@ -20,8 +20,6 @@
          ecore-package
          ~eclass
          eobject->xexpr
-         generate-fast-accessors
-         update-references
          to-xml
          to-xexpr
          alias-id)
@@ -224,7 +222,7 @@
            ;; multi-valuated
            (new-field-multi name)))))
 
-  (define (-expand-eclass-body body)
+  (define (expand-eclass-body body)
     (map (lambda (e)
            (if (pair? e)
                (cond
@@ -239,33 +237,42 @@
                e))
          body))
 
-  (define -method-hash (make-hasheq))
+  (define (generate-fast-accessors body)
+    (define method-hash (make-hasheq))
 
-  (define (-gen-fast-accessors hash)
-    (hash-map
-     hash
-     (lambda (k v)
-       (let ((method-name
-              (if (eq? (caddr v) 'EBoolean)
-                  (append-id "~" k "?")
-                  (append-id "~" k))))
-         `(begin
-            (define-syntax ,method-name
-              (syntax-rules ()
-                ([_ o]
-                 (send o ,k))
-                ;; Allow also to be apply-able
-                ([_]
-                 (lambda (o) (send o ,k)))))
-            (provide ,method-name))))))
-
-  (define (-add-methods-to-hash body)
-    (for-each
-     (lambda (e)
-       (when (and (pair? e)
-                  (member (car e) '(attribute reference ref/derived)))
-         (hash-set! -method-hash (cadr e) e)))
-     body))
+    (define (gen-fast-accessors)
+      (hash-map
+       method-hash
+       (lambda (k v)
+         (let ((method-name
+                (if (eq? (caddr v) 'EBoolean)
+                    (append-id "~" k "?")
+                    (append-id "~" k))))
+           `(begin
+              (define-syntax ,method-name
+                (syntax-id-rules (,method-name)
+                  [(_ o)
+                   (send o ,k)]
+                  ;; Allow also to be apply-able
+                  [,method-name
+                   (lambda (o) (send o ,k))]))
+              (provide ,method-name))))))
+    
+    (define (add-methods-to-hash)
+      (for-each
+       (lambda (e)
+         (when (and (pair? e)
+                    (eq? (car e) '-eclass))
+           (for-each
+            (lambda (e)
+              (when (and (pair? e)
+                         (member (car e) '(attribute reference ref/derived)))
+                (hash-set! method-hash (cadr e) e)))
+            (cdddr e))))
+       body))
+    
+    (add-methods-to-hash)
+    (gen-fast-accessors))    
 
   (define (generate-defines-for-classifiers package-prefix body)
     (filter-map 
@@ -282,12 +289,11 @@
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
 (define-macro (-eclass n super . body)
-  (-add-methods-to-hash body)
   `(begin
      (set! ,n
        (class ,super
          (super-new)
-         ,@(-expand-eclass-body body)))
+         ,@(expand-eclass-body body)))
 
      (send the-epackage eClassifiers-append! (new ,n))))
 
@@ -296,7 +302,7 @@
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
     `(set! ,n
-         (let ((,dt (new EDataType)))
+         (let ((,dt (new ecore:EDataType)))
            (send* ,dt
              (name-set! ,name-symbol)
              (serializable-set! ,serializable?)
@@ -330,22 +336,18 @@
      ;; have been created.
 
      ;; Generate ~xxx methods
-     (generate-fast-accessors)
+     ,@(generate-fast-accessors body)
 
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
-     (update-references)))
+     ;,@(update-references)
+     ))
 
 (define-macro (update-references)
   ;; Update all the references in the model
   `(begin
      ;; TODO
      ))
-
-(define-macro (generate-fast-accessors)
-  ;; Generate all the accessor methods
-  `(begin
-     ,@(-gen-fast-accessors -method-hash)))
 
 (define-macro (with-epackage package package-prefix . body)
   `(begin
@@ -530,22 +532,7 @@
 ;; The macro proper. Private version to generate Ecore itself.
 (begin-for-syntax
 
-  (define (expand-eclass-body body)
-    (map (lambda (e)
-           (if (pair? e)
-               (cond
-                 ;; Attribute
-                 ((eq? (car e) 'attribute)
-                  (expand-class-attribute e))
-                 ;; Reference
-                 ((eq? (car e) 'reference)
-                  (expand-class-reference e))
-                 (else
-                  e))
-               e))
-         body))
-
-  (define (create-attribute-metaclass list)
+  (define (create-attribute-metaclass the-eclass list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
        `(begin
@@ -556,9 +543,9 @@
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
-            (send the-eclass eStructuralFeatures-append! att))))))
+            (send ,the-eclass eStructuralFeatures-append! att))))))
 
-  (define (create-reference-metaclass list)
+  (define (create-reference-metaclass the-eclass list)
     (match list
       ((list 'reference name type contained? minoccur maxoccur)
        `(begin
@@ -569,51 +556,54 @@
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
-            (send the-eclass eStructuralFeatures-append! ref))))))
+            (send ,the-eclass eStructuralFeatures-append! ref))))))
 
-  (define (metaclass-body-creation body)
+  (define (metaclass-body-creation the-eclass body)
     (map (lambda (e)
            (if (pair? e)
                (cond
                  ;; Attribute
                  ((eq? (car e) 'attribute)
-                  (create-attribute-metaclass e))
+                  (create-attribute-metaclass the-eclass e))
                  ;; Reference
                  ((eq? (car e) 'reference)
-                  (create-reference-metaclass e))
+                  (create-reference-metaclass the-eclass e))
                  (else
                   e))
                e))
          body))
 
   (define (create-metaclass n super ifaces body)
-    `(let ((the-eclass (new ecore:EClass)))
-       (send* the-eclass
-         (name-set! ,(symbol->string n))
-         (ePackage-set! the-epackage))
-
-       ,(unless (eq? super 'ecore:EObject)
-            `(send the-eclass eSuperTypes-append! ',super))
-
-       ,@(metaclass-body-creation body)
-
-       (send* the-epackage
-         (eClassifiers-append! the-eclass)
-         (eClassifiers-table-add! ',n the-eclass))))
+    (let ((m-name (append-id n "-eclass")))
+      `(begin
+         (define ,m-name (new ecore:EClass))
+         (send* ,m-name
+           (name-set! ,(symbol->string n))
+           (ePackage-set! the-epackage))
+         
+         ,(unless (eq? super 'ecore:EObject)
+            `(send ,m-name eSuperTypes-append! ,super))
+         
+         ,@(metaclass-body-creation m-name body)
+         
+         (send* the-epackage
+           (eClassifiers-append! ,m-name))
+         ;         (eClassifiers-table-add! ,n the-eclass)
+         )))
 )
 
 (define-macro (eclass n super ifaces . body)
   `(begin
+     ,(create-metaclass n super ifaces body)
+     
      (set! ,n
        (class* ,super ,ifaces
          (super-new)
 
          (inherit-field -eClass)
-         (set! -eClass (send the-epackage eClassifiers-get-by-id ',n))
+         (set! -eClass ,(append-id n "-eclass"))
 
-         ,@(expand-eclass-body body)))
-
-     ,(create-metaclass n super ifaces body)))
+         ,@(expand-eclass-body body)))))
 
 ;; Utility macros
 (define-syntax ~eclass
