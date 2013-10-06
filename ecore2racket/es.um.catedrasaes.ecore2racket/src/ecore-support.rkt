@@ -285,6 +285,22 @@
                  (alias-id ,class-name ,(append-id package-prefix ":" class-name))))))
      body))
 
+  ;; TODO: Generalize this recursive search
+  (define (generate-package-proper body)
+    `(begin
+       (set! the-epackage (new ecore:EPackage))
+       ,@(filter-map 
+          (lambda (e)
+            (cond 
+              [(and (pair? e) (member (car e) '(eclass -eclass)))
+                 (let ((class-name (cadr e)))
+               #f)]
+              [(and (pair? e) (member (car e) '(edatatype -edatatype)))
+               #f]
+              [else 
+               #f]))
+          body)))
+
   )
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
@@ -295,9 +311,11 @@
          (super-new)
          ,@(expand-eclass-body body)))
 
-     (send the-epackage eClassifiers-append! (new ,n))))
+     ;; TODO
+     ;;(send the-epackage eClassifiers-append! (new ,n))
+     ))
 
-;; The eclass macro proper. Private version to generate Ecore itself.
+;; The edatatype macro proper. Private version to generate Ecore itself.
 (define-macro (-edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
@@ -308,7 +326,8 @@
              (serializable-set! ,serializable?)
              (defaultValue-set! ,default-value))
 
-           (send the-epackage eClassifiers-append! ,dt)
+           ;; TODO
+           ;;(send the-epackage eClassifiers-append! ,dt)
 
            ,dt))))
 
@@ -338,6 +357,11 @@
      ;; Generate ~xxx methods
      ,@(generate-fast-accessors body)
 
+     ;; Generate the package itself. As all the classes have been defined above,
+     ;; we can create a proper package object and populate with all the defined
+     ;; classes
+     ,(generate-package-proper body)
+     
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      ;,@(update-references)
