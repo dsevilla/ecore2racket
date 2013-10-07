@@ -294,7 +294,7 @@
             (cond 
               [(and (pair? e) (member (car e) '(eclass -eclass)))
                  (let ((class-name (cadr e)))
-               #f)]
+                   #f)]
               [(and (pair? e) (member (car e) '(edatatype -edatatype)))
                #f]
               [else 
