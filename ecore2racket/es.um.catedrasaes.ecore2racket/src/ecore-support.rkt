@@ -16,6 +16,7 @@
          (prefix-out ecore: EAttribute<%>)
          (prefix-out ecore: EObject<%>)
          eclass
+         edatatype
          with-epackage
          ecore-package
          ~eclass
@@ -533,7 +534,7 @@
  (-eclass
   EDataType EClassifier
   (attribute serializable EBoolean 0 1))
- (provide EDataType)
+ (provide ecore:EDataType)
 
  ;; Datatypes
  (-edatatype EString #t "")
@@ -563,7 +564,7 @@
           (let ((att (new ecore:EAttribute)))
             (send* att
               (name-set! ,(symbol->string name))
-              (eType-set! ',type)
+              (eType-set! ,type)
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
@@ -576,7 +577,7 @@
           (let ((ref (new ecore:EReference)))
             (send* ref
               (name-set! ,(symbol->string name))
-              (eType-set! ',type)
+              (eType-set! ,type)
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
@@ -628,6 +629,23 @@
          (set! -eClass ,(append-id n "-eclass"))
 
          ,@(expand-eclass-body body)))))
+
+;; The edatatype macro proper. Private version to generate Ecore itself.
+(define-macro (edatatype n serializable? default-value)
+  (let ((dt (gensym))
+        (name-symbol (symbol->string n)))
+    `(set! ,n
+         (let ((,dt (new ecore:EDataType)))
+           (send* ,dt
+             (name-set! ,name-symbol)
+             (serializable-set! ,serializable?)
+             (defaultValue-set! ,default-value))
+
+           ;; TODO
+           ;;(send the-epackage eClassifiers-append! ,dt)
+
+           ,dt))))
+
 
 ;; Utility macros
 (define-syntax ~eclass

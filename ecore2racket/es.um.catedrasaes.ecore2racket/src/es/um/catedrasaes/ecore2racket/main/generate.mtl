@@ -37,10 +37,20 @@
 [generate_EClass(klass)/]
 
 [/for]
+
+[for (dt : EDataType | anEPackage.eClassifiers->filter(EDataType))]
+[generate_datatype(dt)/]
+
+[/for]
 )
 
 ;) ; end module [anEPackage.name/]
 [/file]
+[/template]
+
+[template private generate_datatype (aEDataType : EDataType) ]
+(edatatype [aEDataType.name/] [t_f(aEDataType.serializable)/] 0 [comment TODO/])
+ 
 [/template]
 
 [query private pkg_var_name(p : EPackage) : String = p.name + '-package' /]
