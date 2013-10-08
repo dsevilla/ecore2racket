@@ -655,20 +655,27 @@
 
 ;; The edatatype macro proper. Private version to generate Ecore itself.
 (define-macro (edatatype n serializable? default-value)
-  (let ((dt (gensym))
-        (name-symbol (symbol->string n)))
-    `(set! ,n
-         (let ((,dt (new ecore:EDataType)))
-           (send* ,dt
-             (name-set! ,name-symbol)
-             (serializable-set! ,serializable?)
-             (defaultValue-set! ,default-value))
+  (void))
 
-           ;; TODO
-           ;;(send the-epackage eClassifiers-append! ,dt)
 
-           ,dt))))
 
+;  (let ((dt (gensym))
+;        (name-symbol (symbol->string n)))
+;    `(set! ,n
+;         (let ((,dt (new ecore:EDataType)))
+;           (send* ,dt
+;             (name-set! ,name-symbol)
+;             (serializable-set! ,serializable?)
+;             (defaultValue-set! ,default-value))
+;
+;           ;; TODO
+;           ;;(send the-epackage eClassifiers-append! ,dt)
+;
+;           ,dt))))
+
+;; Macro for the only subtype of a datatype: EEnum
+(define-macro (eenum name . keyval)
+  (void))
 
 ;; Utility macros
 (define-syntax ~eclass
