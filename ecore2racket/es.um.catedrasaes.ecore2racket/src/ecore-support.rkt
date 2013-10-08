@@ -67,42 +67,42 @@
     (define/public (eClass) -eClass)
     (define/public (eClass-set! klass) (set! -eClass klass))))
 
-(define (eclassifier-hash-table-mixin% %)
-  (class %
-    (super-new)
-    (field [-eClassifiers-hash-table (make-hash)])
-    (define/public (eClassifiers-table-add! id classifier)
-      (hash-set! -eClassifiers-hash-table id classifier))
-    (define/public (eClassifiers-get-by-id id)
-      (hash-ref -eClassifiers-hash-table id null))))
+;(define (eclassifier-hash-table-mixin% %)
+;  (class %
+;    (super-new)
+;    (field [-eClassifiers-hash-table (make-hash)])
+;    (define/public (eClassifiers-table-add! id classifier)
+;      (hash-set! -eClassifiers-hash-table id classifier))
+;    (define/public (eClassifiers-get-by-id id)
+;      (hash-ref -eClassifiers-hash-table id null))))
 
-(define -EPackage-base
-  (class* EObject-base (EPackage<%>)
-    (super-new)
-    ;; Fake class symbols to close the circle
-    (field [-name ""]
-           [-nsURI ""]
-           [-nsPrefix ""]
-           [-eSuperPackage null]
-           [-eClassifiers (list)])
+;(define -EPackage-base
+;  (class* EObject-base (EPackage<%>)
+;    (super-new)
+;    ;; Fake class symbols to close the circle
+;    (field [-name ""]
+;           [-nsURI ""]
+;           [-nsPrefix ""]
+;           [-eSuperPackage null]
+;           [-eClassifiers (list)])
+;
+;    (define/public (name) -name)
+;    (define/public (name-set! n) (set! -name n))
+;    (define/public (nsURI) -nsURI)
+;    (define/public (nsURI-set! n) (set! -nsURI n))
+;    (define/public (nsPrefix) -nsPrefix)
+;    (define/public (nsPrefix-set! n) (set! -nsPrefix n))
+;
+;    (define/public (eSuperPackage) -eSuperPackage)
+;    (define/public (eSuperPackage-set! n) (set! -eSuperPackage n))
+;    (define/public (eClassifiers) -eClassifiers)
+;    (define/public (eClassifiers-set! n) (set! -eClassifiers n))
+;    (define/public (eClassifiers-append! c)
+;      (set! -eClassifiers
+;            (append -eClassifiers (list c))))))
 
-    (define/public (name) -name)
-    (define/public (name-set! n) (set! -name n))
-    (define/public (nsURI) -nsURI)
-    (define/public (nsURI-set! n) (set! -nsURI n))
-    (define/public (nsPrefix) -nsPrefix)
-    (define/public (nsPrefix-set! n) (set! -nsPrefix n))
-
-    (define/public (eSuperPackage) -eSuperPackage)
-    (define/public (eSuperPackage-set! n) (set! -eSuperPackage n))
-    (define/public (eClassifiers) -eClassifiers)
-    (define/public (eClassifiers-set! n) (set! -eClassifiers n))
-    (define/public (eClassifiers-append! c)
-      (set! -eClassifiers
-            (append -eClassifiers (list c))))))
-
-(define -EPackage
-  (eclassifier-hash-table-mixin% -EPackage-base))
+;(define -EPackage
+;  (eclassifier-hash-table-mixin% -EPackage-base))
 
 ;; TODO: provide contracts for these.
 
@@ -398,10 +398,11 @@
        ,body)))
 
 ;;; Ecore classes
-(define ecore-package (new -EPackage))
-(send ecore-package name-set! "ecore")
-(send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
-(send ecore-package nsPrefix-set! "ecore")
+(define ecore-package null)
+;(define ecore-package (new -EPackage))
+;(send ecore-package name-set! "ecore")
+;(send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
+;(send ecore-package nsPrefix-set! "ecore")
 (-with-epackage
  ecore-package ecore
 
@@ -413,6 +414,17 @@
   EModelElement EObject)
  (provide ecore:EModelElement)
 
+ (-eclass
+  EAnnotation EModelElement
+  (attribute source EString 0 1)
+  (reference eModelElement EModelElement #f 0 1)
+  (reference details EStringToStringMapEntry #t 0 -1))
+  
+ (-eclass
+  EStringToStringMapEntry EObject
+  (attribute key EString 0 1)
+  (attribute value EString 0 1))
+  
  (-eclass
   ENamedElement EModelElement
   (attribute name EString 1 1))
@@ -482,7 +494,6 @@
   (reference eSuperPackage EPackage #f 0 1)
   (reference eClassifiers EClassifier #t 0 -1)
   (reference eSubpackages EPackage #t 0 -1))
- (set! EPackage (eclassifier-hash-table-mixin% EPackage))
  (provide ecore:EPackage)
 
  (-eclass
@@ -536,6 +547,16 @@
   (attribute serializable EBoolean 0 1))
  (provide ecore:EDataType)
 
+ (-eclass
+  EEnumLiteral ENamedElement
+  (attribute value EInt 0 1)
+  (attribute literal EString 0 1)
+  (reference eEnum EEnum #f 0 1))
+ 
+ (-eclass
+  EEnum EDataType
+  (reference eLiterals EEnumLiteral #t 0 -1))
+ 
  ;; Datatypes
  (-edatatype EString #t "")
  (provide ecore:EString)
@@ -543,6 +564,8 @@
  (provide ecore:ELong)
  (-edatatype EInt #t 0)
  (provide ecore:EInt)
+ (-edatatype EShort #t 0)
+ (provide ecore:EShort)
  (-edatatype EChar #t #\u0)
  (provide ecore:EChar)
  (-edatatype EFloat #t 0.0)
