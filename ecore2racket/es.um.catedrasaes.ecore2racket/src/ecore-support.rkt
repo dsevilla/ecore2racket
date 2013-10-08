@@ -662,8 +662,6 @@
 
 (define-macro (eclass n super ifaces . body)
   `(begin
-     ,(create-metaclass n super ifaces body)
-     
      (set! ,n
        (class* ,super ,ifaces
          (super-new)
