@@ -33,7 +33,7 @@
 	(nsURI-set! "http://www.catedrasaes.org/Box")
     (nsPrefix-set! "box"))
 (with-epackage
- box-package box
+ box-package "box" "http://www.catedrasaes.org/Box" box
 (define Box<%> 
   (interface (ecore:EObject<%>)  
 	comment

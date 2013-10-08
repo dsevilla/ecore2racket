@@ -279,11 +279,14 @@
     (filter-map 
      (lambda (e)
        (and (pair? e)
-            (member (car e) '(eclass edatatype -eclass -edatatype))
-            (let ((class-name (cadr e)))
+            (member (car e) '(eclass -eclass edatatype -edatatype eenum))
+            (let ((class-name (cadr e))
+                  (metaclass-name (append-id (cadr e) "-eclass")))
               `(begin
                  (define ,class-name null)
-                 (alias-id ,class-name ,(append-id package-prefix ":" class-name))))))
+                 (alias-id ,class-name ,(append-id package-prefix ":" class-name))
+                 (define ,metaclass-name null)
+                 (alias-id ,metaclass-name ,(append-id package-prefix ":" metaclass-name))))))
      body))
 
   ;; TODO: Generalize this recursive search
@@ -342,7 +345,7 @@
 
 
 
-(define-macro (-with-epackage package package-prefix . body)
+(define-macro (-with-epackage package name uri package-prefix . body)
   `(begin
      (define the-epackage ,package)
      
@@ -374,14 +377,6 @@
      ;; TODO
      ))
 
-(define-macro (with-epackage package package-prefix . body)
-  `(begin
-     (define the-epackage ,package)
-     
-     ;; Predefine the classes so that they can self-reference later.
-     ,@(generate-defines-for-classifiers package-prefix body)
-     
-     ,@body))
 
 (define-syntax (with-eclass stx)
   (syntax-case stx ()
@@ -399,12 +394,8 @@
 
 ;;; Ecore classes
 (define ecore-package null)
-;(define ecore-package (new -EPackage))
-;(send ecore-package name-set! "ecore")
-;(send ecore-package nsURI-set! "http://www.eclipse.org/emf/2002/Ecore")
-;(send ecore-package nsPrefix-set! "ecore")
 (-with-epackage
- ecore-package ecore
+ ecore-package "ecore" "http://www.eclipse.org/emf/2002/Ecore" ecore
 
  (-eclass
   EObject EObject-base)
@@ -440,9 +431,7 @@
    (let ([att-value-n (gensym)])
      `(let* ([,att-value-n ,att]
              [the-package (send this ePackage)]
-             [direct-superclasses
-              (map (curry dynamic-send the-package 'eClassifiers-get-by-id)
-                   -eSuperTypes)]
+             [direct-superclasses -eSuperTypes]
              [all-superclasses
               (apply append
                      direct-superclasses
@@ -622,23 +611,54 @@
          body))
 
   (define (create-metaclass n super ifaces body)
-    (let ((m-name (append-id n "-eclass")))
+    (let ((m-name (append-id n "-eclass"))
+          (m-super-name (append-id super "-eclass")))
       `(begin
-         (define ,m-name (new ecore:EClass))
+         (set! ,m-name (new ecore:EClass))
          (send* ,m-name
            (name-set! ,(symbol->string n))
            (ePackage-set! the-epackage))
          
          ,(unless (eq? super 'ecore:EObject)
-            `(send ,m-name eSuperTypes-append! ,super))
+            `(send ,m-name eSuperTypes-append! ,m-super-name))
          
          ,@(metaclass-body-creation m-name body)
-         
+   
          (send* the-epackage
            (eClassifiers-append! ,m-name))
          ;         (eClassifiers-table-add! ,n the-eclass)
          )))
+  
+  (define (create-metaclasses body)
+    (filter-map
+     (lambda (e)
+       (and (pair? e) (member (car e) '(-eclass eclass))
+            (match e
+              ((list _ name super ifaces body ...)
+               (create-metaclass name super ifaces body)))))
+     body))
+  
+  (define (create-package name uri package-prefix body)
+    `(begin
+       (set! the-epackage (new ecore:EPackage))
+       (send* the-epackage
+         (name-set! ,name)
+         (nsURI-set! ,uri)
+         (nsPrefix-set! (symbol->string ',package-prefix)))))
 )
+
+(define-macro (with-epackage package name uri package-prefix . body)
+  `(begin
+     (define the-epackage ,package)
+     
+     ;; Predefine the classes so that they can self-reference later.
+     ,@(generate-defines-for-classifiers package-prefix body)
+     
+     ,@body
+     
+     ,(create-package name uri package-prefix body)
+     
+     ,@(create-metaclasses body)))
 
 (define-macro (eclass n super ifaces . body)
   `(begin

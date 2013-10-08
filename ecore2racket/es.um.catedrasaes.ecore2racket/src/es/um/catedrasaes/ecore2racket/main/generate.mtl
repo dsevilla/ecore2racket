@@ -32,7 +32,7 @@
 	(nsURI-set! "[anEPackage.nsURI/]")
     (nsPrefix-set! "[anEPackage.nsPrefix/]"))
 (with-epackage
- [pkg_var_name(anEPackage)/] [anEPackage.nsPrefix/]
+ [pkg_var_name(anEPackage)/] "[anEPackage.name/]" "[anEPackage.nsURI/]" [anEPackage.nsPrefix/]
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
 [generate_EClass(klass)/]
 
