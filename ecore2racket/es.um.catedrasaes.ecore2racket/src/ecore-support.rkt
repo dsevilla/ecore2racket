@@ -484,7 +484,7 @@
 (define-macro (eclass n super . body)
   `(begin
      (set! ,n
-       (class* ,super '() ;; Ifaces: TODO
+       (class ,super  ;; Ifaces: TODO
          (super-new)
 
          (inherit-field -eClass)
