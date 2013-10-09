@@ -65,7 +65,7 @@
 ))
 ;; Class Box
 (eclass 
-  Box ecore:EObject (Box<%>)
+  Box ecore:EObject
 
     ;; fields (features)
 	; attribute comment
@@ -112,7 +112,7 @@
 ))
 ;; Class BoxReference
 (eclass 
-  BoxReference ecore:EObject (BoxReference<%>)
+  BoxReference ecore:EObject
 
     ;; fields (features)
 	; attribute isPointer
@@ -141,7 +141,7 @@
 ))
 ;; Class WireReference
 (eclass 
-  WireReference ecore:EObject (WireReference<%>)
+  WireReference ecore:EObject
 
     ;; fields (features)
 	
@@ -158,7 +158,7 @@
 ))
 ;; Class LocalWireReference
 (eclass 
-  LocalWireReference WireReference (LocalWireReference<%>)
+  LocalWireReference WireReference
 
     ;; fields (features)
 	
@@ -175,7 +175,7 @@
 ))
 ;; Class ExternalWireReference
 (eclass 
-  ExternalWireReference WireReference (ExternalWireReference<%>)
+  ExternalWireReference WireReference
 
     ;; fields (features)
 	
@@ -198,7 +198,7 @@
 ))
 ;; Class Connection
 (eclass 
-  Connection ecore:EObject (Connection<%>)
+  Connection ecore:EObject
 
     ;; fields (features)
 	
@@ -227,7 +227,7 @@
 ))
 ;; Class Wire
 (eclass 
-  Wire ecore:EObject (Wire<%>)
+  Wire ecore:EObject
 
     ;; fields (features)
 	; attribute isInput
@@ -256,7 +256,7 @@
 ))
 ;; Class Type
 (eclass 
-  Type ecore:EObject (Type<%>)
+  Type ecore:EObject
 
     ;; fields (features)
 	; attribute isPointer
@@ -279,7 +279,7 @@
 ))
 ;; Class BasicType
 (eclass 
-  BasicType Type (BasicType<%>)
+  BasicType Type
 
     ;; fields (features)
 	; attribute basicType
@@ -303,7 +303,7 @@
 ))
 ;; Class OtherType
 (eclass 
-  OtherType Type (OtherType<%>)
+  OtherType Type
 
     ;; fields (features)
 	; attribute namespace
@@ -339,7 +339,7 @@
 ))
 ;; Class Method
 (eclass 
-  Method ecore:EObject (Method<%>)
+  Method ecore:EObject
 
     ;; fields (features)
 	; attribute comment
@@ -381,7 +381,7 @@
 ))
 ;; Class Param
 (eclass 
-  Param ecore:EObject (Param<%>)
+  Param ecore:EObject
 
     ;; fields (features)
 	; attribute comment
@@ -407,7 +407,7 @@
 ))
 ;; Class WireMany
 (eclass 
-  WireMany Wire (WireMany<%>)
+  WireMany Wire
 
     ;; fields (features)
 	
@@ -424,7 +424,7 @@
 ))
 ;; Class WireMethod
 (eclass 
-  WireMethod Wire (WireMethod<%>)
+  WireMethod Wire
 
     ;; fields (features)
 	

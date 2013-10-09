@@ -199,7 +199,7 @@
           (append-name (append-id f-name "-append!")))
       (with-gensyms (tmp-val-n)
         `(begin
-           (field [,field-name (list)])
+           (field [,field-name null])
            (define ,f-name
              (lambda () ,field-name))
            (public ,f-name)
@@ -267,7 +267,7 @@
            (for-each
             (lambda (e)
               (when (and (pair? e)
-                         (member (car e) '(attribute reference ref/derived)))
+                         (memq (car e) '(attribute reference ref/derived)))
                 (hash-set! method-hash (cadr e) e)))
             (cdddr e))))
        body))
@@ -279,7 +279,7 @@
     (filter-map 
      (lambda (e)
        (and (pair? e)
-            (member (car e) '(eclass -eclass edatatype -edatatype eenum))
+            (memq (car e) '(eclass -eclass edatatype -edatatype eenum))
             (let ((class-name (cadr e))
                   (metaclass-name (append-id (cadr e) "-eclass")))
               `(begin
@@ -296,15 +296,93 @@
        ,@(filter-map 
           (lambda (e)
             (cond 
-              [(and (pair? e) (member (car e) '(eclass -eclass)))
+              [(and (pair? e) (memq (car e) '(eclass -eclass)))
                  (let ((class-name (cadr e)))
                    #f)]
-              [(and (pair? e) (member (car e) '(edatatype -edatatype)))
+              [(and (pair? e) (memq (car e) '(edatatype -edatatype)))
                #f]
               [else 
                #f]))
           body)))
 
+    (define (create-attribute-metaclass the-eclass list)
+    (match list
+      ((list 'attribute name type minoccur maxoccur)
+       `(begin
+          (let ((att (new ecore:EAttribute)))
+            (send* att
+              (name-set! ,(symbol->string name))
+              (eType-set! ,type)
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+
+            (send ,the-eclass eStructuralFeatures-append! att))))))
+
+  (define (create-reference-metaclass the-eclass list)
+    (match list
+      ((list ref-type name type contained? minoccur maxoccur rest ...)
+       `(begin
+          (let ((ref (new ecore:EReference)))
+            (send* ref
+              (name-set! ,(symbol->string name))
+              (eType-set! ,type)
+              (derived-set! ,(eq? ref-type 'ref/derived))
+              (lowerBound-set! ,minoccur)
+              (upperBound-set! ,maxoccur))
+
+            (send ,the-eclass eStructuralFeatures-append! ref))))))
+
+  (define (metaclass-body-creation the-eclass body)
+    (filter-map 
+     (lambda (e)
+       (when (pair? e)
+         (cond
+           ;; Attribute
+           ((eq? (car e) 'attribute)
+            (create-attribute-metaclass the-eclass e))
+           ;; Reference
+           ((memq (car e) '(reference ref/derived))
+            (create-reference-metaclass the-eclass e))
+           (else
+            #f))))
+     body))
+
+  (define (create-metaclass n super body)
+    (let ((m-name (append-id n "-eclass"))
+          (m-super-name (append-id super "-eclass")))
+      `(begin
+         (set! ,m-name (new ecore:EClass))
+         (send* ,m-name
+           (name-set! ,(symbol->string n))
+           (ePackage-set! the-epackage))
+         
+         ,(unless (or (memq n '(EObject ecore:EObject))
+                      (memq super '(EObject ecore:EObject)))
+            `(send ,m-name eSuperTypes-append! ,m-super-name))
+         
+         ,@(metaclass-body-creation m-name body)
+   
+         (send* the-epackage
+           (eClassifiers-append! ,m-name))
+         ;         (eClassifiers-table-add! ,n the-eclass)
+         )))
+  
+  (define (create-metaclasses body)
+    (filter-map
+     (lambda (e)
+       (and (pair? e) (memq (car e) '(-eclass eclass))
+            (match e
+              ((list _ name super body ...)
+               (create-metaclass name super body)))))
+     body))
+  
+  (define (create-package name uri package-prefix body)
+    `(begin
+       (set! the-epackage (new ecore:EPackage))
+       (send* the-epackage
+         (name-set! ,name)
+         (nsURI-set! ,uri)
+         (nsPrefix-set! (symbol->string ',package-prefix)))))
   )
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
@@ -313,11 +391,7 @@
      (set! ,n
        (class ,super
          (super-new)
-         ,@(expand-eclass-body body)))
-
-     ;; TODO
-     ;;(send the-epackage eClassifiers-append! (new ,n))
-     ))
+         ,@(expand-eclass-body body)))))
 
 ;; The edatatype macro proper. Private version to generate Ecore itself.
 (define-macro (-edatatype n serializable? default-value)
@@ -366,6 +440,8 @@
      ;; classes
      ,(generate-package-proper body)
      
+     
+     ,@(create-metaclasses body)
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      ;,@(update-references)
@@ -388,9 +464,64 @@
 
 (define-macro (ref/derived name type contained? minoccur maxoccur body)
   `(begin
-     (field [,(append-id "-" name) (list)])
+     (field [,(append-id "-" name) null])
      (define/public (,name)
        ,body)))
+
+(define-macro (with-epackage package name uri package-prefix . body)
+  `(begin
+     (define the-epackage ,package)
+     
+     ;; Predefine the classes so that they can self-reference later.
+     ,@(generate-defines-for-classifiers package-prefix body)
+     
+     ,@body
+     
+     ,(create-package name uri package-prefix body)
+     
+     ,@(create-metaclasses body)))
+
+(define-macro (eclass n super . body)
+  `(begin
+     (set! ,n
+       (class* ,super '() ;; Ifaces: TODO
+         (super-new)
+
+         (inherit-field -eClass)
+         (set! -eClass ,(append-id n "-eclass"))
+
+         ,@(expand-eclass-body body)))))
+
+;; The edatatype macro proper. Private version to generate Ecore itself.
+(define-macro (edatatype n serializable? default-value)
+  (void))
+
+
+
+;  (let ((dt (gensym))
+;        (name-symbol (symbol->string n)))
+;    `(set! ,n
+;         (let ((,dt (new ecore:EDataType)))
+;           (send* ,dt
+;             (name-set! ,name-symbol)
+;             (serializable-set! ,serializable?)
+;             (defaultValue-set! ,default-value))
+;
+;           ;; TODO
+;           ;;(send the-epackage eClassifiers-append! ,dt)
+;
+;           ,dt))))
+
+;; Macro for the only subtype of a datatype: EEnum
+(define-macro (eenum name . keyval)
+  (void))
+
+;; Utility macros
+(define-syntax ~eclass
+  (syntax-rules ()
+    ((_ c)
+     (send c eClass))))
+
 
 ;;; Ecore classes
 (define ecore-package null)
@@ -566,140 +697,7 @@
 
  )
 
-;; The macro proper. Private version to generate Ecore itself.
-(begin-for-syntax
 
-  (define (create-attribute-metaclass the-eclass list)
-    (match list
-      ((list 'attribute name type minoccur maxoccur)
-       `(begin
-          (let ((att (new ecore:EAttribute)))
-            (send* att
-              (name-set! ,(symbol->string name))
-              (eType-set! ,type)
-              (lowerBound-set! ,minoccur)
-              (upperBound-set! ,maxoccur))
-
-            (send ,the-eclass eStructuralFeatures-append! att))))))
-
-  (define (create-reference-metaclass the-eclass list)
-    (match list
-      ((list 'reference name type contained? minoccur maxoccur)
-       `(begin
-          (let ((ref (new ecore:EReference)))
-            (send* ref
-              (name-set! ,(symbol->string name))
-              (eType-set! ,type)
-              (lowerBound-set! ,minoccur)
-              (upperBound-set! ,maxoccur))
-
-            (send ,the-eclass eStructuralFeatures-append! ref))))))
-
-  (define (metaclass-body-creation the-eclass body)
-    (map (lambda (e)
-           (if (pair? e)
-               (cond
-                 ;; Attribute
-                 ((eq? (car e) 'attribute)
-                  (create-attribute-metaclass the-eclass e))
-                 ;; Reference
-                 ((eq? (car e) 'reference)
-                  (create-reference-metaclass the-eclass e))
-                 (else
-                  e))
-               e))
-         body))
-
-  (define (create-metaclass n super ifaces body)
-    (let ((m-name (append-id n "-eclass"))
-          (m-super-name (append-id super "-eclass")))
-      `(begin
-         (set! ,m-name (new ecore:EClass))
-         (send* ,m-name
-           (name-set! ,(symbol->string n))
-           (ePackage-set! the-epackage))
-         
-         ,(unless (eq? super 'ecore:EObject)
-            `(send ,m-name eSuperTypes-append! ,m-super-name))
-         
-         ,@(metaclass-body-creation m-name body)
-   
-         (send* the-epackage
-           (eClassifiers-append! ,m-name))
-         ;         (eClassifiers-table-add! ,n the-eclass)
-         )))
-  
-  (define (create-metaclasses body)
-    (filter-map
-     (lambda (e)
-       (and (pair? e) (member (car e) '(-eclass eclass))
-            (match e
-              ((list _ name super ifaces body ...)
-               (create-metaclass name super ifaces body)))))
-     body))
-  
-  (define (create-package name uri package-prefix body)
-    `(begin
-       (set! the-epackage (new ecore:EPackage))
-       (send* the-epackage
-         (name-set! ,name)
-         (nsURI-set! ,uri)
-         (nsPrefix-set! (symbol->string ',package-prefix)))))
-)
-
-(define-macro (with-epackage package name uri package-prefix . body)
-  `(begin
-     (define the-epackage ,package)
-     
-     ;; Predefine the classes so that they can self-reference later.
-     ,@(generate-defines-for-classifiers package-prefix body)
-     
-     ,@body
-     
-     ,(create-package name uri package-prefix body)
-     
-     ,@(create-metaclasses body)))
-
-(define-macro (eclass n super ifaces . body)
-  `(begin
-     (set! ,n
-       (class* ,super ,ifaces
-         (super-new)
-
-         (inherit-field -eClass)
-         (set! -eClass ,(append-id n "-eclass"))
-
-         ,@(expand-eclass-body body)))))
-
-;; The edatatype macro proper. Private version to generate Ecore itself.
-(define-macro (edatatype n serializable? default-value)
-  (void))
-
-
-
-;  (let ((dt (gensym))
-;        (name-symbol (symbol->string n)))
-;    `(set! ,n
-;         (let ((,dt (new ecore:EDataType)))
-;           (send* ,dt
-;             (name-set! ,name-symbol)
-;             (serializable-set! ,serializable?)
-;             (defaultValue-set! ,default-value))
-;
-;           ;; TODO
-;           ;;(send the-epackage eClassifiers-append! ,dt)
-;
-;           ,dt))))
-
-;; Macro for the only subtype of a datatype: EEnum
-(define-macro (eenum name . keyval)
-  (void))
-
-;; Utility macros
-(define-syntax ~eclass
-  (syntax-rules ()
-    ((_ c)
-     (send c eClass))))
 
 
 (define (eobject->xexpr o nameattr)
