@@ -27,11 +27,7 @@
   		WireMethod
   	)
 
-(define box-package (new ecore:EPackage))
-(send* box-package 
-	(name-set! "box")
-	(nsURI-set! "http://www.catedrasaes.org/Box")
-    (nsPrefix-set! "box"))
+(define box-package null)
 (with-epackage
  box-package "box" "http://www.catedrasaes.org/Box" box
 (define Box<%> 

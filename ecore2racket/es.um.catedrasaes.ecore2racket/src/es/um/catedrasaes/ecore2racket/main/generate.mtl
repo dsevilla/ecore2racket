@@ -26,11 +26,7 @@
   (provide [pkg_var_name(anEPackage)/])
   [generate_provides(anEPackage)/]
 
-(define [pkg_var_name(anEPackage)/] (new ecore:EPackage))
-(send* [pkg_var_name(anEPackage)/] 
-	(name-set! "[anEPackage.name/]")
-	(nsURI-set! "[anEPackage.nsURI/]")
-    (nsPrefix-set! "[anEPackage.nsPrefix/]"))
+(define [pkg_var_name(anEPackage)/] null)
 (with-epackage
  [pkg_var_name(anEPackage)/] "[anEPackage.name/]" "[anEPackage.nsURI/]" [anEPackage.nsPrefix/]
 [for (klass : EClass | anEPackage.eClassifiers->filter(EClass))]
