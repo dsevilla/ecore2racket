@@ -290,20 +290,35 @@
      body))
 
   ;; TODO: Generalize this recursive search
-  (define (generate-package-proper body)
+  (define (create-package name uri package-prefix body)
     `(begin
-       (set! the-epackage (new ecore:EPackage))
-       ,@(filter-map 
-          (lambda (e)
-            (cond 
-              [(and (pair? e) (memq (car e) '(eclass -eclass)))
-                 (let ((class-name (cadr e)))
-                   #f)]
-              [(and (pair? e) (memq (car e) '(edatatype -edatatype)))
-               #f]
-              [else 
-               #f]))
-          body)))
+       (set! 
+        the-epackage 
+        (new
+         (class ecore:EPackage
+           (super-new)
+           ,@(filter-map 
+              (lambda (e)
+                (when (pair? e)
+                  (cond 
+                    [(memq (car e) '(eclass -eclass))
+                     (let* ((class-name (cadr e))
+                            (metaclass-name (append-id class-name "-eclass"))
+                            (method-name (append-id "get-" class-name)))
+                       ;; TODO: do the same for attributes and references
+                       `(define/public (,method-name) ,metaclass-name))]
+                    [(memq (car e) '(edatatype -edatatype))
+                     (let* ((class-name (cadr e))
+                            (metaclass-name (append-id class-name "-eclass"))
+                            (method-name (append-id "get-" class-name)))
+                       `(define/public (,method-name) ,metaclass-name))]
+                    [else
+                     #f])))
+              body))))
+       (send* the-epackage
+         (name-set! ,name)
+         (nsURI-set! ,uri)
+         (nsPrefix-set! ,(symbol->string package-prefix)))))
 
     (define (create-attribute-metaclass the-eclass list)
     (match list
@@ -375,14 +390,7 @@
               ((list _ name super body ...)
                (create-metaclass name super body)))))
      body))
-  
-  (define (create-package name uri package-prefix body)
-    `(begin
-       (set! the-epackage (new ecore:EPackage))
-       (send* the-epackage
-         (name-set! ,name)
-         (nsURI-set! ,uri)
-         (nsPrefix-set! (symbol->string ',package-prefix)))))
+
   )
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
@@ -435,13 +443,14 @@
      ;; Generate ~xxx methods
      ,@(generate-fast-accessors body)
 
+     ;; Metaclasses for all the classes and datatypes in the package
+     ,@(create-metaclasses body)
+
      ;; Generate the package itself. As all the classes have been defined above,
      ;; we can create a proper package object and populate with all the defined
      ;; classes
-     ,(generate-package-proper body)
+     ,(create-package name uri package-prefix body)
      
-     
-     ,@(create-metaclasses body)
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      ;,@(update-references)
@@ -477,9 +486,9 @@
      
      ,@body
      
-     ,(create-package name uri package-prefix body)
+     ,@(create-metaclasses body)
      
-     ,@(create-metaclasses body)))
+     ,(create-package name uri package-prefix body)))
 
 (define-macro (eclass n super . body)
   `(begin
