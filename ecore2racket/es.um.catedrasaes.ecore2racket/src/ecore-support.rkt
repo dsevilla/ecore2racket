@@ -17,6 +17,7 @@
          (prefix-out ecore: EObject<%>)
          eclass
          edatatype
+         eenum
          with-epackage
          ecore-package
          ~eclass
@@ -76,33 +77,6 @@
 ;    (define/public (eClassifiers-get-by-id id)
 ;      (hash-ref -eClassifiers-hash-table id null))))
 
-;(define -EPackage-base
-;  (class* EObject-base (EPackage<%>)
-;    (super-new)
-;    ;; Fake class symbols to close the circle
-;    (field [-name ""]
-;           [-nsURI ""]
-;           [-nsPrefix ""]
-;           [-eSuperPackage null]
-;           [-eClassifiers (list)])
-;
-;    (define/public (name) -name)
-;    (define/public (name-set! n) (set! -name n))
-;    (define/public (nsURI) -nsURI)
-;    (define/public (nsURI-set! n) (set! -nsURI n))
-;    (define/public (nsPrefix) -nsPrefix)
-;    (define/public (nsPrefix-set! n) (set! -nsPrefix n))
-;
-;    (define/public (eSuperPackage) -eSuperPackage)
-;    (define/public (eSuperPackage-set! n) (set! -eSuperPackage n))
-;    (define/public (eClassifiers) -eClassifiers)
-;    (define/public (eClassifiers-set! n) (set! -eClassifiers n))
-;    (define/public (eClassifiers-append! c)
-;      (set! -eClassifiers
-;            (append -eClassifiers (list c))))))
-
-;(define -EPackage
-;  (eclassifier-hash-table-mixin% -EPackage-base))
 
 ;; TODO: provide contracts for these.
 
@@ -208,8 +182,8 @@
            (public ,set-name)
            (define ,append-name
              (lambda (,tmp-val-n)
-               (set! ,field-name 
-                     (append ,field-name 
+               (set! ,field-name
+                     (append ,field-name
                              (if (list? ,tmp-val-n)
                                  ,tmp-val-n
                                  (list ,tmp-val-n))))))
@@ -258,12 +232,12 @@
                   [,method-name
                    (lambda (o) (send o ,k))]))
               (provide ,method-name))))))
-    
+
     (define (add-methods-to-hash)
       (for-each
        (lambda (e)
          (when (and (pair? e)
-                    (eq? (car e) '-eclass))
+                    (eq? (car e) 'eclass))
            (for-each
             (lambda (e)
               (when (and (pair? e)
@@ -271,15 +245,15 @@
                 (hash-set! method-hash (cadr e) e)))
             (cdddr e))))
        body))
-    
+
     (add-methods-to-hash)
-    (gen-fast-accessors))    
+    (gen-fast-accessors))
 
   (define (generate-defines-for-classifiers package-prefix body)
-    (filter-map 
+    (filter-map
      (lambda (e)
        (and (pair? e)
-            (memq (car e) '(eclass -eclass edatatype -edatatype eenum))
+            (memq (car e) '(eclass edatatype eenum))
             (let ((class-name (cadr e))
                   (metaclass-name (append-id (cadr e) "-eclass")))
               `(begin
@@ -292,15 +266,15 @@
   ;; TODO: Generalize this recursive search
   (define (create-package name uri package-prefix body)
     `(begin
-       (set! 
-        the-epackage 
+       (set!
+        the-epackage
         (new
          (class ecore:EPackage
            (super-new)
-           ,@(filter-map 
+           ,@(filter-map
               (lambda (e)
                 (when (pair? e)
-                  (cond 
+                  (cond
                     [(memq (car e) '(eclass -eclass))
                      (let* ((class-name (cadr e))
                             (metaclass-name (append-id class-name "-eclass"))
@@ -348,7 +322,7 @@
             (send ,the-eclass eStructuralFeatures-append! ref))))))
 
   (define (metaclass-body-creation the-eclass body)
-    (filter-map 
+    (filter-map
      (lambda (e)
        (when (pair? e)
          (cond
@@ -370,22 +344,22 @@
          (send* ,m-name
            (name-set! ,(symbol->string n))
            (ePackage-set! the-epackage))
-         
+
          ,(unless (or (memq n '(EObject ecore:EObject))
                       (memq super '(EObject ecore:EObject)))
             `(send ,m-name eSuperTypes-append! ,m-super-name))
-         
+
          ,@(metaclass-body-creation m-name body)
-   
+
          (send* the-epackage
            (eClassifiers-append! ,m-name))
          ;         (eClassifiers-table-add! ,n the-eclass)
          )))
-  
+
   (define (create-metaclasses body)
     (filter-map
      (lambda (e)
-       (and (pair? e) (memq (car e) '(-eclass eclass))
+       (and (pair? e) (eq? (car e) 'eclass)
             (match e
               ((list _ name super body ...)
                (create-metaclass name super body)))))
@@ -393,16 +367,9 @@
 
   )
 
-;; The eclass macro proper. Private version to generate Ecore itself.
-(define-macro (-eclass n super . body)
-  `(begin
-     (set! ,n
-       (class ,super
-         (super-new)
-         ,@(expand-eclass-body body)))))
 
 ;; The edatatype macro proper. Private version to generate Ecore itself.
-(define-macro (-edatatype n serializable? default-value)
+(define-macro (edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
     `(set! ,n
@@ -430,10 +397,10 @@
 (define-macro (-with-epackage package name uri package-prefix . body)
   `(begin
      (define the-epackage ,package)
-     
+
      ;; Predefine the classes so that they can self-reference later.
      ,@(generate-defines-for-classifiers package-prefix body)
-     
+
      ,@body
      ;; We generate here a call to macros so that they are
      ;; at the same level to all the previous calls to
@@ -450,7 +417,7 @@
      ;; we can create a proper package object and populate with all the defined
      ;; classes
      ,(create-package name uri package-prefix body)
-     
+
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      ;,@(update-references)
@@ -461,7 +428,6 @@
   `(begin
      ;; TODO
      ))
-
 
 (define-syntax (with-eclass stx)
   (syntax-case stx ()
@@ -480,16 +446,17 @@
 (define-macro (with-epackage package name uri package-prefix . body)
   `(begin
      (define the-epackage ,package)
-     
+
      ;; Predefine the classes so that they can self-reference later.
      ,@(generate-defines-for-classifiers package-prefix body)
-     
+
      ,@body
-     
+
      ,@(create-metaclasses body)
-     
+
      ,(create-package name uri package-prefix body)))
 
+;; The eclass macro proper. Private version to generate Ecore itself.
 (define-macro (eclass n super . body)
   `(begin
      (set! ,n
@@ -500,26 +467,6 @@
          (set! -eClass ,(append-id n "-eclass"))
 
          ,@(expand-eclass-body body)))))
-
-;; The edatatype macro proper. Private version to generate Ecore itself.
-(define-macro (edatatype n serializable? default-value)
-  (void))
-
-
-
-;  (let ((dt (gensym))
-;        (name-symbol (symbol->string n)))
-;    `(set! ,n
-;         (let ((,dt (new ecore:EDataType)))
-;           (send* ,dt
-;             (name-set! ,name-symbol)
-;             (serializable-set! ,serializable?)
-;             (defaultValue-set! ,default-value))
-;
-;           ;; TODO
-;           ;;(send the-epackage eClassifiers-append! ,dt)
-;
-;           ,dt))))
 
 ;; Macro for the only subtype of a datatype: EEnum
 (define-macro (eenum name . keyval)
@@ -537,52 +484,55 @@
 (-with-epackage
  ecore-package "ecore" "http://www.eclipse.org/emf/2002/Ecore" ecore
 
- (-eclass
+ (eclass
   EObject EObject-base)
  (provide ecore:EObject)
 
- (-eclass
+ (eclass
   EModelElement EObject)
  (provide ecore:EModelElement)
 
- (-eclass
-  EAnnotation EModelElement
+ (eclass  EAnnotation EModelElement
   (attribute source EString 0 1)
   (reference eModelElement EModelElement #f 0 1)
   (reference details EStringToStringMapEntry #t 0 -1))
-  
- (-eclass
+
+ (eclass
   EStringToStringMapEntry EObject
   (attribute key EString 0 1)
   (attribute value EString 0 1))
-  
- (-eclass
+
+ (eclass
   ENamedElement EModelElement
   (attribute name EString 1 1))
  (provide ecore:EModelElement)
- 
- (-eclass
+
+ (eclass
   EClassifier ENamedElement
   (attribute defaultValue EObject 0 1)
   (reference ePackage EPackage #f 0 1))
  (provide ecore:EClassifier)
- 
+
  (define-macro (collect-from-supers all-att-super att)
    (let ([att-value-n (gensym)])
      `(let* ([,att-value-n ,att]
              [the-package (send this ePackage)]
              [direct-superclasses -eSuperTypes]
              [all-superclasses
-              (apply append
-                     direct-superclasses
-                     (map (lambda (c) (send c eAllSuperTypes))
-                          direct-superclasses))])
-        (apply append
-               ,att-value-n
-               (map (lambda (c) (send c ,all-att-super))
-                    all-superclasses)))))
+              (set->list
+               (list->set
+                (apply append
+                       direct-superclasses
+                       (map (lambda (c) (send c eAllSuperTypes))
+                            direct-superclasses))))])
+        (set->list
+         (list->set
+          (apply append
+                 ,att-value-n
+                 (map (lambda (c) (send c ,all-att-super))
+                      all-superclasses)))))))
 
- (-eclass
+ (eclass
   EClass EClassifier
   (attribute abstract EBoolean 0 1)
   (attribute interface EBoolean 0 1)
@@ -616,7 +566,7 @@
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
  (provide ecore:EClass)
 
- (-eclass
+ (eclass
   EPackage ENamedElement
   (attribute nsURI EString 0 1)
   (attribute nsPrefix EString 0 1)
@@ -625,7 +575,7 @@
   (reference eSubpackages EPackage #t 0 -1))
  (provide ecore:EPackage)
 
- (-eclass
+ (eclass
   ETypedElement ENamedElement
   (attribute ordered EBoolean 0 1)
   (attribute unique EBoolean 0 1)
@@ -635,19 +585,19 @@
   (attribute required EBoolean 0 1)
   (reference eType EClassifier #f 0 1))
  (provide ecore:ETypedElement)
- 
- (-eclass
+
+ (eclass
   EOperation ETypedElement
   (reference eContainingClass EClass #f 1 1)
   (reference eParameters EParameter #t 0 -1))
  (provide ecore:EOperation)
 
- (-eclass
+ (eclass
   EParameter ETypedElement
   (reference eOperation EOperation #f 1 1))
  (provide ecore:EParameter)
 
- (-eclass
+ (eclass
   EStructuralFeature ETypedElement
   (attribute changeable EBoolean 0 1)
   (attribute volatile EBoolean 0 1)
@@ -657,13 +607,13 @@
   (reference eContainingClass EClass #f 0 1))
  (provide ecore:EStructuralFeature)
 
- (-eclass
+ (eclass
   EAttribute EStructuralFeature
   (attribute iD EBoolean 0 1)
   (reference eAttributeType EDataType #f 1 1))
  (provide ecore:EAttribute)
 
- (-eclass
+ (eclass
   EReference EStructuralFeature
   (attribute containment EBoolean 0 1)
   (attribute container EBoolean 0 1)
@@ -671,43 +621,40 @@
   (reference eReferenceType EClass #f 1 1))
  (provide ecore:EReference)
 
- (-eclass
+ (eclass
   EDataType EClassifier
   (attribute serializable EBoolean 0 1))
  (provide ecore:EDataType)
 
- (-eclass
+ (eclass
   EEnumLiteral ENamedElement
   (attribute value EInt 0 1)
   (attribute literal EString 0 1)
   (reference eEnum EEnum #f 0 1))
- 
- (-eclass
+
+ (eclass
   EEnum EDataType
   (reference eLiterals EEnumLiteral #t 0 -1))
- 
+
  ;; Datatypes
- (-edatatype EString #t "")
+ (edatatype EString #t "")
  (provide ecore:EString)
- (-edatatype ELong #t 0)
+ (edatatype ELong #t 0)
  (provide ecore:ELong)
- (-edatatype EInt #t 0)
+ (edatatype EInt #t 0)
  (provide ecore:EInt)
- (-edatatype EShort #t 0)
+ (edatatype EShort #t 0)
  (provide ecore:EShort)
- (-edatatype EChar #t #\u0)
+ (edatatype EChar #t #\u0)
  (provide ecore:EChar)
- (-edatatype EFloat #t 0.0)
+ (edatatype EFloat #t 0.0)
  (provide ecore:EFloat)
- (-edatatype EDouble #t 0.0)
+ (edatatype EDouble #t 0.0)
  (provide ecore:EDouble)
- (-edatatype EBoolean #t #f)
+ (edatatype EBoolean #t #f)
  (provide ecore:EBoolean)
 
  )
-
-
-
 
 (define (eobject->xexpr o nameattr)
   (-eobject->xexpr o null nameattr 0))
@@ -811,3 +758,9 @@
 ;; ;            #`(new #,base)]
 ;; ;         [_ base])))))
 
+(module+ test
+  (require rackunit)
+
+  (check-equal? (sort (map ~name (~eAllAttributes (~eclass (new EClass)))) string<?)
+                (sort '("name" "interface" "abstract" "defaultValue") string<?))
+)
