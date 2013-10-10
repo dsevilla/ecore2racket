@@ -273,27 +273,32 @@
            (super-new)
            ,@(filter-map
               (lambda (e)
-                (when (pair? e)
-                  (cond
-                    [(memq (car e) '(eclass -eclass))
-                     (let* ((class-name (cadr e))
-                            (metaclass-name (append-id class-name "-eclass"))
-                            (method-name (append-id "get-" class-name)))
-                       ;; TODO: do the same for attributes and references
-                       `(define/public (,method-name) ,metaclass-name))]
-                    [(memq (car e) '(edatatype -edatatype))
-                     (let* ((class-name (cadr e))
-                            (metaclass-name (append-id class-name "-eclass"))
-                            (method-name (append-id "get-" class-name)))
-                       `(define/public (,method-name) ,metaclass-name))]
-                    [else
-                     #f])))
+                (when (and (pair? e) (memq (car e) '(eclass edatatype)))
+                  (let* ((class-name (cadr e))
+                         (metaclass-name (append-id class-name "-eclass"))
+                         (method-name (append-id "get-" class-name)))
+                    ;; TODO: do the same for attributes and references if the metaobject is an EClass
+                    `(define/public (,method-name) ,metaclass-name))))
               body))))
        (send* the-epackage
          (name-set! ,name)
          (nsURI-set! ,uri)
          (nsPrefix-set! ,(symbol->string package-prefix)))))
 
+  (define (add-metaclasses-to-package body)
+    (filter-map
+     (lambda (e)
+       (when (and (pair? e) (memq (car e) '(eclass edatatype)))
+            (let* ((class-name (cadr e))
+                   (metaclass-name (append-id class-name "-eclass"))
+                   (method-name (append-id "get-" class-name)))
+              ;; TODO: do the same for attributes and references if the metaobject is an EClass
+              `(begin
+                 (send the-epackage eClassifiers-append! ,metaclass-name)
+                 (displayln ,(symbol->string metaclass-name))
+                 (send ,metaclass-name ePackage-set! the-epackage)))))
+     body))
+  
     (define (create-attribute-metaclass the-eclass list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
@@ -342,27 +347,36 @@
       `(begin
          (set! ,m-name (new ecore:EClass))
          (send* ,m-name
-           (name-set! ,(symbol->string n))
-           (ePackage-set! the-epackage))
+           (name-set! ,(symbol->string n)))
 
          ,(unless (or (memq n '(EObject ecore:EObject))
                       (memq super '(EObject ecore:EObject)))
             `(send ,m-name eSuperTypes-append! ,m-super-name))
 
-         ,@(metaclass-body-creation m-name body)
+         ,@(metaclass-body-creation m-name body))))
 
-         (send* the-epackage
-           (eClassifiers-append! ,m-name))
-         ;         (eClassifiers-table-add! ,n the-eclass)
-         )))
+    (define (create-datatype-metaclass n serializable? default-value)
+      (let ((m-name (append-id n "-eclass")))
+        `(begin
+           (set! ,m-name (new ecore:EDataType))
+           (send* ,m-name
+             (name-set! ,(symbol->string n))
+             (serializable-set! ,serializable?)
+             (defaultValue-set! ,default-value)))))
 
   (define (create-metaclasses body)
     (filter-map
      (lambda (e)
-       (and (pair? e) (eq? (car e) 'eclass)
+       (when (pair? e)
+         (cond 
+           ((eq? (car e) 'eclass)
             (match e
               ((list _ name super body ...)
-               (create-metaclass name super body)))))
+               (create-metaclass name super body))))
+           ((eq? (car e) 'edatatype)
+            (match e
+              ((list _ name serializable? default-value)
+               (create-datatype-metaclass name serializable? default-value)))))))
      body))
 
   )
@@ -372,17 +386,12 @@
 (define-macro (edatatype n serializable? default-value)
   (let ((dt (gensym))
         (name-symbol (symbol->string n)))
-    `(set! ,n
-         (let ((,dt (new ecore:EDataType)))
-           (send* ,dt
-             (name-set! ,name-symbol)
-             (serializable-set! ,serializable?)
-             (defaultValue-set! ,default-value))
-
-           ;; TODO
-           ;;(send the-epackage eClassifiers-append! ,dt)
-
-           ,dt))))
+    `(begin
+       (set! ,n (new ecore:EDataType))
+       (send* ,n
+         (name-set! ,name-symbol)
+         (serializable-set! ,serializable?)
+         (defaultValue-set! ,default-value)))))
 
 
 ;(define-syntax (with-epackage stx)
@@ -396,7 +405,7 @@
 
 (define-macro (-with-epackage package name uri package-prefix . body)
   `(begin
-     (define the-epackage ,package)
+     (define the-epackage null)
 
      ;; Predefine the classes so that they can self-reference later.
      ,@(generate-defines-for-classifiers package-prefix body)
@@ -418,9 +427,14 @@
      ;; classes
      ,(create-package name uri package-prefix body)
 
+     ;; Finally add the metaclasses to the package
+     ,@(add-metaclasses-to-package body)
+     
      ;; Resolve references for this model. If a symbol naming a EClassifier
      ;; is introduced, search in the package the concrete classifier and reference it
      ;,@(update-references)
+     
+     (set! ,package the-epackage)
      ))
 
 (define-macro (update-references)
