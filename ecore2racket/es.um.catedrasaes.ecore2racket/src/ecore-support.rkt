@@ -278,65 +278,84 @@
                          (metaclass-name (append-id class-name "-eclass"))
                          (method-name (append-id "get-" class-name)))
                     ;; TODO: do the same for attributes and references if the metaobject is an EClass
-                    `(define/public (,method-name) ,metaclass-name))))
+                    `(begin
+                       (define/public (,method-name) ,metaclass-name)
+                       ,@(if (eq? (car e) 'eclass)
+                             (add-metaclass-elements-to-epackage e)
+                             null)))))
               body))))
        (send* the-epackage
          (name-set! ,name)
          (nsURI-set! ,uri)
          (nsPrefix-set! ,(symbol->string package-prefix)))))
 
+  (define (add-metaclass-elements-to-epackage class-spec)
+    (match class-spec
+      ((list _ name super body ...)
+       (filter-map 
+        (lambda (e)
+          (when (pair? e)
+            (cond
+              ((eq? (car e) 'attribute)
+               `(define/public (,(append-id "get-" name "-" (cadr e)))
+                  ,(append-id name "-" (cadr e) "-eattribute")))
+              ((memq (car e) '(reference ref/derived))
+               `(define/public (,(append-id "get-" name "-" (cadr e)))
+                  ,(append-id name "-" (cadr e) "-ereference"))))))
+        body))))
+        
+  
   (define (add-metaclasses-to-package body)
     (filter-map
      (lambda (e)
        (when (and (pair? e) (memq (car e) '(eclass edatatype)))
             (let* ((class-name (cadr e))
-                   (metaclass-name (append-id class-name "-eclass"))
-                   (method-name (append-id "get-" class-name)))
-              ;; TODO: do the same for attributes and references if the metaobject is an EClass
+                   (metaclass-name (append-id class-name "-eclass")))
               `(begin
                  (send the-epackage eClassifiers-append! ,metaclass-name)
-                 (displayln ,(symbol->string metaclass-name))
                  (send ,metaclass-name ePackage-set! the-epackage)))))
      body))
   
-    (define (create-attribute-metaclass the-eclass list)
+  (define (create-attribute-metaclass class-name metaclass-name list)
     (match list
       ((list 'attribute name type minoccur maxoccur)
-       `(begin
-          (let ((att (new ecore:EAttribute)))
-            (send* att
+       (let ((eatt-metatype-name (append-id class-name "-" name "-eattribute")))
+         `(begin
+            (define ,eatt-metatype-name (new ecore:EAttribute))
+            (send* ,eatt-metatype-name
               (name-set! ,(symbol->string name))
               (eType-set! ,type)
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
+            
+            (send ,metaclass-name eStructuralFeatures-append! ,eatt-metatype-name))))))
 
-            (send ,the-eclass eStructuralFeatures-append! att))))))
-
-  (define (create-reference-metaclass the-eclass list)
+  (define (create-reference-metaclass class-name metaclass-name list)
     (match list
       ((list ref-type name type contained? minoccur maxoccur rest ...)
-       `(begin
-          (let ((ref (new ecore:EReference)))
-            (send* ref
+       (let ((eref-metatype-name (append-id class-name "-" name "-ereference")))
+         `(begin
+            (define ,eref-metatype-name (new ecore:EReference))
+            (send* ,eref-metatype-name
               (name-set! ,(symbol->string name))
               (eType-set! ,type)
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
 
-            (send ,the-eclass eStructuralFeatures-append! ref))))))
+            (send ,metaclass-name eStructuralFeatures-append! ,eref-metatype-name))))))
 
-  (define (metaclass-body-creation the-eclass body)
+  (define (metaclass-body-creation class-name metaclass-name body)
     (filter-map
      (lambda (e)
        (when (pair? e)
          (cond
            ;; Attribute
            ((eq? (car e) 'attribute)
-            (create-attribute-metaclass the-eclass e))
+            (create-attribute-metaclass class-name metaclass-name e))
            ;; Reference
            ((memq (car e) '(reference ref/derived))
-            (create-reference-metaclass the-eclass e))
+            (create-reference-metaclass class-name metaclass-name e))
            (else
             #f))))
      body))
@@ -353,7 +372,7 @@
                       (memq super '(EObject ecore:EObject)))
             `(send ,m-name eSuperTypes-append! ,m-super-name))
 
-         ,@(metaclass-body-creation m-name body))))
+         ,@(metaclass-body-creation n m-name body))))
 
     (define (create-datatype-metaclass n serializable? default-value)
       (let ((m-name (append-id n "-eclass")))
@@ -506,7 +525,7 @@
   EModelElement EObject)
  (provide ecore:EModelElement)
 
- (eclass  EAnnotation EModelElement
+ (eclass EAnnotation EModelElement
   (attribute source EString 0 1)
   (reference eModelElement EModelElement #f 0 1)
   (reference details EStringToStringMapEntry #t 0 -1))
@@ -624,7 +643,8 @@
  (eclass
   EAttribute EStructuralFeature
   (attribute iD EBoolean 0 1)
-  (reference eAttributeType EDataType #f 1 1))
+  (ref/derived eAttributeType EDataType #f 1 1
+               (send this eType)))
  (provide ecore:EAttribute)
 
  (eclass
