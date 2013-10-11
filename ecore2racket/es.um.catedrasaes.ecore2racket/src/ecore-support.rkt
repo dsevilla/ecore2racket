@@ -324,7 +324,7 @@
             (define ,eatt-metatype-name (new ecore:EAttribute))
             (send* ,eatt-metatype-name
               (name-set! ,(symbol->string name))
-              (eType-set! ,type)
+              (eType-set! ,(append-id type "-eclass"))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
             
@@ -343,8 +343,11 @@
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
-
-            (send ,metaclass-name eStructuralFeatures-append! ,eref-metatype-name))))))
+            
+            (send ,metaclass-name eStructuralFeatures-append! ,eref-metatype-name)
+            
+            (alias-id ,etype-metaclass ,(append-id package-prefix ":" etype-metaclass))
+            (provide ,(append-id package-prefix ":" etype-metaclass)))))))
 
   (define (metaclass-body-creation class-name metaclass-name body)
     (filter-map
