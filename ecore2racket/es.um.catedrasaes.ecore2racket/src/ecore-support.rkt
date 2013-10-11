@@ -333,12 +333,13 @@
   (define (create-reference-metaclass class-name metaclass-name list)
     (match list
       ((list ref-type name type contained? minoccur maxoccur rest ...)
-       (let ((eref-metatype-name (append-id class-name "-" name "-ereference")))
+       (let ((eref-metatype-name (append-id class-name "-" name "-ereference"))
+             (etype-metaclass (append-id type "-eclass")))
          `(begin
             (define ,eref-metatype-name (new ecore:EReference))
             (send* ,eref-metatype-name
               (name-set! ,(symbol->string name))
-              (eType-set! ,type)
+              (eType-set! ,etype-metaclass)
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
@@ -368,19 +369,18 @@
 
          ,(unless (or (memq n '(EObject ecore:EObject))
                       (memq super '(EObject ecore:EObject)))
-            `(send ,m-name eSuperTypes-append! ,m-super-name))
+            `(send ,m-name eSuperTypes-append! ,m-super-name)))))
 
-         ,@(metaclass-body-creation n m-name body))))
 
-    (define (create-datatype-metaclass n serializable? default-value)
-      (let ((m-name (append-id n "-eclass")))
-        `(begin
-           (set! ,m-name (new ecore:EDataType))
-           (send* ,m-name
-             (name-set! ,(symbol->string n))
-             (serializable-set! ,serializable?)
-             (defaultValue-set! ,default-value)))))
-
+  (define (create-datatype-metaclass n serializable? default-value)
+    (let ((m-name (append-id n "-eclass")))
+      `(begin
+         (set! ,m-name (new ecore:EDataType))
+         (send* ,m-name
+           (name-set! ,(symbol->string n))
+           (serializable-set! ,serializable?)
+           (defaultValue-set! ,default-value)))))
+  
   (define (create-metaclasses body)
     (filter-map
      (lambda (e)
@@ -396,6 +396,22 @@
                (create-datatype-metaclass name serializable? default-value)))))))
      body))
 
+  ;; As references need metaclasses to be defined (because they are included in their eType)
+  ;; we have to separate metaclass creation from the creation of all the elements
+  ;; included in metaclases
+  (define (create-metaclasses-body body)
+    (filter-map
+     (lambda (e)
+       (when (pair? e)
+         (cond 
+           ((eq? (car e) 'eclass)
+            (match e
+              ((list _ name super body ...)
+               `(begin
+                  ,@(metaclass-body-creation name (append-id name "-eclass") body))))))))
+     body))
+  
+  
   )
 
 
@@ -433,6 +449,11 @@
      ;; Metaclasses for all the classes and datatypes in the package
      ,@(create-metaclasses body)
 
+     ;; Inner elements of metaclasses (EAttributes and EReferences mainly)
+     ;; These are created after because they reference metaclasses (for example,
+     ;; as types of references).
+     ,@(create-metaclasses-body body)
+     
      ;; Generate the package itself. As all the classes have been defined above,
      ;; we can create a proper package object and populate with all the defined
      ;; classes
@@ -480,6 +501,11 @@
      ;; Metaclasses for all the classes and datatypes in the package
      ,@(create-metaclasses body)
 
+     ;; Inner elements of metaclasses (EAttributes and EReferences mainly)
+     ;; These are created after because they reference metaclasses (for example,
+     ;; as types of references).
+     ,@(create-metaclasses-body body)
+     
      ;; Generate the package itself. As all the classes have been defined above,
      ;; we can create a proper package object and populate with all the defined
      ;; classes
