@@ -355,9 +355,7 @@
             (create-attribute-metaclass class-name metaclass-name e))
            ;; Reference
            ((memq (car e) '(reference ref/derived))
-            (create-reference-metaclass class-name metaclass-name e))
-           (else
-            #f))))
+            (create-reference-metaclass class-name metaclass-name e)))))
      body))
 
   (define (create-metaclass n super body)
@@ -412,14 +410,12 @@
          (serializable-set! ,serializable?)
          (defaultValue-set! ,default-value)))))
 
-
 ;(define-syntax (with-epackage stx)
 ;    (syntax-case stx ()
 ;      ((_ package body ...)
 ;         #`(begin
 ;             (define #,(datum->syntax stx 'the-epackage) package)
 ;             body ...))))
-
 
 
 (define-macro (-with-epackage package name uri package-prefix . body)
@@ -430,10 +426,6 @@
      ,@(generate-defines-for-classifiers package-prefix body)
 
      ,@body
-     ;; We generate here a call to macros so that they are
-     ;; at the same level to all the previous calls to
-     ;; eclass, so it is run *after* all the classes
-     ;; have been created.
 
      ;; Generate ~xxx methods
      ,@(generate-fast-accessors body)
@@ -485,9 +477,22 @@
 
      ,@body
 
+     ;; Metaclasses for all the classes and datatypes in the package
      ,@(create-metaclasses body)
 
-     ,(create-package name uri package-prefix body)))
+     ;; Generate the package itself. As all the classes have been defined above,
+     ;; we can create a proper package object and populate with all the defined
+     ;; classes
+     ,(create-package name uri package-prefix body)
+
+     ;; Finally add the metaclasses to the package
+     ,@(add-metaclasses-to-package body)
+     
+     ;; Resolve references for this model. If a symbol naming a EClassifier
+     ;; is introduced, search in the package the concrete classifier and reference it
+     ;,@(update-references)
+     
+     (set! ,package the-epackage)))
 
 ;; The eclass macro proper. Private version to generate Ecore itself.
 (define-macro (eclass n super . body)
