@@ -414,7 +414,6 @@
                   ,@(metaclass-body-creation name (append-id name "-eclass") body))))))))
      body))
   
-  
   )
 
 
