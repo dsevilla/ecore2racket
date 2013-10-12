@@ -19,7 +19,7 @@
          edatatype
          eenum
          with-epackage
-         ecore-package
+         ecore:ecore-package
          ~eclass
          eobject->xexpr
          to-xml
@@ -254,13 +254,17 @@
      (lambda (e)
        (and (pair? e)
             (memq (car e) '(eclass edatatype eenum))
-            (let ((class-name (cadr e))
-                  (metaclass-name (append-id (cadr e) "-eclass")))
+            (let* ((class-name (cadr e))
+                   (fqn-class-name (append-id package-prefix ":" class-name))
+                   (metaclass-name (append-id class-name "-eclass"))
+                   (fqn-metaclass-name (append-id package-prefix ":" metaclass-name)))
               `(begin
                  (define ,class-name null)
-                 (alias-id ,class-name ,(append-id package-prefix ":" class-name))
+                 (alias-id ,class-name ,fqn-class-name)
+                 (provide ,fqn-class-name)
                  (define ,metaclass-name null)
-                 (alias-id ,metaclass-name ,(append-id package-prefix ":" metaclass-name))))))
+                 (alias-id ,metaclass-name ,fqn-metaclass-name)
+                 (provide ,fqn-metaclass-name)))))
      body))
 
   ;; TODO: Generalize this recursive search
@@ -344,11 +348,8 @@
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
             
-            (send ,metaclass-name eStructuralFeatures-append! ,eref-metatype-name)
+            (send ,metaclass-name eStructuralFeatures-append! ,eref-metatype-name))))))
             
-            (alias-id ,etype-metaclass ,(append-id package-prefix ":" etype-metaclass))
-            (provide ,(append-id package-prefix ":" etype-metaclass)))))))
-
   (define (metaclass-body-creation class-name metaclass-name body)
     (filter-map
      (lambda (e)
@@ -373,7 +374,6 @@
          ,(unless (or (memq n '(EObject ecore:EObject))
                       (memq super '(EObject ecore:EObject)))
             `(send ,m-name eSuperTypes-append! ,m-super-name)))))
-
 
   (define (create-datatype-metaclass n serializable? default-value)
     (let ((m-name (append-id n "-eclass")))
@@ -548,16 +548,15 @@
 
 ;;; Ecore classes
 (define ecore-package null)
+(alias-id ecore-package ecore:ecore-package)
 (-with-epackage
  ecore-package "ecore" "http://www.eclipse.org/emf/2002/Ecore" ecore
 
  (eclass
   EObject EObject-base)
- (provide ecore:EObject)
 
  (eclass
   EModelElement EObject)
- (provide ecore:EModelElement)
 
  (eclass EAnnotation EModelElement
   (attribute source EString 0 1)
@@ -572,13 +571,11 @@
  (eclass
   ENamedElement EModelElement
   (attribute name EString 1 1))
- (provide ecore:EModelElement)
 
  (eclass
   EClassifier ENamedElement
   (attribute defaultValue EObject 0 1)
   (reference ePackage EPackage #f 0 1))
- (provide ecore:EClassifier)
 
  (define-macro (collect-from-supers all-att-super att)
    (let ([att-value-n (gensym)])
@@ -631,7 +628,6 @@
 
   (ref/derived eAllSuperTypes EClass #f 0 -1
               (collect-from-supers eAllSuperTypes -eSuperTypes)))
- (provide ecore:EClass)
 
  (eclass
   EPackage ENamedElement
@@ -640,7 +636,6 @@
   (reference eSuperPackage EPackage #f 0 1)
   (reference eClassifiers EClassifier #t 0 -1)
   (reference eSubpackages EPackage #t 0 -1))
- (provide ecore:EPackage)
 
  (eclass
   ETypedElement ENamedElement
@@ -651,18 +646,15 @@
   (attribute many EBoolean 0 1)
   (attribute required EBoolean 0 1)
   (reference eType EClassifier #f 0 1))
- (provide ecore:ETypedElement)
 
  (eclass
   EOperation ETypedElement
   (reference eContainingClass EClass #f 1 1)
   (reference eParameters EParameter #t 0 -1))
- (provide ecore:EOperation)
 
  (eclass
   EParameter ETypedElement
   (reference eOperation EOperation #f 1 1))
- (provide ecore:EParameter)
 
  (eclass
   EStructuralFeature ETypedElement
@@ -672,14 +664,12 @@
   (attribute unsettable EBoolean 0 1)
   (attribute derived EBoolean 0 1)
   (reference eContainingClass EClass #f 0 1))
- (provide ecore:EStructuralFeature)
 
  (eclass
   EAttribute EStructuralFeature
   (attribute iD EBoolean 0 1)
   (ref/derived eAttributeType EDataType #f 1 1
                (send this eType)))
- (provide ecore:EAttribute)
 
  (eclass
   EReference EStructuralFeature
@@ -687,12 +677,10 @@
   (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
   (reference eReferenceType EClass #f 1 1))
- (provide ecore:EReference)
 
  (eclass
   EDataType EClassifier
   (attribute serializable EBoolean 0 1))
- (provide ecore:EDataType)
 
  (eclass
   EEnumLiteral ENamedElement
@@ -706,21 +694,13 @@
 
  ;; Datatypes
  (edatatype EString #t "")
- (provide ecore:EString)
  (edatatype ELong #t 0)
- (provide ecore:ELong)
  (edatatype EInt #t 0)
- (provide ecore:EInt)
  (edatatype EShort #t 0)
- (provide ecore:EShort)
  (edatatype EChar #t #\u0)
- (provide ecore:EChar)
  (edatatype EFloat #t 0.0)
- (provide ecore:EFloat)
  (edatatype EDouble #t 0.0)
- (provide ecore:EDouble)
  (edatatype EBoolean #t #f)
- (provide ecore:EBoolean)
 
  )
 
