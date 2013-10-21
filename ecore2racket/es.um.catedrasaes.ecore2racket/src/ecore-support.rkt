@@ -27,10 +27,12 @@
          alias-id)
 
 (module utils racket
+
   (define-syntax-rule (alias-id from to)
     (define-syntax to
       (syntax-id-rules ()
         [to from])))
+
   (provide (all-defined-out)))
 
 (module syntax-utils racket
@@ -67,19 +69,25 @@
 ;         #'(let ((vars gensyms) ...)
 ;             body ...)))))
 
+  (define-syntax-rule (for-phases-0-1 def)
+    (begin
+      def
+      (begin-for-syntax
+        def)))
   
-  (define (append-id . list)
-    (string->symbol
-     (apply
-      string-append
-      (map (lambda (s-s)
-             (if (symbol? s-s)
-                 (symbol->string s-s)
-                 s-s))
-           list))))
+  (for-phases-0-1 
+   (define (append-id . list)
+     (string->symbol
+      (apply
+       string-append
+       (map (lambda (s-s)
+              (if (symbol? s-s)
+                  (symbol->string s-s)
+                  s-s))
+            list)))))
   
   (begin-for-syntax
-  
+    
     ;; The list is an eclass spec?
     (define (eclass-spec? list)
       (and (pair? list)
@@ -95,26 +103,44 @@
       (and (pair? list)
            (memq (car list) '(reference reference* ref/derived))))
     
-    (define (-eclass-let-spec spec)
+    (define (-extract-hash-defs-and-body defs)
+      (if (symbol? (car defs))
+          (let-values ([(rest-letdefs rest-defs)
+                        (-extract-hash-defs-and-body (cddr defs))])
+            (values (cons (list (car defs) (cadr defs))
+                          rest-letdefs)
+                    rest-defs))
+          (values null defs)))
+    
+    (define (-eclass-hash-spec spec)
       (if (not (eclass-spec? spec))
           (values #f #f)
           (match spec
             ;; (eclass name super (attribute ...))
             [(list 'eclass name super body ...)
              (values 
-              `((e-name ,name) (e-super ,super))
+              `((name ,name) (eSuperTypes (list ,super)))
               body)]
             ;; (eclass* name att1 val1 att2 val2 ... body)
             ;; body is marked by a non-symbol
             [(list 'eclass* name defs ...)
-              (let proc-defs ((defs defs))
-                (if (symbol? (car defs))
-                    (let-values ([(rest-letdefs rest-defs)
-                                  (proc-defs (cddr defs))])
-                      (values (cons (list (car defs) (cadr defs))
-                                    rest-letdefs)
-                              rest-defs))
-                    (values null defs)))])))
+             (-extract-hash-defs-and-body defs)])))
+    
+    (define (-attribute-let-spec spec)
+      (if (not (attribute-spec? spec))
+          (values #f #f)
+          (match spec
+            ;; (
+            [(list 'attribute name type minoccur maxoccur body ...)
+             (values 
+              `((name ,name) (eType ,type) (eLowerBound ,minoccur) (eUpperBound ,maxoccur))
+              body)]
+            ;; (eclass* name att1 val1 att2 val2 ... body)
+            ;; body is marked by a non-symbol
+            [(list 'eclass* name defs ...)
+             (-extract-hash-defs-and-body defs)])))
+    
+    
     )
   
   ;; Macros to extract the information from a metamodel declaration and 
@@ -122,14 +148,12 @@
   ;; Execute body when "spec" is a class spec. body is executed within
   ;; an environment that includes the different class elements
   (define-macro (with-eclass-spec spec)
-    (let-values ([(let-spec body) (-eclass-let-spec spec)])
+    (let-values ([(let-spec body) (-eclass-hash-spec spec)])
       (unless let-spec
         `(let (,@let-spec)
            ,body))))
   
-  (provide (all-defined-out))
-  
-  )
+  (provide (all-defined-out)))
 
 (require  (submod "." utils)
           (for-syntax (submod "." utils)))
