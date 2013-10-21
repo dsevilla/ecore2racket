@@ -31,10 +31,10 @@
     (define-syntax to
       (syntax-id-rules ()
         [to from])))
-  (provide alias-id))
+  (provide (all-defined-out)))
 
 (module syntax-utils racket
-  (require compatibility/defmacro)
+  (require compatibility/defmacro (for-syntax racket))
   
   (define-macro (with-gensyms list . body)
     `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
@@ -68,7 +68,7 @@
 ;             body ...)))))
 
   
-    (define (append-id . list)
+  (define (append-id . list)
     (string->symbol
      (apply
       string-append
@@ -78,8 +78,56 @@
                  s-s))
            list))))
   
-  (provide with-gensyms
-           append-id)
+  (begin-for-syntax
+  
+    ;; The list is an eclass spec?
+    (define (eclass-spec? list)
+      (and (pair? list)
+           (memq (car list) '(eclass eclass*))))
+    
+    ;; The list is an attribute spec?
+    (define (attribute-spec? list)
+      (and (pair? list)
+           (memq (car list) '(attribute attribute*))))
+
+    ;; The list is a reference spec?
+    (define (reference-spec? list)
+      (and (pair? list)
+           (memq (car list) '(reference reference* ref/derived))))
+    
+    (define (-eclass-let-spec spec)
+      (if (not (eclass-spec? spec))
+          (values #f #f)
+          (match spec
+            ;; (eclass name super (attribute ...))
+            [(list 'eclass name super body ...)
+             (values 
+              `((e-name ,name) (e-super ,super))
+              body)]
+            ;; (eclass* name att1 val1 att2 val2 ... body)
+            ;; body is marked by a non-symbol
+            [(list 'eclass* name defs ...)
+              (let proc-defs ((defs defs))
+                (if (symbol? (car defs))
+                    (let-values ([(rest-letdefs rest-defs)
+                                  (proc-defs (cddr defs))])
+                      (values (cons (list (car defs) (cadr defs))
+                                    rest-letdefs)
+                              rest-defs))
+                    (values null defs)))])))
+    )
+  
+  ;; Macros to extract the information from a metamodel declaration and 
+  ;; put it into a set of variables for easy access.
+  ;; Execute body when "spec" is a class spec. body is executed within
+  ;; an environment that includes the different class elements
+  (define-macro (with-eclass-spec spec)
+    (let-values ([(let-spec body) (-eclass-let-spec spec)])
+      (unless let-spec
+        `(let (,@let-spec)
+           ,body))))
+  
+  (provide (all-defined-out))
   
   )
 
@@ -159,21 +207,6 @@
 
 (begin-for-syntax
 
-
-  ;; The list is an eclass spec?
-  (define (eclass-spec? list)
-    (and (pair? list)
-         (memq (car list) '(eclass eclass*))))
-
-  ;; The list is an attribute spec?
-  (define (attribute-spec? list)
-    (and (pair? list)
-         (memq (car list) '(attribute attribute*))))
-
-  ;; The list is a reference spec?
-  (define (reference-spec? list)
-    (and (pair? list)
-         (memq (car list) '(reference reference* ref/derived))))
 
   
   (define (default-value type)
