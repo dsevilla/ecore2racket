@@ -26,11 +26,68 @@
          to-xexpr
          alias-id)
 
-(define-syntax-rule (alias-id from to)
-  (define-syntax to
-    (syntax-id-rules ()
-      [to from])))
+(module utils racket
+  (define-syntax-rule (alias-id from to)
+    (define-syntax to
+      (syntax-id-rules ()
+        [to from])))
+  (provide alias-id))
 
+(module syntax-utils racket
+  (require compatibility/defmacro)
+  
+  (define-macro (with-gensyms list . body)
+    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
+       ,@body))
+
+;  (define-macro (with-gensyms list . body)
+;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
+;       ,@body))
+;
+;  ;; Cannot use define-macro for syntax...
+;  (define-syntax (with-gensyms stx)
+;    (syntax-case stx ()
+;      ((_ (vars ...) body ...)
+;       (with-syntax
+;           ([(gensyms ...) #'((gensym 'vars) ...)])
+;         #'(let ((vars gensyms) ...)
+;             body ...)))))
+
+;  ;; same
+;  (define-syntax (with-gensyms stx)
+;    (syntax-case stx ()
+;      ((_ (vars ...) body ...)
+;       (with-syntax
+;           ([(gensyms ...)
+;             (map (lambda (s)
+;                    (datum->syntax
+;                     stx
+;                     `(gensym ',s)))
+;                  (syntax->datum #'(vars ...)))])
+;         #'(let ((vars gensyms) ...)
+;             body ...)))))
+
+  
+    (define (append-id . list)
+    (string->symbol
+     (apply
+      string-append
+      (map (lambda (s-s)
+             (if (symbol? s-s)
+                 (symbol->string s-s)
+                 s-s))
+           list))))
+  
+  (provide with-gensyms
+           append-id)
+  
+  )
+
+(require  (submod "." utils)
+          (for-syntax (submod "." utils)))
+
+(require (for-syntax (submod "." syntax-utils)))
+  
 ;;; Interfaces describing the different Ecore metamodel elements. In a
 ;;; perfect world, these entities would have been generated with the
 ;;; same interface all other metamodels have, but we need a bootstrap
@@ -102,33 +159,23 @@
 
 (begin-for-syntax
 
-;  (define-macro (with-gensyms list . body)
-;    `(let (,@(map (λ (v) `(,v (gensym ',v))) list))
-;       ,@body))
 
-  ;; Cannot use define-macro for syntax...
-  (define-syntax (with-gensyms stx)
-    (syntax-case stx ()
-      ((_ (vars ...) body ...)
-       (with-syntax
-           ([(gensyms ...) #'((gensym 'vars) ...)])
-         #'(let ((vars gensyms) ...)
-             body ...)))))
+  ;; The list is an eclass spec?
+  (define (eclass-spec? list)
+    (and (pair? list)
+         (memq (car list) '(eclass eclass*))))
 
-;  ;; same
-;  (define-syntax (with-gensyms stx)
-;    (syntax-case stx ()
-;      ((_ (vars ...) body ...)
-;       (with-syntax
-;           ([(gensyms ...)
-;             (map (lambda (s)
-;                    (datum->syntax
-;                     stx
-;                     `(gensym ',s)))
-;                  (syntax->datum #'(vars ...)))])
-;         #'(let ((vars gensyms) ...)
-;             body ...)))))
+  ;; The list is an attribute spec?
+  (define (attribute-spec? list)
+    (and (pair? list)
+         (memq (car list) '(attribute attribute*))))
 
+  ;; The list is a reference spec?
+  (define (reference-spec? list)
+    (and (pair? list)
+         (memq (car list) '(reference reference* ref/derived))))
+
+  
   (define (default-value type)
     (let ((val (assq type '([EInt 0]
                             [EFloat 0.0]
@@ -140,15 +187,7 @@
                             [EBoolean #f]))))
       (if val (cadr val) null)))
 
-  (define (append-id . list)
-    (string->symbol
-     (apply
-      string-append
-      (map (lambda (s-s)
-             (if (symbol? s-s)
-                 (symbol->string s-s)
-                 s-s))
-           list))))
+
 
   (define (expand-class-attribute list)
     (match list
@@ -281,7 +320,6 @@
                   (let* ((class-name (cadr e))
                          (metaclass-name (append-id class-name "-eclass"))
                          (method-name (append-id "get-" class-name)))
-                    ;; TODO: do the same for attributes and references if the metaobject is an EClass
                     `(begin
                        (define/public (,method-name) ,metaclass-name)
                        ,@(if (eq? (car e) 'eclass)
