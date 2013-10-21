@@ -118,28 +118,42 @@
           (match spec
             ;; (eclass name super (attribute ...))
             [(list 'eclass name super body ...)
-             (values 
-              `((name ,name) (eSuperTypes (list ,super)))
+             (values
+              `((name ,name) (eSuperTypes ,(list super)))
               body)]
             ;; (eclass* name att1 val1 att2 val2 ... body)
             ;; body is marked by a non-symbol
             [(list 'eclass* name defs ...)
              (-extract-hash-defs-and-body defs)])))
     
-    (define (-attribute-let-spec spec)
+    (define (-attribute-hash-spec spec)
       (if (not (attribute-spec? spec))
           (values #f #f)
           (match spec
-            ;; (
             [(list 'attribute name type minoccur maxoccur body ...)
              (values 
-              `((name ,name) (eType ,type) (eLowerBound ,minoccur) (eUpperBound ,maxoccur))
+              `((name ,name) (eType ,type) (lowerBound ,minoccur) (upperBound ,maxoccur))
               body)]
-            ;; (eclass* name att1 val1 att2 val2 ... body)
+            ;; (attribute* name att1 val1 att2 val2 ... body)
             ;; body is marked by a non-symbol
-            [(list 'eclass* name defs ...)
+            [(list 'attribute* name defs ...)
              (-extract-hash-defs-and-body defs)])))
     
+    (define (-reference-hash-spec spec)
+      (if (not (reference-spec? spec))
+          (values #f #f)
+          (match spec
+            [(list 'reference name type contained? minoccur maxoccur body ...)
+             (values 
+              `((name ,name) (eType ,type) 
+                             (containment ,contained?) 
+                             (lowerBound ,minoccur) 
+                             (upperBound ,maxoccur))
+              body)]
+            ;; (reference* name att1 val1 att2 val2 ... body)
+            ;; body is marked by a non-symbol
+            [(list 'reference* name defs ...)
+             (-extract-hash-defs-and-body defs)])))
     
     )
   
@@ -148,10 +162,23 @@
   ;; Execute body when "spec" is a class spec. body is executed within
   ;; an environment that includes the different class elements
   (define-macro (with-eclass-spec spec)
-    (let-values ([(let-spec body) (-eclass-hash-spec spec)])
-      (unless let-spec
-        `(let (,@let-spec)
+    (let-values ([(hash-spec body) (-eclass-hash-spec spec)])
+      (unless hash-spec
+        `(let ((the-eclass-hash (make-immutable-hasheq ,@hash-spec)))
            ,body))))
+
+  (define-macro (with-attribute-spec spec)
+    (let-values ([(hash-spec body) (-attribute-hash-spec spec)])
+      (unless hash-spec
+        `(let ((the-attribute-hash (make-immutable-hasheq ,@hash-spec)))
+           ,body))))
+
+  (define-macro (with-reference-spec spec)
+    (let-values ([(hash-spec body) (-reference-hash-spec spec)])
+      (unless hash-spec
+        `(let ((the-reference-hash (make-immutable-hasheq ,@hash-spec)))
+           ,body))))
+
   
   (provide (all-defined-out)))
 
@@ -439,6 +466,7 @@
             (send* ,eref-metatype-name
               (name-set! ,(symbol->string name))
               (eType-set! ,etype-metaclass)
+              (contained-set! ,contained?)
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
@@ -770,7 +798,8 @@
   (attribute containment EBoolean 0 1)
   (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
-  (reference eReferenceType EClass #f 1 1))
+  (ref/derived eReferenceType EClass #f 1 1
+               (send this eType)))
 
  (eclass
   EDataType EClassifier
