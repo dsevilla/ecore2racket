@@ -93,8 +93,14 @@
       (and (pair? list)
            (memq (car list) '(eclass eclass*))))
     
+    ;; The list is an edatatype spec?
+    (define (edatatype-spec? list)
+      (and (pair? list)
+           (memq (car list) '(edatatype edatatype*))))
+    
     ;; The list is an attribute spec?
     (define (attribute-spec? list)
+      (displayln list)
       (and (pair? list)
            (memq (car list) '(attribute attribute*))))
 
@@ -105,55 +111,54 @@
     
     (define (-extract-hash-defs-and-body defs)
       (if (symbol? (car defs))
-          (let-values ([(rest-letdefs rest-defs)
-                        (-extract-hash-defs-and-body (cddr defs))])
-            (values (cons (list (car defs) (cadr defs))
-                          rest-letdefs)
-                    rest-defs))
-          (values null defs)))
+          (cons (list (car defs) (cadr defs)) (-extract-hash-defs-and-body (cddr defs)))
+          (list (list '-body defs))))
     
     (define (-eclass-hash-spec spec)
-      (if (not (eclass-spec? spec))
-          (values #f #f)
-          (match spec
-            ;; (eclass name super (attribute ...))
-            [(list 'eclass name super body ...)
-             (values
-              `((name ,name) (eSuperTypes ,(list super)))
-              body)]
-            ;; (eclass* name att1 val1 att2 val2 ... body)
-            ;; body is marked by a non-symbol
-            [(list 'eclass* name defs ...)
-             (-extract-hash-defs-and-body defs)])))
+      (and (eclass-spec? spec)
+           (match spec
+             ;; (eclass name super (attribute ...))
+             [(list 'eclass name super body ...)
+              `((name ,name) (eSuperTypes ,(list super)) (-body ,body))]
+             ;; (eclass* name att1 val1 att2 val2 ... body)
+             ;; body is marked by a non-symbol
+             [(list 'eclass* name defs ...)
+              (-extract-hash-defs-and-body defs)])))
+    
+    (define (-edatatype-hash-spec spec)
+      (and (edatatype-spec? spec)
+           (match spec
+             ;; (edatatype name serializable? default-value body ...)
+             [(list 'edatatype name serializable? default-value body ...)
+              `((name ,name) (serializable ,serializable?) (defaultValue ,default-value) (-body ,body))]
+             ;; (edatatype* name att1 val1 att2 val2 ... body)
+             ;; body is marked by a non-symbol
+             [(list 'edatatype* name defs ...)
+              (-extract-hash-defs-and-body defs)])))
     
     (define (-attribute-hash-spec spec)
-      (if (not (attribute-spec? spec))
-          (values #f #f)
-          (match spec
-            [(list 'attribute name type minoccur maxoccur body ...)
-             (values 
-              `((name ,name) (eType ,type) (lowerBound ,minoccur) (upperBound ,maxoccur))
-              body)]
-            ;; (attribute* name att1 val1 att2 val2 ... body)
-            ;; body is marked by a non-symbol
-            [(list 'attribute* name defs ...)
-             (-extract-hash-defs-and-body defs)])))
+      (and (attribute-spec? spec)
+           (match spec
+             [(list 'attribute name type minoccur maxoccur body ...)
+              `((name ,name) (eType ,type) (lowerBound ,minoccur) (upperBound ,maxoccur) (-body ,body))]
+             ;; (attribute* name att1 val1 att2 val2 ... body)
+             ;; body is marked by a non-symbol
+             [(list 'attribute* name defs ...)
+              (-extract-hash-defs-and-body defs)])))
     
     (define (-reference-hash-spec spec)
-      (if (not (reference-spec? spec))
-          (values #f #f)
-          (match spec
-            [(list 'reference name type contained? minoccur maxoccur body ...)
-             (values 
+      (and (reference-spec? spec)
+           (match spec
+             [(list 'reference name type contained? minoccur maxoccur body ...)
               `((name ,name) (eType ,type) 
-                             (containment ,contained?) 
-                             (lowerBound ,minoccur) 
-                             (upperBound ,maxoccur))
-              body)]
+                             (containment ,contained?)
+                             (lowerBound ,minoccur)
+                             (upperBound ,maxoccur)
+                             (-body ,body))]
             ;; (reference* name att1 val1 att2 val2 ... body)
             ;; body is marked by a non-symbol
-            [(list 'reference* name defs ...)
-             (-extract-hash-defs-and-body defs)])))
+             [(list 'reference* name defs ...)
+              (-extract-hash-defs-and-body defs)])))
     
     )
   
@@ -161,29 +166,46 @@
   ;; put it into a set of variables for easy access.
   ;; Execute body when "spec" is a class spec. body is executed within
   ;; an environment that includes the different class elements
-  (define-macro (with-eclass-spec spec)
-    (let-values ([(hash-spec body) (-eclass-hash-spec spec)])
-      (unless hash-spec
+  (define-macro (with-eclass-spec spec . body)
+    (displayln spec)
+    (let ([hash-spec (-eclass-hash-spec spec)])
+      (when hash-spec
         `(let ((the-eclass-hash (make-immutable-hasheq ,@hash-spec)))
            ,body))))
 
-  (define-macro (with-attribute-spec spec)
-    (let-values ([(hash-spec body) (-attribute-hash-spec spec)])
-      (unless hash-spec
+  (define-macro (with-edatatype-spec spec . body)
+    (let ([hash-spec (-edatatype-hash-spec spec)])
+      (when hash-spec
+        `(let ((the-eclass-hash (make-immutable-hasheq ,@hash-spec)))
+           ,body))))
+
+  (define-macro (with-attribute-spec spec . body)
+    (let ([hash-spec (-attribute-hash-spec spec)])
+      (when hash-spec
         `(let ((the-attribute-hash (make-immutable-hasheq ,@hash-spec)))
            ,body))))
 
-  (define-macro (with-reference-spec spec)
-    (let-values ([(hash-spec body) (-reference-hash-spec spec)])
-      (unless hash-spec
+  (define-macro (with-reference-spec spec . body)
+    (let ([hash-spec (-reference-hash-spec spec)])
+      (when hash-spec
         `(let ((the-reference-hash (make-immutable-hasheq ,@hash-spec)))
            ,body))))
 
+  ;; EClass spec hash
+  (define-syntax-rule (.ec name)
+    (hash-ref the-eclass-hash 'name))
+
+  ;; Attribute spec hash
+  (define-syntax-rule (.a name)
+    (hash-ref the-attribute-hash 'name))
+  
+  ;; Reference spec hash
+  (define-syntax-rule (.r name)
+    (hash-ref the-reference-hash 'name))
   
   (provide (all-defined-out)))
 
-(require  (submod "." utils)
-          (for-syntax (submod "." utils)))
+(require (submod "." utils))
 
 (require (for-syntax (submod "." syntax-utils)))
   
@@ -257,8 +279,6 @@
          (for-syntax racket))
 
 (begin-for-syntax
-
-
   
   (define (default-value type)
     (let ((val (assq type '([EInt 0]
@@ -271,15 +291,13 @@
                             [EBoolean #f]))))
       (if val (cadr val) null)))
 
-
-
-  (define (expand-class-attribute list)
-    (match list
-      ((list 'attribute name type minoccur maxoccur)
-       (if (= maxoccur 1)
-           (new-field-mono name (default-value type))
-           ;; multi-valuated
-           (new-field-multi name (default-value type))))))
+  (define (expand-class-attribute spec)
+    (with-attribute-spec 
+     spec
+     (if (= (.a upperBound) 1)
+         (new-field-mono (.a name) (default-value (.a eType)))
+         ;; multi-valuated
+         (new-field-multi (.a name) (default-value (.a eType))))))
 
   (define (new-field-mono f-name (default-value null))
     (let ((field-name (append-id "-" f-name))
