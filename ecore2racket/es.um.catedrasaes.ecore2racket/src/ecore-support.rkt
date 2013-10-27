@@ -85,6 +85,11 @@
                   (symbol->string s-s)
                   s-s))
             list)))))
+
+  ;; The list is an attribute spec?
+  (define (attribute-spec? list)
+    `(and (pair? ,list)
+          (memq (car ,list) '(attribute attribute*))))
   
   (begin-for-syntax
     
@@ -98,11 +103,7 @@
       (and (pair? list)
            (memq (car list) '(edatatype edatatype*))))
     
-    ;; The list is an attribute spec?
-    (define (attribute-spec? list)
-      (displayln list)
-      (and (pair? list)
-           (memq (car list) '(attribute attribute*))))
+
 
     ;; The list is a reference spec?
     (define (reference-spec? list)
@@ -111,8 +112,8 @@
     
     (define (-extract-hash-defs-and-body defs)
       (if (symbol? (car defs))
-          (cons (list (car defs) (cadr defs)) (-extract-hash-defs-and-body (cddr defs)))
-          (list (list '-body defs))))
+          (cons (cons (car defs) (cadr defs)) (-extract-hash-defs-and-body (cddr defs)))
+          (list (cons '-body defs))))
     
     (define (-eclass-hash-spec spec)
       (and (eclass-spec? spec)
@@ -136,15 +137,6 @@
              [(list 'edatatype* name defs ...)
               (-extract-hash-defs-and-body defs)])))
     
-    (define (-attribute-hash-spec spec)
-      (and (attribute-spec? spec)
-           (match spec
-             [(list 'attribute name type minoccur maxoccur body ...)
-              `((name ,name) (eType ,type) (lowerBound ,minoccur) (upperBound ,maxoccur) (-body ,body))]
-             ;; (attribute* name att1 val1 att2 val2 ... body)
-             ;; body is marked by a non-symbol
-             [(list 'attribute* name defs ...)
-              (-extract-hash-defs-and-body defs)])))
     
     (define (-reference-hash-spec spec)
       (and (reference-spec? spec)
@@ -159,7 +151,18 @@
             ;; body is marked by a non-symbol
              [(list 'reference* name defs ...)
               (-extract-hash-defs-and-body defs)])))
+
     
+    (define (-attribute-hash-spec spec)
+      `(and ,(attribute-spec? spec)
+            (match ,spec
+              [(list 'attribute name type minoccur maxoccur body ...)
+               `((name . ,name) (eType . ,type) (lowerBound . ,minoccur) (upperBound . ,maxoccur) (-body . ,body))]
+              ;; (attribute* name att1 val1 att2 val2 ... body)
+              ;; body is marked by a non-symbol
+              [(list 'attribute* name defs ...)
+               (-extract-hash-defs-and-body defs)])))
+
     )
   
   ;; Macros to extract the information from a metamodel declaration and 
@@ -167,7 +170,6 @@
   ;; Execute body when "spec" is a class spec. body is executed within
   ;; an environment that includes the different class elements
   (define-macro (with-eclass-spec spec . body)
-    (displayln spec)
     (let ([hash-spec (-eclass-hash-spec spec)])
       (when hash-spec
         `(let ((the-eclass-hash (make-immutable-hasheq ,@hash-spec)))
@@ -179,10 +181,11 @@
         `(let ((the-eclass-hash (make-immutable-hasheq ,@hash-spec)))
            ,body))))
 
+  
   (define-macro (with-attribute-spec spec . body)
-    (let ([hash-spec (-attribute-hash-spec spec)])
-      (when hash-spec
-        `(let ((the-attribute-hash (make-immutable-hasheq ,@hash-spec)))
+    `(let ([hash-spec ,(-attribute-hash-spec spec)])
+       (when hash-spec
+         (let ((the-attribute-hash (make-immutable-hasheq hash-spec)))
            ,body))))
 
   (define-macro (with-reference-spec spec . body)
@@ -196,8 +199,11 @@
     (hash-ref the-eclass-hash 'name))
 
   ;; Attribute spec hash
-  (define-syntax-rule (.a name)
-    (hash-ref the-attribute-hash 'name))
+;  (define-syntax-rule (.a name)
+;    (hash-ref the-attribute-hash 'name))
+  
+  (define-macro (.a name)
+    `(hash-ref the-attribute-hash ',name))
   
   ;; Reference spec hash
   (define-syntax-rule (.r name)
