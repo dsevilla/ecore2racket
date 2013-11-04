@@ -85,13 +85,11 @@
                   (symbol->string s-s)
                   s-s))
             list)))))
-
-  ;; The list is an attribute spec?
-  (define (attribute-spec? list)
-    `(and (pair? ,list)
-          (memq (car ,list) '(attribute attribute*))))
-  
   (begin-for-syntax
+    ;; The list is an attribute spec?
+    (define (attribute-spec? list)
+      `(and (pair? ,list)
+            (memq (car ,list) '(attribute attribute*))))
     
     ;; The list is an eclass spec?
     (define (eclass-spec? list)
@@ -102,8 +100,6 @@
     (define (edatatype-spec? list)
       (and (pair? list)
            (memq (car list) '(edatatype edatatype*))))
-    
-
 
     ;; The list is a reference spec?
     (define (reference-spec? list)
