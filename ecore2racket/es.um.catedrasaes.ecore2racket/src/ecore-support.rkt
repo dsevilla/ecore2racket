@@ -344,6 +344,7 @@
             (send* ,eref-metatype-name
               (name-set! ,(symbol->string name))
               (eType-set! ,etype-metaclass)
+              (contained-set! ,contained?)
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
@@ -675,7 +676,8 @@
   (attribute containment EBoolean 0 1)
   (attribute container EBoolean 0 1)
   (reference eOpposite EReference #f 0 1)
-  (reference eReferenceType EClass #f 1 1))
+  (ref/derived eReferenceType EClass #f 1 1
+               (send this eType)))
 
  (eclass
   EDataType EClassifier
