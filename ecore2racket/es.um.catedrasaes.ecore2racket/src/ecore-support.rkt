@@ -344,7 +344,7 @@
             (send* ,eref-metatype-name
               (name-set! ,(symbol->string name))
               (eType-set! ,etype-metaclass)
-              (contained-set! ,contained?)
+              (containment-set! ,contained?)
               (derived-set! ,(eq? ref-type 'ref/derived))
               (lowerBound-set! ,minoccur)
               (upperBound-set! ,maxoccur))
